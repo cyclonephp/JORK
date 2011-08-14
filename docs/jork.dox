@@ -1,0 +1,49 @@
+<?php
+
+/**
+ * @addtogroup JORK JORK
+ * 
+ * JORK is one of the most important modules of CyclonePHP. It's a fetureful
+ * Object-Relational Mapping (ORM) library inspired by Hibernate. It is designed
+ * to give you an easy and flexible tool for complex data manipulation with small
+ * performance overhead.
+ * 
+ * In the early development of the module its name stood for Just Another
+ * Object-relational Mapper for Kohana, but later when we decided to maintain
+ * CyclonePHP as a separate project the name lost its original semantics,
+ * so now it's simply JORK and it is not an acronym.
+ * 
+ * @section jork-orm What is ORM?
+ * 
+ * As you know already, JORK is an ORM library and ORM stands for Object
+ * Relational Mapping. But what is it all about? Well, the term it self
+ * appeared even in the early days of object-oriented programming, but an
+ * exact definition of the term has never been written. It won't be done
+ * this time too, but in this chapter I'm going to describe what is it for,
+ * what is the problem it's going to solve, why is it good for you to use
+ * an ORM library. It won't be a JORK-specific or PHP-specific.
+ * 
+ * @subsection jork-orm-problem The difference between data models
+ * 
+ * As we have known it for a long time, the most mature data storage 
+ * technologies for business applications are relational databases (RDBMS-s).
+ * The solid math theory behind relational data storage makes it capable for
+ * storing complex data structures in a normalized way. The data schema can
+ * be properly defined and if you do eligible normalization then later you
+ * can extract whatever data you want from your database.
+ * 
+ * Not so later after the appearance of RDBMS-s came object-oriented programming.
+ * The basic idea of OOP is the encapsulation of the data and the behavior,
+ * but that's not what we are going to talk about this time. The aspect of
+ * OOP we are currently interested in is how the data is stored at run-time
+ * in OO systems: it's stored in a network called object graph.
+ * 
+ * It's obvious that RDBMS-s store data in relations (so-called tables) but
+ * the understanding of the term object graph may need some explanation,
+ * so let's see an example:
+ * 
+ * \image latex objectgraph-example.png "Object graph example" width=10cm
+ * 
+ * 
+ * 
+ */

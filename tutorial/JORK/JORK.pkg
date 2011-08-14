@@ -1,0 +1,30 @@
+<refentry id="{@id}">
+ <refnamediv>
+  <refname>JORK tutorial</refname>
+  <refpurpose>JORK is a heavyweight ORM library for CyclonePHP</refpurpose>
+ </refnamediv>
+ <refsynopsisdiv>
+  <author>
+   Bence Eros	
+   <authorblurb>
+    {@link mailto:crystal@cyclonephp.com Bence Eros}
+   </authorblurb>
+  </author>
+ </refsynopsisdiv>
+ {@toc}
+
+<refsect1 id="{@id intro}">
+	<title>What is JORK?</title>
+	<para>
+		<itemizedlist>
+			<listitem>It's an ORM library inspired by Hibernate</listitem>
+			<listitem>One of the most important modules of CyclonePHP</listitem>
+			<listitem>It's built on SimpleDB</listitem>
+			<listitem>originally JORK stood for Just another ORm for Kohana. Now it's simply called JORK.</listitem>
+			<listitem>JORK has its own object query language called JORK-QL</listitem>
+			<listitem>it implements the Active Record design pattern</listitem>
+		</itemizedlist>
+	</para>
+</refsect1>
+
+</refentry>

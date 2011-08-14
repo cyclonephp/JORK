@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="11.1">
+  <zoom_level>10</zoom_level>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>400</x>
+      <y>380</y>
+      <w>240</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>_car-1: Car_
+--
+id: 1
+model: CarType=cartype-1
+owner: Person=person-1</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>530</x>
+      <y>190</y>
+      <w>280</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>_cartype-1: CarModel_
+--
+id: 1
+name: WhatEver
+manufacturer: CarManufacturer=audi</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>130</x>
+      <y>60</y>
+      <w>270</w>
+      <h>100</h>
+    </coordinates>
+    <panel_attributes>_audi: CarManufacturer_
+--
+id: 1
+name: audi
+models: Collection&lt;CarModel&gt;
+repairers: Collection&lt;Repairer&gt;</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>30</x>
+      <y>270</y>
+      <w>320</w>
+      <h>60</h>
+    </coordinates>
+    <panel_attributes>_repairer-1: Repairer_
+--
+id: 1
+manufacturers: Collection&lt;CarManufaturer&gt;</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>80</x>
+      <y>130</y>
+      <w>196</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-&gt;
+m1=0..n
+m2=0..n
+repairs the cars of&gt;</panel_attributes>
+    <additional_attributes>60;140;150;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>260</x>
+      <y>560</y>
+      <w>290</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>_person-1: Person_
+--
+id: 1
+car: Car=car-1
+preferredPrepairer: Repairer=repairer-1
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>110</x>
+      <y>300</y>
+      <w>170</w>
+      <h>350</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=0..1
+m2=0..n
+</panel_attributes>
+    <additional_attributes>30;30;150;330</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>360</x>
+      <y>430</y>
+      <w>200</w>
+      <h>150</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-&gt;
+m1=0..1
+m2=0..1
+owns&gt;</panel_attributes>
+    <additional_attributes>180;30;30;130</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>510</x>
+      <y>240</y>
+      <w>150</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-&gt;
+m1=0..1
+m2=0..n
+belongs to&gt;</panel_attributes>
+    <additional_attributes>30;140;130;30</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>370</x>
+      <y>80</y>
+      <w>180</w>
+      <h>180</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-
+m1=0..1
+m2=0..n
+created by&gt;</panel_attributes>
+    <additional_attributes>30;30;160;160</additional_attributes>
+  </element>
+</diagram>
