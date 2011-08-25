@@ -176,6 +176,15 @@ class JORK_Mapper_SelectTest extends Kohana_Unittest_TestCase {
         ));
     }
 
+    /**
+     * issue #138 (redmine)
+     */
+    public function testAtomicPropertySelection() {
+        $query = JORK::select('t.modinfo.creator.id', 't.modinfo.creator.name')->from('Model_Topic t');
+        $mapper = JORK_Mapper_Select::for_query($query);
+        list($db_query, ) = $mapper->map();
+    }
+
     public function testManyToMany() {
         $jork_query = JORK::from('Model_Topic')->with('categories');
         $mapper = JORK_Mapper_Select::for_query($jork_query);

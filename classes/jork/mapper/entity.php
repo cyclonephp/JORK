@@ -6,6 +6,12 @@
  */
 class JORK_Mapper_Entity implements JORK_Mapper_Row {
 
+    const SELECT_ALL = 0;
+
+    const SELECT_LAST = 1;
+
+    const SELECT_NONE = 2;
+
     /**
      * @var array
      */
@@ -215,17 +221,13 @@ class JORK_Mapper_Entity implements JORK_Mapper_Row {
      * @return the full column name (with table alias)
      */
     protected function add_atomic_property($prop_name, &$prop_schema) {
-
         if (in_array($prop_name, $this->_result_atomics))
                 return;
 
-        try {
         $tbl_name = array_key_exists('table', $prop_schema)
                 ? $prop_schema['table']
                 : $this->_entity_schema->table;
-        } catch (ErrorException $ex) {
-            echo $ex->getMessage();
-        }
+        
         if ( ! array_key_exists($tbl_name, $this->_table_aliases)) {
             $tbl_alias = $this->add_table($tbl_name);
         }
@@ -314,7 +316,7 @@ class JORK_Mapper_Entity implements JORK_Mapper_Row {
      * @param array $prop_chain the array representation of the property chain
      * @throws JORK_Schema_Exception
      */
-    public function merge_prop_chain(array $prop_chain, $is_select = FALSE, $is_only = FALSE) {
+    public function merge_prop_chain(array $prop_chain, $select_policy = JORK_Mapper_Entity::SELECT_NONE) {
         $root_prop = array_shift($prop_chain);
         $schema = $this->_entity_schema->get_property_schema($root_prop);
         if ($schema instanceof JORK_Model_Embeddable) { // embedded component
@@ -325,12 +327,16 @@ class JORK_Mapper_Entity implements JORK_Mapper_Row {
                 throw new JORK_Syntax_Exception('only the last item of a property
                     chain can be an atomic property');
             $next_mapper = $this->get_component_mapper($root_prop, $schema);
-            $next_mapper->select_all_atomics();
-            $next_mapper->merge_prop_chain($prop_chain);
+            if ($select_policy == self::SELECT_ALL) {
+                $next_mapper->select_all_atomics();
+            }
+            $next_mapper->merge_prop_chain($prop_chain, $select_policy);
         } else {
             if (array_key_exists('class', $schema)) { // component
                 $next_mapper = $this->get_component_mapper($root_prop, $schema);
-                $next_mapper->select_all_atomics();
+                if ($select_policy != self::SELECT_NONE) {
+                    $next_mapper->select_all_atomics();
+                }
             } elseif (is_array($schema)) { // atomic property
                 $this->add_atomic_property($root_prop, $schema);
             } else { // embedded component
@@ -352,7 +358,6 @@ class JORK_Mapper_Entity implements JORK_Mapper_Row {
      * Called if the select list is empty.
      */
     public function select_all_atomics() {
-        //echo $this->_entity_alias.PHP_EOL;
         foreach ($this->_entity_schema->atomics as $prop_name => $prop_schema) {
             $this->add_atomic_property($prop_name, $prop_schema);
         }

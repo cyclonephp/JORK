@@ -177,7 +177,7 @@ abstract class JORK_Mapper_Select {
 
             $left_prop_chain = array($left_last_prop
                 , JORK_Model_Abstract::schema_by_class($left_ent_schema->components[$left_last_prop]['class'])->primary_key());
-            $left_mapper->merge_prop_chain($left_prop_chain);
+            $left_mapper->merge_prop_chain($left_prop_chain, JORK_Mapper_Entity::SELECT_NONE);
             $expr->left_operand = $left_mapper->resolve_prop_chain($left_prop_chain);
         } elseif ($left_is_model) {
             $left_class = $expr->left_operand->schema()->class;
@@ -190,7 +190,7 @@ abstract class JORK_Mapper_Select {
             $right_class = $right_ent_schema->components[$right_last_prop]['class'];
             $right_prop_chain = array($right_last_prop
                 , JORK_Model_Abstract::schema_by_class($right_ent_schema->components[$right_last_prop]['class'])->primary_key());
-            $right_mapper->merge_prop_chain($right_prop_chain);
+            $right_mapper->merge_prop_chain($right_prop_chain, JORK_Mapper_Entity::SELECT_NONE);
             $expr->right_operand = $right_mapper->resolve_prop_chain($right_prop_chain);
         } elseif ($right_is_model) {
             $right_class = $expr->right_operand->schema()->class;

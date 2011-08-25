@@ -50,7 +50,7 @@ class JORK_Mapper_Select_ExplRoot extends JORK_Mapper_Select {
             if (!array_key_exists($root_entity, $this->_mappers))
                 throw new JORK_Syntax_Exception('invalid root entity in WITH clause: ' . $root_entity);
 
-            $this->_mappers[$root_entity]->merge_prop_chain($prop_chain, TRUE, TRUE);
+            $this->_mappers[$root_entity]->merge_prop_chain($prop_chain, JORK_Mapper_Entity::SELECT_ALL);
         }
     }
 
@@ -114,7 +114,7 @@ class JORK_Mapper_Select_ExplRoot extends JORK_Mapper_Select {
             if (empty($prop_chain)) {
                 $this->_mappers[$root_entity]->select_all_atomics();
             } else {
-                $this->_mappers[$root_entity]->merge_prop_chain($prop_chain, TRUE);
+                $this->_mappers[$root_entity]->merge_prop_chain($prop_chain, JORK_Mapper_Entity::SELECT_LAST);
             }
             if (array_key_exists('projection', $select_item)) {
                 $this->add_projections($select_item['prop_chain'], $select_item['projection']);
@@ -129,7 +129,7 @@ class JORK_Mapper_Select_ExplRoot extends JORK_Mapper_Select {
         foreach ($projections as $raw_projection) {
             $proj = explode('.', $raw_projection);
             array_unshift($proj, $last_prop);
-            $mapper->merge_prop_chain($proj);
+            $mapper->merge_prop_chain($proj, JORK_Mapper_Entity::SELECT_ALL);
         }
     }
 

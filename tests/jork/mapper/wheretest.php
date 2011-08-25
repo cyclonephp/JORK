@@ -71,13 +71,6 @@ class JORK_Mapper_WhereTest extends Kohana_Unittest_TestCase {
                )
            ),
            array(
-               'table' => array('user_contact_info', 'user_contact_info_0'),
-               'type' => 'LEFT',
-               'conditions' => array(
-                   new DB_Expression_Binary('t_users_0.id', '=', 'user_contact_info_0.user_fk')
-               )
-           ),
-           array(
                'table' => array('t_topics', 't_topics_0'),
                'type' => 'LEFT',
                'conditions' => array(
@@ -91,13 +84,6 @@ class JORK_Mapper_WhereTest extends Kohana_Unittest_TestCase {
                    new DB_Expression_Binary('t_topics_0.creator_fk', '=', 't_users_1.id')
                )
            ),
-           array(
-               'table' => array('user_contact_info', 'user_contact_info_1'),
-               'type' => 'LEFT',
-               'conditions' => array(
-                   new DB_Expression_Binary('t_users_1.id', '=', 'user_contact_info_1.user_fk')
-               )
-           )
         ), $db_query->joins);
         $this->assertEquals(array(
             new DB_Expression_Binary('t_users_0.id', '=', 't_users_1.id')
@@ -124,13 +110,6 @@ class JORK_Mapper_WhereTest extends Kohana_Unittest_TestCase {
                )
            ),
            array(
-               'table' => array('user_contact_info', 'user_contact_info_0'),
-               'type' => 'LEFT',
-               'conditions' => array(
-                   new DB_Expression_Binary('t_users_0.id', '=', 'user_contact_info_0.user_fk')
-               )
-           ),
-           array(
                'table' => array('t_topics', 't_topics_0'),
                'type' => 'LEFT',
                'conditions' => array(
@@ -142,13 +121,6 @@ class JORK_Mapper_WhereTest extends Kohana_Unittest_TestCase {
                'type' => 'LEFT',
                'conditions' => array(
                    new DB_Expression_Binary('t_topics_0.creator_fk', '=', 't_users_1.id')
-               )
-           ),
-           array(
-               'table' => array('user_contact_info', 'user_contact_info_1'),
-               'type' => 'LEFT',
-               'conditions' => array(
-                   new DB_Expression_Binary('t_users_1.id', '=', 'user_contact_info_1.user_fk')
                )
            )
         ), $db_query->joins);

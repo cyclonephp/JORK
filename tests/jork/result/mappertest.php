@@ -42,7 +42,8 @@ class JORK_Result_MapperTest extends JORK_DbTest {
     }
 
     public function testManyCompJoin() {
-        $result = JORK::from('Model_User')->with('posts.topic')->exec('jork_test');
+        $query = JORK::from('Model_User')->with('posts.topic');
+        $result = $query->exec('jork_test');
         $idx = 1;
         foreach ($result as $user) {
             $this->assertTrue($user instanceof  Model_User);

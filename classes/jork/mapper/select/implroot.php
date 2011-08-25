@@ -23,7 +23,7 @@ class JORK_Mapper_Select_ImplRoot extends JORK_Mapper_Select {
             if (array_key_exists('alias', $with_item)) {
                 $this->_naming_srv->set_alias($with_item['prop_chain'], $with_item['alias']);
             }
-            $this->_mappers[NULL]->merge_prop_chain($with_item['prop_chain']->as_array(), TRUE, TRUE);
+            $this->_mappers[NULL]->merge_prop_chain($with_item['prop_chain']->as_array(), JORK_Mapper_Entity::SELECT_ALL);
         }
     }
 
@@ -43,9 +43,7 @@ class JORK_Mapper_Select_ImplRoot extends JORK_Mapper_Select {
 
     protected function map_select() {
         if (empty($this->_jork_query->select_list)) {
-            foreach ($this->_mappers as $mapper) {
-                $mapper->select_all_atomics();
-            }
+            $this->_mappers[NULL]->select_all_atomics();
             return;
         }
         foreach ($this->_jork_query->select_list as &$select_item) {
@@ -59,7 +57,7 @@ class JORK_Mapper_Select_ImplRoot extends JORK_Mapper_Select {
                 continue;
             }
             $prop_chain = $select_item['prop_chain']->as_array();
-            $this->_mappers[NULL]->merge_prop_chain($prop_chain, TRUE);
+            $this->_mappers[NULL]->merge_prop_chain($prop_chain, JORK_Mapper_Entity::SELECT_LAST);
             if (array_key_exists('projection', $select_item)) {
                 $this->add_projections($select_item['prop_chain'], $select_item['projection']);
             }
@@ -69,7 +67,7 @@ class JORK_Mapper_Select_ImplRoot extends JORK_Mapper_Select {
     protected function add_projections(JORK_Query_PropChain $prop_chain, $projections) {
         list($mapper,, ) = $this->_mappers[NULL]->resolve_prop_chain($prop_chain->as_array());
         foreach ($projections as $proj) {
-            $mapper->merge_prop_chain(explode('.', $proj));
+            $mapper->merge_prop_chain(explode('.', $proj), JORK_Mapper_Entity::SELECT_ALL);
         }
     }
 
