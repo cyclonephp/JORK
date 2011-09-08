@@ -5,7 +5,7 @@ abstract class JORK_DbTest extends Kohana_Unittest_TestCase {
 
     public function  setUp() {
         parent::setUp();
-        $sql = file_get_contents(LIBPATH.'jork/tests/testdata.sql');
+        $sql = file_get_contents(\cyclone\LIBPATH.'jork/tests/testdata.sql');
         try {
             DB::connector('jork_test')->connect();
             DB::executor('jork_test')->exec_custom($sql);
