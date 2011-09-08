@@ -70,7 +70,7 @@ abstract class JORK_Model_Abstract implements ArrayAccess, IteratorAggregate{
      */
     public function  __construct() {
         if (NULL === self::$_cfg) {
-            self::$_cfg = Config::inst()->get('jork');
+            self::$_cfg = \cyclone\Config::inst()->get('jork');
         }
     }
 

@@ -256,7 +256,7 @@ class JORK_Query_Select {
         $mapper = JORK_Mapper_Select::for_query($this);
         list($db_query, $mappers) = $mapper->map();
         
-        if (Config::inst()->get('jork.show_sql')) {
+        if (\cyclone\Config::inst()->get('jork.show_sql')) {
             echo $db_query->compile($database).PHP_EOL;
         }
         $sql = DB::compiler($database)->compile_select($db_query);

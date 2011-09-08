@@ -4,7 +4,7 @@
 class JORK_Result_MapperTest extends JORK_DbTest {
 
     public function testConfig() {
-        Config::inst()->get('jork.show_sql');
+        \cyclone\Config::inst()->get('jork.show_sql');
         DB::executor('jork_test')->exec_custom('select 1');
     }
 
