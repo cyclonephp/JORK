@@ -1,7 +1,9 @@
 <?php
 
+use cyclone as cy;
+use cyclone\jork\model;
 
-class Model_User extends JORK_Model_Abstract {
+class Model_User extends model\AbstractModel {
 
 
     protected function setup() {
@@ -57,14 +59,14 @@ class Model_User extends JORK_Model_Abstract {
         $this->_schema->components = array(
             'posts' => array(
                 'class' => 'Model_Post',
-                'type' => JORK::ONE_TO_MANY,
+                'type' => cy\JORK::ONE_TO_MANY,
                 'join_column' => 'user_fk',
-                'on_delete' => JORK::SET_NULL
+                'on_delete' => cy\JORK::SET_NULL
             ),
             'moderated_category' => array(
                 'class' => 'Model_Category',
                 'mapped_by' => 'moderator',
-                'on_delete' => JORK::SET_NULL
+                'on_delete' => cy\JORK::SET_NULL
             )
         );
     }

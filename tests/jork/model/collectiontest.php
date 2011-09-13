@@ -1,34 +1,36 @@
 <?php
 
+use cyclone as cy;
+
 
 class JORK_Model_CollectionTest extends Kohana_Unittest_TestCase {
 
 
     /**
-     * @expectedException JORk_Exception
+     * @expectedException cyclone\jork\Exception
      */
     public function testForComponent() {
         $user = new Model_User;
-        $coll = JORK_Model_Collection::for_component($user, 'posts');
-        $this->assertInstanceOf('JORK_Model_Collection_OneToMany', $coll);
+        $coll = cy\jork\model\collection\AbstractCollection::for_component($user, 'posts');
+        $this->assertInstanceOf('cyclone\\jork\\model\\collection\\OneToManyCollection', $coll);
 
         $topic = new Model_Topic;
-        $coll = JORK_Model_Collection::for_component($topic, 'categories');
-        $this->assertInstanceOf('JORK_Model_Collection_ManyToMany', $coll);
+        $coll = cy\jork\model\collection\AbstractCollection::for_component($topic, 'categories');
+        $this->assertInstanceOf('cyclone\\jork\\model\\collection\\ManyToManyCollection', $coll);
 
-        $coll = JORK_Model_Collection::for_component($topic, 'posts');
-        $this->assertInstanceOf('JORK_Model_Collection_Reverse_ManyToOne', $coll);
+        $coll = cy\jork\model\collection\AbstractCollection::for_component($topic, 'posts');
+        $this->assertInstanceOf('cyclone\\jork\\model\\collection\\reverse\\ManyToOneCollection', $coll);
 
         $cat = new Model_Category;
-        $coll = JORK_Model_Collection::for_component($cat, 'topics');
-        $this->assertInstanceOf('JORK_Model_Collection_Reverse_ManyToMany', $coll);
+        $coll = cy\jork\model\collection\AbstractCollection::for_component($cat, 'topics');
+        $this->assertInstanceOf('cyclone\\jork\\model\\collection\\reverse\\ManyToManyCollection', $coll);
 
-        $coll = JORK_Model_Collection::for_component($cat, 'moderator');
+        $coll = cy\jork\model\collection\AbstractCollection::for_component($cat, 'moderator');
     }
 
     public function testIteration() {
-        $result = JORK::from('Model_Topic')->with('posts')
-                ->where('id', '=', DB::esc(1))->exec('jork_test');
+        $result = cy\JORK::from('Model_Topic')->with('posts')
+                ->where('id', '=', cy\DB::esc(1))->exec('jork_test');
         $topic = $result[0];
 
         $counter = 0;

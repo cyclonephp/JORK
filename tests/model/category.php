@@ -1,7 +1,10 @@
 <?php
 
+use cyclone as cy;
+use cyclone\jork\model;
 
-class Model_Category extends JORK_Model_Abstract {
+
+class Model_Category extends model\AbstractModel {
 
 
     public function setup() {
@@ -29,12 +32,12 @@ class Model_Category extends JORK_Model_Abstract {
         $this->_schema->components = array(
             'topics' => array(
                 'class' => 'Model_Topic',
-                'type' => JORK::MANY_TO_MANY,
+                'type' => cy\JORK::MANY_TO_MANY,
                 'mapped_by' => 'categories'
             ),
             'moderator' => array(
                 'class' => 'Model_User',
-                'type' => JORK::ONE_TO_ONE,
+                'type' => cy\JORK::ONE_TO_ONE,
                 'join_column' => 'moderator_fk'
             ),
             'modinfo' => 'Model_ModInfo'

@@ -1,5 +1,9 @@
 <?php
 
+
+use cyclone as cy;
+use cyclone\db;
+
 /**
  * This test class is a general test class used for general functional testing
  */
@@ -25,15 +29,15 @@ class JORK_Model_Playground extends JORK_DbTest {
         }
         
         $user->save();
-        $posts = DB::select()->from('t_posts')->exec('jork_test');
+        $posts = cy\DB::select()->from('t_posts')->exec('jork_test');
         $this->assertEquals(10, count($posts));
-        $users = DB::select()->from('t_users')->exec('jork_test'); 
+        $users = cy\DB::select()->from('t_users')->exec('jork_test');
         $this->assertEquals(5, count($users));
-        $topics = DB::select()->from('t_topics')->exec('jork_test');
+        $topics = cy\DB::select()->from('t_topics')->exec('jork_test');
         $this->assertEquals(5, count($topics));
-        $categories = DB::select()->from('t_categories')->exec('jork_test');
+        $categories = cy\DB::select()->from('t_categories')->exec('jork_test');
         $this->assertEquals(4, count($categories));
-        $ct = DB::select()->from('categories_topics')->exec('jork_test');
+        $ct = cy\DB::select()->from('categories_topics')->exec('jork_test');
         $this->assertEquals(5, count($ct));
     }
 

@@ -1,29 +1,34 @@
 <?php
 
+use cyclone as cy;
+use cyclone\db;
+use cyclone\jork;
+use cyclone\jork\query;
+
 
 class JORK_Query_Test extends Kohana_Unittest_TestCase {
 
     /**
-     * @expectedException JORK_Syntax_Exception
+     * @expectedException cyclone\jork\SyntaxException
      */
     public function testSelect() {
-        $query = new JORK_Query_Select;
+        $query = new query\SelectQuery;
         $query->select('user{id,name} u', 'user', 'user{id,name}', 'user.posts posts');
         $this->assertEquals($query->select_list, array(
             array(
-                'prop_chain' => JORK_Query_PropChain::from_string('user'),
+                'prop_chain' => query\PropChain::from_string('user'),
                 'projection' => array('id', 'name'),
                 'alias' => 'u'
             ),
             array(
-                'prop_chain' => JORK_Query_PropChain::from_string('user')
+                'prop_chain' => query\PropChain::from_string('user')
             ),
             array(
-                'prop_chain' => JORK_Query_PropChain::from_string('user'),
+                'prop_chain' => query\PropChain::from_string('user'),
                 'projection' => array('id', 'name')
             ),
             array(
-                'prop_chain' => JORK_Query_PropChain::from_string('user.posts'),
+                'prop_chain' => query\PropChain::from_string('user.posts'),
                 'alias' => 'posts'
             )
         ));
@@ -31,7 +36,7 @@ class JORK_Query_Test extends Kohana_Unittest_TestCase {
     }
 
     public function testFrom() {
-        $query = new JORK_Query_Select;
+        $query = new query\SelectQuery;
         $query->from('Model_User u');
         $query->from('Model_User');
         $this->assertEquals($query->from_list, array(
@@ -46,15 +51,15 @@ class JORK_Query_Test extends Kohana_Unittest_TestCase {
     }
 
     public function testWith() {
-        $query = new JORK_Query_Select;
-        $subquery = new JORK_Query_Select;
+        $query = new query\SelectQuery;
+        $subquery = new query\SelectQuery;
         $query->with('post.author', 'post.author auth', $subquery);
-        $this->assertEquals($query->with_list, new ArrayObject(array(
+        $this->assertEquals($query->with_list, new \ArrayObject(array(
             array(
-                'prop_chain' => JORK_Query_PropChain::from_string('post.author')
+                'prop_chain' => query\PropChain::from_string('post.author')
             ),
             array(
-                'prop_chain' => JORK_Query_PropChain::from_string('post.author'),
+                'prop_chain' => query\PropChain::from_string('post.author'),
                 'alias' => 'auth'
             ),
             $subquery
@@ -62,12 +67,12 @@ class JORK_Query_Test extends Kohana_Unittest_TestCase {
     }
 
     public function testJoin() {
-        $query = new JORK_Query_Select;
-        $subselect = new JORK_Query_Select();
+        $query = new query\SelectQuery;
+        $subselect = new query\SelectQuery;
         $query->join('Model_User u')->on('u.id', '=', 'post.author_fk');
         $query->join('Model_User')->on('exists', $subselect);
         //$query->join('Model_User')->on(JORK::expr)
-        $this->assertEquals($query->join_list, new ArrayObject(array(
+        $this->assertEquals($query->join_list, new \ArrayObject(array(
             array(
                 'type' => 'INNER',
                 'class' => 'Model_User',
@@ -83,8 +88,8 @@ class JORK_Query_Test extends Kohana_Unittest_TestCase {
     }
 
     public function testWhere() {
-        $query = new JORK_Query_Select;
+        $query = new query\SelectQuery;
         $query->where(1, 2, 3);
-        $this->assertEquals($query->where_conditions, array(new DB_Expression_Binary(1, 2, 3)));
+        $this->assertEquals($query->where_conditions, array(new db\BinaryExpression(1, 2, 3)));
     }
 }

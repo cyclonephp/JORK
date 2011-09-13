@@ -1,35 +1,40 @@
 <?php
 
+use cyclone as cy;
+use cyclone\db;
+use cyclone\jork;
+use cyclone\jork\query;
+
 
 class JORK_Query_CacheTest extends Kohana_Unittest_TestCase {
 
     public function  setUp() {
         parent::setUp();
-        JORK_Query_Cache::clear_pool();
+        query\Cache::clear_pool();
     }
 
     public function testInst() {
-        $inst = JORK_Query_Cache::inst('Model_User');
-        $this->assertInstanceOf('JORK_Query_Cache', $inst);
+        $inst = query\Cache::inst('Model_User');
+        $this->assertInstanceOf('cyclone\jork\query\Cache', $inst);
     }
 
     public function testInsertSQL() {
-        $cache = JORK_Query_Cache::inst('Model_User');
+        $cache = query\Cache::inst('Model_User');
         $inserts = $cache->insert_sql();
         $this->assertEquals(
             array(
-                't_users' => DB::insert('t_users'),
-                'user_contact_info' => DB::insert('user_contact_info')
+                't_users' => cy\DB::insert('t_users'),
+                'user_contact_info' => cy\DB::insert('user_contact_info')
             ),
             $inserts
         );
     }
 
     public function testUpdateSQL() {
-        $updates = JORK_Query_Cache::inst('Model_User')->update_sql();
+        $updates = query\Cache::inst('Model_User')->update_sql();
         $this->assertEquals(array(
-            't_users' => DB::update('t_users'),
-            'user_contact_info' => DB::update('user_contact_info')
+            't_users' => cy\DB::update('t_users'),
+            'user_contact_info' => cy\DB::update('user_contact_info')
         ), $updates);
     }
 }

@@ -1,5 +1,8 @@
 <?php
 
+use cyclone as cy;
+use cyclone\db;
+
 
 abstract class JORK_DbTest extends Kohana_Unittest_TestCase {
 
@@ -7,17 +10,17 @@ abstract class JORK_DbTest extends Kohana_Unittest_TestCase {
         parent::setUp();
         $sql = file_get_contents(\cyclone\LIBPATH.'jork/tests/testdata.sql');
         try {
-            DB::connector('jork_test')->connect();
-            DB::executor('jork_test')->exec_custom($sql);
-            DB::connector('jork_test')->commit();
-        } catch (DB_Exception $ex) {
+            cy\DB::connector('jork_test')->connect();
+            cy\DB::executor('jork_test')->exec_custom($sql);
+            cy\DB::connector('jork_test')->commit();
+        } catch (db\Exception $ex) {
             echo $ex->getMessage() . PHP_EOL;
             $this->markTestSkipped('failed to establish database connection jork_test');
         }
     }
 
     public function  tearDown() {
-        JORK_InstancePool::clear();
+        cy\jork\InstancePool::clear();
         parent::tearDown();
     }
 

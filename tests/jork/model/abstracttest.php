@@ -1,5 +1,8 @@
 <?php
 
+use cyclone as cy;
+use cyclone\db;
+
 
 class JORK_Model_AbstractTest extends JORK_DbTest {
 
@@ -67,7 +70,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $user->name = 'foo bar';
         $user->save();
         $this->assertEquals(5, $user->id);
-        $result = JORK::from('Model_User')->where('id', '=', DB::esc(5))
+        $result = cy\JORK::from('Model_User')->where('id', '=', cy\DB::esc(5))
                 ->exec('jork_test');
         foreach ($result as $user) {
             $this->assertEquals(5, $user->id);
@@ -107,22 +110,22 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
 
         $user->save();
 
-        $result = DB::select()->from('t_users')->where('id', '=', DB::esc(4))->exec('jork_test');
+        $result = cy\DB::select()->from('t_users')->where('id', '=', cy\DB::esc(4))->exec('jork_test');
         foreach ($result as $row) {
             $this->assertEquals('foo', $row['name']);
         }
 
-        $result = DB::select()->from('t_posts')->where('id', '=', DB::esc(5))->exec('jork_test');
+        $result = cy\DB::select()->from('t_posts')->where('id', '=', cy\DB::esc(5))->exec('jork_test');
         $this->assertEquals(1, count($result));
     }
 
     public function testDelete() {
-       $result = JORK::from('Model_Post')->where('id', '=', DB::esc(4))
+       $result = cy\JORK::from('Model_Post')->where('id', '=', cy\DB::esc(4))
                ->exec('jork_test');
        $post = $result[0];
        $post->delete();
-       $this->assertEquals(0, count(DB::select()->from('t_posts')
-               ->where('id', '=', DB::esc(4))->exec('jork_test')));
+       $this->assertEquals(0, count(cy\DB::select()->from('t_posts')
+               ->where('id', '=', cy\DB::esc(4))->exec('jork_test')));
 
        $user = new Model_User;
        $user->delete();
@@ -132,9 +135,9 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
      * Tests component behavior on entity deletion
      */
     public function testDeleteComponents() {
-        $result = JORK::from('Model_Topic')
+        $result = cy\JORK::from('Model_Topic')
                 ->with('posts')
-                ->where('id', '=', DB::esc(1))
+                ->where('id', '=', cy\DB::esc(1))
                 ->exec('jork_test');
         $topic = $result[0];
 
@@ -146,14 +149,14 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
     }
 
     public function testSetNullFkForReverseOneToOne() {
-        $result = JORK::from('Model_User')->where('id', '=', DB::esc(1))
+        $result = cy\JORK::from('Model_User')->where('id', '=', cy\DB::esc(1))
                 ->exec('jork_test');
         $user = $result[0];
 
         $user->delete();
 
         $this->assertEquals(2, count(
-            DB::select()->from('t_categories')->where('moderator_fk', 'is', NULL)
+            cy\DB::select()->from('t_categories')->where('moderator_fk', 'is', NULL)
                 ->exec('jork_test')->as_array()
         ));
     }
@@ -168,7 +171,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $this->assertEquals(256, $user->name);
         $this->assertInternalType('string', $user->name);
 
-        $result = JORK::from('Model_User')->where('id', '=', DB::esc(1))
+        $result = cy\JORK::from('Model_User')->where('id', '=', cy\DB::esc(1))
                 ->exec('jork_test');
         $user = $result[0];
         $this->assertInternalType('int', $user->id);
@@ -176,7 +179,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
     }
 
     /**
-     * @expectedException JORK_Exception
+     * @expectedException cyclone\jork\Exception
      */
     public function testAtomicTypeCheck() {
         $user = new Model_User;
@@ -193,10 +196,10 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         }
         $topic->save(FALSE);
         $this->assertEquals(5, $topic->id);
-        $topics = DB::select()->from('t_topics')->exec('jork_test');
+        $topics = cy\DB::select()->from('t_topics')->exec('jork_test');
         $this->assertEquals(5, count($topics));
 
-        $posts = DB::select()->from('t_posts')->exec('jork_test');
+        $posts = cy\DB::select()->from('t_posts')->exec('jork_test');
         $this->assertEquals(4, count($posts));
     }
 
@@ -210,10 +213,10 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         }
         $topic->save(TRUE);
         $this->assertEquals(5, $topic->id);
-        $topics = DB::select()->from('t_topics')->exec('jork_test');
+        $topics = cy\DB::select()->from('t_topics')->exec('jork_test');
         $this->assertEquals(5, count($topics));
 
-        $posts = DB::select()->from('t_posts')->exec('jork_test');
+        $posts = cy\DB::select()->from('t_posts')->exec('jork_test');
         $this->assertEquals(9, count($posts));
     }
 
@@ -231,13 +234,13 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
 
         $topic->save(array('posts'));
         $this->assertEquals(5, $topic->id);
-        $topics = DB::select()->from('t_topics')->exec('jork_test');
+        $topics = cy\DB::select()->from('t_topics')->exec('jork_test');
         $this->assertEquals(5, count($topics));
 
-        $posts = DB::select()->from('t_posts')->exec('jork_test');
+        $posts = cy\DB::select()->from('t_posts')->exec('jork_test');
         $this->assertEquals(9, count($posts));
 
-        $categories = DB::select()->from('t_categories')->exec('jork_test');
+        $categories = cy\DB::select()->from('t_categories')->exec('jork_test');
         $this->assertEquals(3, count($categories));
     }
 

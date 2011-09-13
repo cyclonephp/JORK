@@ -1,6 +1,8 @@
 <?php
+use cyclone as cy;
+use cyclone\jork\model;
 
-class Model_Topic extends JORK_Model_Abstract {
+class Model_Topic extends model\AbstractModel {
 
     public function setup() {
         $this->_schema->db_conn = 'jork_test';
@@ -22,7 +24,7 @@ class Model_Topic extends JORK_Model_Abstract {
         $this->_schema->components = array(
             'categories' => array(
                 'class' => 'Model_Category',
-                'type' => JORK::MANY_TO_MANY,
+                'type' => cy\JORK::MANY_TO_MANY,
                 'join_table' => array(
                     'name' => 'categories_topics',
                     'join_column' => 'topic_fk',
@@ -32,7 +34,7 @@ class Model_Topic extends JORK_Model_Abstract {
             'posts' => array(
 		'class' => 'Model_Post',
 		'mapped_by' => 'topic',
-                'on_delete' => JORK::SET_NULL
+                'on_delete' => cy\JORK::SET_NULL
             ),
             'modinfo' => 'Model_ModInfo'
         );

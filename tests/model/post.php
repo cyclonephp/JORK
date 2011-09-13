@@ -1,7 +1,10 @@
 <?php
 
+use cyclone as cy;
+use cyclone\jork\model;
 
-class Model_Post extends JORK_Model_Abstract {
+
+class Model_Post extends model\AbstractModel {
 
 
     public function setup() {
@@ -36,7 +39,7 @@ class Model_Post extends JORK_Model_Abstract {
             ),
             'topic' => array(
                 'class' => 'Model_Topic',
-                'type' => JORK::MANY_TO_ONE,
+                'type' => cy\JORK::MANY_TO_ONE,
                 'join_column' => 'topic_fk'
             ),
             'modinfo' => 'Model_ModInfo'

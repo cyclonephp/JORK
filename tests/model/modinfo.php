@@ -1,7 +1,10 @@
 <?php
 
+use cyclone as cy;
+use cyclone\jork\model;
 
-class Model_ModInfo extends JORK_Model_Embeddable {
+
+class Model_ModInfo extends model\EmbeddableModel {
 
     public function setup() {
         $this->_schema->atomics = array(
@@ -31,12 +34,12 @@ class Model_ModInfo extends JORK_Model_Embeddable {
         $this->_schema->components = array(
             'creator' => array(
                 'class' => 'Model_User',
-                'type' => JORK::MANY_TO_ONE,
+                'type' => cy\JORK::MANY_TO_ONE,
                 'join_column' => 'creator_fk'
             ),
             'modifier' => array(
                 'class' => 'Model_User',
-                'type' => JORK::MANY_TO_ONE,
+                'type' => cy\JORK::MANY_TO_ONE,
                 'join_column' => 'modifier_fk'
             )
         );

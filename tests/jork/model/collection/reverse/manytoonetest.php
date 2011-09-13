@@ -1,4 +1,6 @@
 <?php
+use cyclone as cy;
+use cyclone\db;
 
 
 class JORK_Model_Collection_Reverse_ManyToOneTest extends Kohana_Unittest_TestCase {
@@ -32,15 +34,15 @@ class JORK_Model_Collection_Reverse_ManyToOneTest extends Kohana_Unittest_TestCa
      * Tests component behavior on entity deletion
      */
     public function testNotifyOwnerDeletion() {
-        $result = JORK::from('Model_Topic')
+        $result = cy\JORK::from('Model_Topic')
                 ->with('posts')
-                ->where('id', '=', DB::esc(1))
+                ->where('id', '=', cy\DB::esc(1))
                 ->exec('jork_test');
         $topic = $result[0];
 
         $topic->delete();
 
-        $this->assertEquals(2, count(DB::select()->from('t_posts')
+        $this->assertEquals(2, count(cy\DB::select()->from('t_posts')
                 ->where('topic_fk', 'is', NULL)->exec('jork_test')));
     }
 }

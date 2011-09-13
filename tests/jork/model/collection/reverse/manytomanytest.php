@@ -1,5 +1,7 @@
 <?php
 
+use cyclone as cy;
+use cyclone\db;
 
 class JORK_Model_Collection_Reverse_ManyToManyTest extends JORK_DbTest {
 
@@ -25,12 +27,12 @@ class JORK_Model_Collection_Reverse_ManyToManyTest extends JORK_DbTest {
     }
 
     public function testSave() {
-        $result = JORK::from('Model_Category')->with('topics')
+        $result = cy\JORK::from('Model_Category')->with('topics')
                 ->where('id', '=', DB::esc(2))
                 ->exec('jork_test');
         $category = $result[0];
 
-        $result = JORK::from('Model_Topic')->where('id', '=', DB::esc(3))
+        $result = cy\JORK::from('Model_Topic')->where('id', '=', DB::esc(3))
                 ->exec('jork_test');
         $topic = $result[0];
         $this->assertEquals(2, count($category->topics));
@@ -39,8 +41,8 @@ class JORK_Model_Collection_Reverse_ManyToManyTest extends JORK_DbTest {
         $category->topics->append($topic);
         
         $category->topics->save();
-        $result = DB::select()->from('categories_topics')
-                ->where('category_fk', '=', DB::esc(2))
+        $result = cy\DB::select()->from('categories_topics')
+                ->where('category_fk', '=', cy\DB::esc(2))
                 ->exec('jork_test')->as_array();
         $this->assertEquals(2, count($result));
         $this->assertEquals(1, $result[0]['topic_fk']);

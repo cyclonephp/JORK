@@ -1,5 +1,8 @@
 <?php
 
+use cyclone as cy;
+use cyclone\db;
+
 
 class JORK_Model_Collection_ManyToManyTest extends JORK_DbTest {
 
@@ -24,23 +27,24 @@ class JORK_Model_Collection_ManyToManyTest extends JORK_DbTest {
     }
 
     public function testSave() {
-        $result = JORK::from('Model_Topic')->with('categories')
-                ->where('id', '=', DB::esc(2))->exec('jork_test');
+        $result = cy\JORK::from('Model_Topic')->with('categories')
+                ->where('id', '=', cy\DB::esc(2))->exec('jork_test');
         $topic = $result[0];
         $this->assertInstanceOf('Model_Topic', $topic);
         
-        $result = JORK::from('Model_Category')->where('id', '=', DB::esc(3))->exec('jork_test');
+        $result = cy\JORK::from('Model_Category')->where('id', '=', cy\DB::esc(3))
+                ->exec('jork_test');
         $category = $result[0];
         $this->assertInstanceOf('Model_Category', $category);
 
         $topic->categories->append($category);
         unset($topic->categories[2]);
         $topic->save();
-        $result = DB::select()->from('categories_topics')
-                ->where('topic_fk', '=', DB::esc(2))->exec('jork_test')->as_array();
+        $result = cy\DB::select()->from('categories_topics')
+                ->where('topic_fk', '=', cy\DB::esc(2))->exec('jork_test')->as_array();
         $this->assertEquals(1, count($result));
         $this->assertEquals(3, $result[0]['category_fk']);
-        $this->assertEquals(4, count(DB::select()->from('categories_topics')
+        $this->assertEquals(4, count(cy\DB::select()->from('categories_topics')
                 ->exec('jork_test')->as_array()));
     }
 }

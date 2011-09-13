@@ -1,5 +1,8 @@
 <?php
 
+use cyclone as cy;
+use cyclone\db;
+
 
 class JORK_Model_Collection_OneToManyTest extends JORK_DbTest {
 
@@ -14,7 +17,7 @@ class JORK_Model_Collection_OneToManyTest extends JORK_DbTest {
     }
 
     /**
-     * @expectedException JORK_Exception
+     * @expectedException cyclone\jork\Exception
      * @expectedExceptionMessage the items of this collection should be Model_Post instances
      */
     public function testTypeSafety() {
@@ -45,13 +48,13 @@ class JORK_Model_Collection_OneToManyTest extends JORK_DbTest {
         $this->assertEquals(5, $post->id);
         $this->assertEquals(5, $post->user_fk);
 
-        $result = DB::select()->from('t_posts')->where('id', '=', DB::esc(5))->exec('jork_test');
+        $result = cy\DB::select()->from('t_posts')->where('id', '=', cy\DB::esc(5))->exec('jork_test');
         $this->assertEquals(1, count($result));
 
         $user->posts->delete($post);
         $user->posts->save();
 
-        $result = DB::select()->from('t_posts')->where('id', '=', DB::esc(5))->exec('jork_test');
+        $result = cy\DB::select()->from('t_posts')->where('id', '=', cy\DB::esc(5))->exec('jork_test');
         foreach ($result as $row) {
             $this->assertEquals(NULL, $row['user_fk']);
         }
@@ -60,7 +63,7 @@ class JORK_Model_Collection_OneToManyTest extends JORK_DbTest {
     public function testNotifyOwnerDeletion() {
         Model_User::inst()->delete_by_pk(1);
 
-        $this->assertEquals(2, count(DB::select()->from('t_posts')
+        $this->assertEquals(2, count(cy\DB::select()->from('t_posts')
                 ->where('user_fk', 'IS', NULL)
                 ->exec('jork_test')->as_array()));
     }

@@ -1,18 +1,20 @@
 <?php
 
+use cyclone\jork;
+
 
 class JORK_Naming_ServiceTest extends Kohana_Unittest_TestCase {
 
     public function testGetSchema() {
-        $service = new JORK_Naming_Service;
+        $service = new jork\NamingService;
         $service->set_alias('Model_User', 'user');
         $schema = $service->get_schema('user.posts');
-        $this->assertEquals($schema, JORK_Model_Abstract::schema_by_class('Model_Post'));
+        $this->assertEquals($schema, jork\model\AbstractModel::schema_by_class('Model_Post'));
 
 
         $service->set_alias('user.posts', 'post');
         $schema = $service->get_schema('post.topic');
-        $this->assertEquals($schema, JORK_Model_Abstract::schema_by_class('Model_Topic'));
+        $this->assertEquals($schema, jork\model\AbstractModel::schema_by_class('Model_Topic'));
 
         $schema = $service->get_schema('post.topic.name');
         $this->assertEquals($schema, array(
@@ -25,7 +27,7 @@ class JORK_Naming_ServiceTest extends Kohana_Unittest_TestCase {
     }
 
     public function testTableAlias() {
-        $service = new JORK_Naming_Service;
+        $service = new jork\NamingService;
         $service->set_alias('Model_Post', 'post');
         $service->set_alias('Model_Post', 'post2');
         $this->assertEquals('t_posts_0', $service->table_alias('post', 't_posts'));
@@ -34,9 +36,9 @@ class JORK_Naming_ServiceTest extends Kohana_Unittest_TestCase {
     }
 
     public function testImplRoot() {
-        $srv = new JORK_Naming_Service;
+        $srv = new jork\NamingService;
         $srv->set_implicit_root('Model_User');
         $this->assertEquals($srv->get_schema(NULL)
-                , JORK_Model_Abstract::schema_by_class('Model_User'));
+                , jork\model\AbstractModel::schema_by_class('Model_User'));
     }
 }
