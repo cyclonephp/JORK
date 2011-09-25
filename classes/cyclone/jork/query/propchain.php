@@ -14,6 +14,7 @@ class PropChain {
 
     /**
      * Internal string representation of the property chain
+     * 
      * @var string
      */
     private $str;
