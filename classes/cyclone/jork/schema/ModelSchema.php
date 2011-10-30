@@ -11,17 +11,97 @@ use cyclone as cy;
  */
  class ModelSchema {
 
+     /**
+      * The name of the database connection.
+      *
+      * @var string
+      */
     public $db_conn = 'default';
 
+    /**
+     * The name of the model class which the schema instance provides
+     * mapping schema for.
+     *
+     * @var string
+     */
     public $class;
 
+    /**
+     * The name of the database table where the primitive properties
+     * of the class should be mapped.
+     *
+     * @var string
+     */
     public $table;
 
+    /**
+     * @var array<SecondaryTableSchema>
+     */
     public $secondary_tables;
 
-    public $atomics;
+    /**
+     * @var array<PrimitivePropertySchema>
+     */
+    public $primitives = array();
 
-    public $components;
+    /**
+     * @var array<ComponentSchema>
+     */
+    public $components = array();
+
+    /**
+     * Setter for the <code>$db_conn</code> property.
+     *
+     * @param string $db_conn
+     * @return ModelSchema <code>$this</code>
+     */
+    public function db_conn($db_conn) {
+        $this->db_conn = $db_conn;
+        return $this;
+    }
+
+    /**
+     *
+     * @param string $class
+     * @return ModelSchema
+     */
+    public function clazz($class) {
+        $this->class = $class;
+        return $this;
+    }
+
+    /**
+     * Setter for the <code>$table</code> property.
+     *
+     * @param string $table
+     * @return ModelSchema
+     */
+    public function table($table) {
+        $this->table = $table;
+        return $this;
+    }
+
+    /**
+     * @param string $name
+     * @param PrimitivePropertySchema $schema
+     * @return ModelSchema
+     */
+    public function primitive($name, PrimitivePropertySchema $schema) {
+        $this->primitives[$name] = $schema;
+        return $this;
+    }
+
+    /**
+     *
+     * @param <type> $name
+     * @param ComponentSchema $schema
+     * @return ModelSchema 
+     */
+    public function component($name, ComponentSchema $schema) {
+        $this->components[$name] = $schema;
+        return $this;
+    }
+    
 
     public function primary_key() {
         foreach ($this->atomics as $name => $def) {

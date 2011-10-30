@@ -2,8 +2,6 @@
 
 namespace cyclone;
 
-
-
 /**
  * @author Bence Erős <crystal@cyclonephp.com>
  * @package JORK
