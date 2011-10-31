@@ -10,7 +10,13 @@ class Model_Post extends model\AbstractModel {
     public function setup() {
         $this->_schema->db_conn = 'jork_test';
         $this->_schema->table = 't_posts';
-        $this->_schema->atomics = array(
+        $this->_schema->primitive(cy\JORK::primitive('id', 'int')
+                    ->primary_key()->generation_strategy('auto')
+                )->primitive(cy\JORK::primitive('name', 'string')
+                )->primitive(cy\JORK::primitive('topic_fk', 'int')
+                )->primitive(cy\JORK::primitive('user_fk', 'int')
+                );
+        /*$this->_schema->atomics = array(
             'id' => array(
                 'type' => 'int',
                 'primary' => true,
@@ -31,8 +37,14 @@ class Model_Post extends model\AbstractModel {
                     'not null' => true
                 )
             )
-        );
-        $this->_schema->components = array(
+        );*/
+        $this->_schema->component(cy\JORK::component('author', 'Model_User')
+                    ->mapped_by('posts')
+                )->component(cy\JORK::component('topic', 'Model_Topic')
+                    ->type(cy\JORK::MANY_TO_ONE)
+                    ->join_column('topic_fk')
+                )->embedded_component('modinfo', 'Model_ModInfo');
+        /*$this->_schema->components = array(
             'author' => array(
                 'class' => 'Model_User',
                 'mapped_by' => 'posts'
@@ -43,7 +55,7 @@ class Model_Post extends model\AbstractModel {
                 'join_column' => 'topic_fk'
             ),
             'modinfo' => 'Model_ModInfo'
-        );
+        );*/
     }
 
     public static function inst() {

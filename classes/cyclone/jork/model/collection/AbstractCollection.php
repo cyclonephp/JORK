@@ -18,20 +18,20 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
 
     public static function for_component($owner, $comp_name) {
         $comp_schema = $owner->schema()->components[$comp_name];
-        if (array_key_exists('mapped_by', $comp_schema)) {
+        if (isset($comp_schema->mapped_by)) {
             $remote_comp_schema = jork\model\AbstractModel::schema_by_class($comp_schema['class'])
-                ->components[$comp_schema['mapped_by']];
-            if (cy\JORK::MANY_TO_ONE == $remote_comp_schema['type'])
+                ->components[$comp_schema->mapped_by];
+            if (cy\JORK::MANY_TO_ONE == $remote_comp_schema->type)
                 return new reverse\ManyToOneCollection($owner
                         , $comp_name, $comp_schema);
-            elseif (cy\JORK::MANY_TO_MANY == $remote_comp_schema['type'])
+            elseif (cy\JORK::MANY_TO_MANY == $remote_comp_schema->type)
                 return new reverse\ManyToManyCollection($owner
                         , $comp_name, $comp_schema);
         } else {
-            if (cy\JORK::ONE_TO_MANY == $comp_schema['type']) {
+            if (cy\JORK::ONE_TO_MANY == $comp_schema->type) {
                 return new OneToManyCollection($owner, $comp_name
                         , $comp_schema);
-            } elseif (cy\JORK::MANY_TO_MANY == $comp_schema['type']) {
+            } elseif (cy\JORK::MANY_TO_MANY == $comp_schema->type) {
                 return new ManyToManyCollection($owner, $comp_name
                         , $comp_schema);
             }
@@ -120,7 +120,7 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
         $this->_owner = $owner;
         $this->_comp_name = $comp_name;
         $this->_comp_schema = $comp_schema;
-        $this->_comp_class = $comp_schema['class'];
+        $this->_comp_class = $comp_schema->class;
         $this->_owner->add_pk_change_listener($this);
     }
 
@@ -131,7 +131,7 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
      * Implementations call the save() method.
      *
      * @param mixed $owner_pk the new primary key of the owner of the collection.
-     * @see JORK_Model_Abstract::insert();
+     * @see cyclone\\jork\\model\\AbstractModel::insert();
      */
     public abstract function notify_pk_creation($owner_pk);
 
@@ -148,7 +148,7 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
      * component definition but it's value is neither JORK::SET_NULL
      * nor JORK::CASCADE
      *
-     * @see JORK_Model_Abstract::delete()
+     * @see  cyclone\\jork\\model\\AbstractModel::delete()
      * @param mixed $owner_pk the primary key of the owner.
      */
     public abstract function notify_owner_deletion(db\ParamExpression $owner_pk);

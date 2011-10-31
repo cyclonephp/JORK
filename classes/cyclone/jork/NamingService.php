@@ -72,7 +72,7 @@ class NamingService {
                 $this->_entity_aliases[$name] = model\AbstractModel::schema_by_class($name);
                 return;
             } else {
-                foreach ($this->_implicit_root_schema->atomics as $col_name => $col_def) {
+                foreach ($this->_implicit_root_schema->primitives as $col_name => $col_def) {
                     if ($name == $col_name) {
                         $this->_entity_aliases[$name] = $col_def;
                         return;
@@ -80,7 +80,7 @@ class NamingService {
                 }
                 foreach ($this->_implicit_root_schema->components as $cmp_name => $cmp_def) {
                     if ($name == $cmp_name) {
-                        $this->_entity_aliases[$name] = model\AbstractModel::schema_by_class($cmp_def['class']);
+                        $this->_entity_aliases[$name] = model\AbstractModel::schema_by_class($cmp_def->class);
                         return;
                     }
                 }
@@ -88,7 +88,7 @@ class NamingService {
         } else {
             $walked_segments = array();
             if (NULL == $this->_implicit_root_schema) {
-                if ( ! array_key_exists($segments[0], $this->_entity_aliases))
+                if ( ! isset($this->_entity_aliases[$segments[0]]))
                     throw new Exception('invalid identifier: '.$name);
                 $root_schema = $this->_entity_aliases[$segments[0]]; //explicit root entity class
                 $walked_segments []= array_shift($segments);
@@ -106,7 +106,7 @@ class NamingService {
                         if ($cmp_def instanceof schema\EmbeddableSchema) {
                             $current_schema = $cmp_def;
                         } else {
-                            $current_schema = model\AbstractModel::schema_by_class($cmp_def['class']);
+                            $current_schema = model\AbstractModel::schema_by_class($cmp_def->class);
                         }
                         $this->_entity_aliases[implode('.', $walked_segments)] = $current_schema;
                         $found = TRUE; break;
@@ -128,14 +128,14 @@ class NamingService {
     }
 
     public function table_alias($prop_chain, $table_name, $needs_unique = FALSE) {
-        if ( ! array_key_exists($prop_chain, $this->_table_aliases)) {
+        if ( ! isset($this->_table_aliases[$prop_chain])) {
             $this->_table_aliases[$prop_chain] = array();
         }
 
         // doesn't work if called with needs_unique = TRUE then with
         // needs_unique = TRUE with the same table name        
-        if ( $needs_unique || ! array_key_exists($table_name, $this->_table_aliases[$prop_chain])) {
-            if ( ! array_key_exists($table_name, $this->_table_usage)) {
+        if ( $needs_unique || ! isset($this->_table_aliases[$prop_chain][$table_name])) {
+            if ( ! isset($this->_table_usage[$table_name])) {
                 $this->_table_usage[$table_name] = 0;
             }
             $this->_table_aliases[$prop_chain][$table_name] = $table_name . '_'

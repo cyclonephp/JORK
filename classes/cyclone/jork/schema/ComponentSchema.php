@@ -59,6 +59,15 @@ class ComponentSchema {
     public $inverse_join_column;
 
     /**
+     * The mapping schema of the join table used to map a many-to-many relation.
+     * If the component is not in a many-to-many relation with the model, then
+     * this property should be omitted.
+     *
+     * @var JoinTableSchema
+     */
+    public $join_table;
+
+    /**
      * Determines what to do with this component if the owner model is deleted.
      * Possible values:
      * <ul>
@@ -142,6 +151,17 @@ class ComponentSchema {
      */
     public function inverse_join_column($column) {
         $this->inverse_join_column = $column;
+        return $this;
+    }
+
+    /**
+     * Setter for the <code>$join_table</code> property.
+     *
+     * @param JoinTableSchema $join_table
+     * @return ComponentSchema <code>$this</code>
+     */
+    public function join_table(JoinTableSchema $join_table) {
+        $this->join_table = $join_table;
         return $this;
     }
 

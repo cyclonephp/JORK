@@ -65,7 +65,7 @@ class JORK {
      * @return schema\PrimitivePropertySchema 
      */
     public static function primitive($name, $type) {
-        return new schema\PrimitivePropertySchema($name);
+        return new schema\PrimitivePropertySchema($name, $type);
     }
 
     /**

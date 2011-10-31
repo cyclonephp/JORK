@@ -12,13 +12,16 @@ class Model_User extends model\AbstractModel {
         $this->_schema->secondary_table(cy\JORK::secondary_table(
                 'user_contact_info', 'user_fk', 'id'
                 ));
-        $this->_schema->secondary_tables = array(
-            'user_contact_info' => array(
-                'join_column' => 'user_fk',
-                'inverse_join_column' => 'id'
-            )
-        );
-        $this->_schema->atomics = array(
+        $this->_schema->primitive(cy\JORK::primitive('id', 'int')
+                    ->primary_key()
+                    ->generation_strategy('auto')
+                )->primitive(cy\JORK::primitive('name', 'string')
+                )->primitive(cy\JORK::primitive('password', 'string')
+                )->primitive(cy\JORK::primitive('created_at', 'datetime')
+                )->primitive(cy\JORK::primitive('email', 'string')->table('user_contact_info')
+                )->primitive(cy\JORK::primitive('phone_num', 'string')->table('user_contact_info')
+                );
+        /*$this->_schema->atomics = array(
             'id' => array(
                 'type' => 'int',
                 'primary' => true,
@@ -58,8 +61,16 @@ class Model_User extends model\AbstractModel {
                     'regex' => '/^\d{2}-\d{2}-\d{3}-\d{4}$/'
                 )
             )
-        );
-        $this->_schema->components = array(
+        );*/
+        $this->_schema->component(cy\JORK::component('posts', 'Model_Post')
+                    ->type(cy\JORK::ONE_TO_MANY)
+                    ->join_column('user_fk')
+                    ->on_delete(cy\JORK::SET_NULL)
+                )->component(cy\JORK::component('moderated_category', 'Model_Category')
+                    ->mapped_by('moderator')
+                    ->on_delete(cy\JORK::SET_NULL)
+                );
+        /*$this->_schema->components = array(
             'posts' => array(
                 'class' => 'Model_Post',
                 'type' => cy\JORK::ONE_TO_MANY,
@@ -71,7 +82,7 @@ class Model_User extends model\AbstractModel {
                 'mapped_by' => 'moderator',
                 'on_delete' => cy\JORK::SET_NULL
             )
-        );
+        );*/
     }
 
     public static function inst() {

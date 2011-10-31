@@ -50,6 +50,13 @@ use cyclone as cy;
     public $components = array();
 
     /**
+     * Embedded component name => name of EmbeddedComponentSchema subclass
+     *
+     * @var array<string>
+     */
+    public $embedded_components = array();
+
+    /**
      * Setter for the <code>$db_conn</code> property.
      *
      * @param string $db_conn
@@ -103,6 +110,17 @@ use cyclone as cy;
      */
     public function component(ComponentSchema $schema) {
         $this->components[$schema->name] = $schema;
+        return $this;
+    }
+
+    /**
+     *
+     * @param string $name
+     * @param string $classname
+     * @return ModelSchema
+     */
+    public function embedded_component($name, $classname) {
+        $this->embedded_components[$name] = $classname;
         return $this;
     }
     

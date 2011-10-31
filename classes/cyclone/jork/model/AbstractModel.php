@@ -53,15 +53,13 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             if (NULL === $inst->_schema->components) {
                 $inst->_schema->components = array();
             }
-            foreach ($inst->_schema->components as $k => &$v) {
-                if (is_string($v)) { // embedded component class found
-                    $emb_inst = call_user_func(array($v, 'inst'));
-                    $emb_schema = new jork\schema\EmbeddableSchema($inst->_schema, $v);
-                    $emb_inst->_schema = $emb_schema;
-                    $emb_inst->setup();
-                    $emb_schema->table = $inst->_schema->table;
-                    $v = $emb_schema;
-                }
+            foreach ($inst->_schema->embedded_components as $k => &$v) {
+                $emb_inst = call_user_func(array($v, 'inst'));
+                $emb_schema = new jork\schema\EmbeddableSchema($inst->_schema, $v);
+                $emb_inst->_schema = $emb_schema;
+                $emb_inst->setup();
+                $emb_schema->table = $inst->_schema->table;
+                $v = $emb_schema;
             }
             self::$_instances[$classname] = $inst;
         }
