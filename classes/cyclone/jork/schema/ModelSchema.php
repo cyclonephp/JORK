@@ -81,13 +81,17 @@ use cyclone as cy;
         return $this;
     }
 
+    public function secondary_table(SecondaryTableSchema $secondary_table) {
+        $this->secondary_tables [$secondary_table->name] = $secondary_table;
+        return $this;
+    }
+
     /**
-     * @param string $name
      * @param PrimitivePropertySchema $schema
      * @return ModelSchema
      */
-    public function primitive($name, PrimitivePropertySchema $schema) {
-        $this->primitives[$name] = $schema;
+    public function primitive(PrimitivePropertySchema $schema) {
+        $this->primitives[$schema->name] = $schema;
         return $this;
     }
 
@@ -97,34 +101,32 @@ use cyclone as cy;
      * @param ComponentSchema $schema
      * @return ModelSchema 
      */
-    public function component($name, ComponentSchema $schema) {
-        $this->components[$name] = $schema;
+    public function component(ComponentSchema $schema) {
+        $this->components[$schema->name] = $schema;
         return $this;
     }
     
 
     public function primary_key() {
-        foreach ($this->atomics as $name => $def) {
-            if (isset($def['primary']))
+        foreach ($this->primitives as $name => $def) {
+            if ($def->is_primary_key)
                 return $name;
         }
     }
 
     public function get_property_schema($name) {
-        foreach ($this->atomics as $k => $v) {
-            if ($k == $name)
-                return $v;
-        }
-        foreach ($this->components as $k => $v) {
-            if ($k == $name)
-                return $v;
-        }
+        if (isset($this->primitives[$name]))
+            return $this->primitives[$name];
+
+        if (isset($this->components[$name]))
+            return $this->components[$name];
+        
         throw new jork\SchemaException("property '$name' of {$this->class} does not exist");
     }
 
     public function table_name_for_column($col_name) {
-        return array_key_exists('table', $this->atomics[$col_name])
-                ? $this->atomics[$col_name]
+        return isset($this->primitives[$col_name]->table)
+                ? $this->prmitives[$col_name]->table
                 : $this->table;
     }
 
@@ -133,15 +135,15 @@ use cyclone as cy;
         if ($comp_schema instanceof EmbeddableSchema)
             // embedded components are always to-one components by nature
             return FALSE;
-        if ( ! array_key_exists('mapped_by', $comp_schema))
-            return $comp_schema['type'] == cy\JORK::ONE_TO_MANY
-                || $comp_schema['type'] == cy\JORK::MANY_TO_MANY;
+        if ( ! isset($comp_schema->mapped_by))
+            return $comp_schema->type == cy\JORK::ONE_TO_MANY
+                || $comp_schema->type == cy\JORK::MANY_TO_MANY;
 
         $remote_comp_schema = jork\model\AbstractModel::schema_by_class($comp_schema['class'])
-            ->components[$comp_schema['mapped_by']];
+            ->components[$comp_schema->mapped_by];
 
-        return $remote_comp_schema['type'] == cy\JORK::MANY_TO_MANY
-            || $remote_comp_schema['type'] == cy\JORK::MANY_TO_ONE;
+        return $remote_comp_schema->type == cy\JORK::MANY_TO_MANY
+            || $remote_comp_schema->type == cy\JORK::MANY_TO_ONE;
     }
     
 }

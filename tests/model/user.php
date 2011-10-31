@@ -9,6 +9,9 @@ class Model_User extends model\AbstractModel {
     protected function setup() {
         $this->_schema->db_conn = 'jork_test';
         $this->_schema->table = 't_users';
+        $this->_schema->secondary_table(cy\JORK::secondary_table(
+                'user_contact_info', 'user_fk', 'id'
+                ));
         $this->_schema->secondary_tables = array(
             'user_contact_info' => array(
                 'join_column' => 'user_fk',
