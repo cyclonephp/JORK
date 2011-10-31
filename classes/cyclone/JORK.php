@@ -2,6 +2,8 @@
 
 namespace cyclone;
 
+use cyclone\jork\schema;
+
 /**
  * @author Bence Erős <crystal@cyclonephp.com>
  * @package JORK
@@ -55,5 +57,46 @@ class JORK {
         $query->from_array($args);
         return $query;
     }
+
+    /**
+     *
+     * @param <type> $name
+     * @param <type> $type
+     * @return schema\PrimitivePropertySchema 
+     */
+    public static function primitive($name, $type) {
+        return new schema\PrimitivePropertySchema($name);
+    }
+
+    /**
+     *
+     * @param <type> $name
+     * @param <type> $class
+     * @return schema\ComponentSchema
+     */
+    public static function component($name, $class) {
+        return new schema\ComponentSchema($name, $class);
+    }
+
+    /**
+     *
+     * @param <type> $name
+     * @return schema\SecondaryTableSchema
+     */
+    public static function secondary_table($name) {
+        return new schema\SecondaryTableSchema($name);
+    }
+
+    /**
+     *
+     * @param <type> $join_column
+     * @param <type> $inverse_join_column
+     * @return schema\JoinColumnSchema
+     */
+    public static function join_table($name, $join_column, $inverse_join_column) {
+        return new schema\JoinColumnSchema($name, $join_column, $inverse_join_column);
+    }
+
+
 
 }

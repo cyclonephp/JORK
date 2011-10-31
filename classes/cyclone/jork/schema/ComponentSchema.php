@@ -85,7 +85,12 @@ class ComponentSchema {
      */
     public $mapped_by;
 
-    /**
+    public function __construct($name, $class) {
+        $this->name = $name;
+        $this->class = $class;
+    }
+
+        /**
      * Setter for the <code>$name</code> property.
      *
      * @param <type> $name

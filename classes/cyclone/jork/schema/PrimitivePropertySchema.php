@@ -64,7 +64,12 @@ class PrimitivePropertySchema {
      */
     public $table;
 
-    /**
+    public function __construct($name, $type) {
+        $this->name = $name;
+        $this->type = $type;
+    }
+
+        /**
      * Setter for the <code>$name</code> property.
      *
      * @param string $name

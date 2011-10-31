@@ -35,7 +35,11 @@ class SecondaryTableSchema {
      */
     public $inverse_join_column;
 
-    /**
+    public function __construct($name) {
+        $this->name = $name;
+    }
+
+        /**
      * Setter for the <code>$name</code> property.
      *
      * @param string $name
