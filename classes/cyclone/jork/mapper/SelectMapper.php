@@ -151,7 +151,7 @@ abstract class SelectMapper {
      * with the corresponding primary key columns.
      * 
      * @param DB_Expression_Binary $expr
-     * @throws JORK_Exception if the two operands are not the same class
+     * @throws cyclone\jork\Exception if the two operands are not the same class
      */
     protected function obj2condition(db\BinaryExpression $expr) {
         $left_is_array = is_array($expr->left_operand);
@@ -176,7 +176,7 @@ abstract class SelectMapper {
                     = $expr->left_operand;
 //                if ($left_ent_schema->components[$left_last_prop]['class']
 //                    != $right_ent_schema->components[$right_last_prop]['class'])
-//                    throw new JORK_Exception("unable to check equality of class '"
+//                    throw new cyclone\jork\Exception("unable to check equality of class '"
 //                            . $left_ent_schema->components[$left_last_prop]['class'] . "' with class '"
 //                            . $right_ent_schema->components[$right_last_prop]['class'] . "'");
             $left_class = $left_ent_schema->components[$left_last_prop]->class;

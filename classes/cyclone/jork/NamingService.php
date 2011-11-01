@@ -48,7 +48,7 @@ class NamingService {
 
     /**
      * @param string $name a property chain or an alias name
-     * @throws JORK_Exception if $name is not a valid name
+     * @throws cyclone\jork\Exception if $name is not a valid name
      * @return JORK_Mapping_Schema or string
      */
     public function get_schema($name) {
@@ -62,7 +62,7 @@ class NamingService {
      * Called if $name does not exist in $this->_aliases
      *
      * @param string $name a property chain or an alias name
-     * @throws JORK_Exception if $name is not a valid name
+     * @throws cyclone\jork\Exception if $name is not a valid name
      * @see JORK_Naming_Service::get_schema()
      */
     private function search_schema($name) {

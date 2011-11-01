@@ -144,7 +144,7 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
      * owner of the collection. The $owner_pk parameter is already put into an
      * escaped parameter object by JORK_Model_Abstract::delete_by_pk()
      *
-     * The method throws JORK_Exception if the 'on_delete' key exists in the
+     * The method throws cyclone\jork\Exception if the 'on_delete' key exists in the
      * component definition but it's value is neither JORK::SET_NULL
      * nor JORK::CASCADE
      *
@@ -197,7 +197,7 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
             }
         }
         if ($old_pk === NULL) 
-            throw new JORK_Exception("failed to update data structure: {$this->_comp_class} #$new_pk not found. Entities in collection: #" . implode(', #', $existing_pks));
+            throw new jork\Exception("failed to update data structure: {$this->_comp_class} #$new_pk not found. Entities in collection: #" . implode(', #', $existing_pks));
 
         if (isset($this->_storage[$new_pk])) {
             $temp = $this->_storage[$new_pk];

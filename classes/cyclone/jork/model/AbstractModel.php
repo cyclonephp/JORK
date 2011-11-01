@@ -360,11 +360,11 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * NULL or an empty JORK_Model_Collection instance (the latter case happens
      * if the component is a to-many component).
      *
-     * If it doesn't find the property in the schema then throws a JORK_Exception.
+     * If it doesn't find the property in the schema then throws a cyclone\jork\Exception.
      *
      * @param string $key
      * @return mixed
-     * @throws JORK_Exception
+     * @throws cyclone\jork\Exception
      */
     public function  __get($key) {
         $schema = $this->schema();
@@ -645,7 +645,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     /**
      *
      * @param mixed $cascade
-     * @throws JORK_Exception if $cascade if netither a boolean nor an array
+     * @throws cyclone\jork\Exception if $cascade if netither a boolean nor an array
      * @usedby JORK_Model_Abstract::insert()
      * @usedby JORK_Model_Abstract::update()
      */
@@ -662,7 +662,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                 $comps []= $this->_components[$key];
             }
         } else
-            throw new JORK_Exception('$cascade parameter must be boolean or array');
+            throw new jork\Exception('$cascade parameter must be boolean or array');
 
         // turn the lock on
         $this->_save_in_progress = TRUE;
