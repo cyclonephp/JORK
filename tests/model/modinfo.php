@@ -7,7 +7,11 @@ use cyclone\jork\model;
 class Model_ModInfo extends model\EmbeddableModel {
 
     public function setup() {
-        $this->_schema->atomics = array(
+        $this->_schema->primitive(cy\JORK::primitive('created_at', 'datetime')
+                )->primitive(cy\JORK::primitive('creator_fk', 'int')
+                )->primitive(cy\JORK::primitive('modified_at', 'datetime')
+                )->primitive(cy\JORK::primitive('modifier_fk', 'int'));
+        /*$this->_schema->atomics = array(
             'created_at' => array(
                 'type' => 'datetime',
                 'constraints' => array(
@@ -29,8 +33,13 @@ class Model_ModInfo extends model\EmbeddableModel {
                     'not null' => true
                 )
             )
-        );
-        
+        );*/
+
+        $this->_schema->component(cy\JORK::component('creator', 'Model_User')
+                    ->type(cy\JORK::MANY_TO_ONE)->join_column('creator_fk')
+                )->component(cy\JORK::component('modifier', 'Model_User')
+                    ->type(cy\JORK::MANY_TO_ONE)->join_column('modifier_fk'));
+        /*
         $this->_schema->components = array(
             'creator' => array(
                 'class' => 'Model_User',
@@ -42,7 +51,7 @@ class Model_ModInfo extends model\EmbeddableModel {
                 'type' => cy\JORK::MANY_TO_ONE,
                 'join_column' => 'modifier_fk'
             )
-        );
+        );*/
     }
 
     public static function inst() {

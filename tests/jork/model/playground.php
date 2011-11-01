@@ -18,6 +18,7 @@ class JORK_Model_Playground extends JORK_DbTest {
 
         $category = new Model_Category;
         $category->name = 'WTF???';
+        
         $topic->categories->append($category);
 
         $run = 0;

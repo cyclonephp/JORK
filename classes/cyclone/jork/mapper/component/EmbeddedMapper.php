@@ -57,7 +57,7 @@ class EmbeddedMapper extends jork\mapper\EntityMapper {
         $this->_comp_name = $comp_name;
         $this->_entity_alias = $select_item;
         $this->_entity_schema = $this->_parent_mapper
-                ->_entity_schema->components[$comp_name];
+                ->_entity_schema->embedded_components[$comp_name];
         $this->_naming_srv = $this->_parent_mapper->_naming_srv;
         $this->_db_query = $this->_parent_mapper->_db_query;
         $this->_jork_query = $parent_mapper->_jork_query;
@@ -70,13 +70,13 @@ class EmbeddedMapper extends jork\mapper\EntityMapper {
 
         $tbl_name = $this->_parent_mapper->_entity_schema->table;
 
-        if ( ! array_key_exists($tbl_name, $this->_parent_mapper->_table_aliases)) {
+        if ( ! isset($this->_parent_mapper->_table_aliases[$tbl_name])) {
             $tbl_alias = $this->_parent_mapper->add_table($tbl_name);
         }
         $tbl_alias = $this->_parent_mapper->_table_aliases[$tbl_name];
 
-        $col_name = array_key_exists('column', $prop_schema)
-                ? $prop_schema['column']
+        $col_name = isset($prop_schema->column)
+                ? $prop_schema->column
                 : $prop_name;
 
         $full_column = $tbl_alias.'.'.$col_name;

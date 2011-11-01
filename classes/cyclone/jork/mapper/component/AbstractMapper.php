@@ -34,7 +34,7 @@ abstract class AbstractMapper extends jork\mapper\EntityMapper {
         $this->_parent_mapper = $parent_mapper;
         $this->_comp_name = $comp_name;
         $this->_comp_schema = $parent_mapper->_entity_schema->components[$comp_name];
-        $this->_is_reverse = array_key_exists('mapped_by', $this->_comp_schema);
+        $this->_is_reverse = isset($this->_comp_schema->mapped_by);
     }
 
    
@@ -50,32 +50,35 @@ abstract class AbstractMapper extends jork\mapper\EntityMapper {
      */
     public static function factory(jork\mapper\EntityMapper $parent_mapper
             , $comp_name, $select_item) {
+        if (isset($parent_mapper->_entity_schema->embedded_components[$comp_name]))
+            return new EmbeddedMapper ($parent_mapper, $comp_name, $select_item);
+        
         $comp_def = $parent_mapper->_entity_schema->components[$comp_name];
 
-        if ($comp_def instanceof jork\schema\EmbeddableSchema) {
-            return new EmbeddedMapper($parent_mapper, $comp_name, $select_item);
-        }
+//        if ($comp_def instanceof jork\schema\EmbeddableSchema) {
+//            return new EmbeddedMapper($parent_mapper, $comp_name, $select_item);
+//        }
 
         $impls = array(
-            cy\JORK::ONE_TO_ONE => 'cyclone\jork\mapper\component\OneToOneMapper',
-            cy\JORK::ONE_TO_MANY => 'cyclone\jork\mapper\component\OneToManyMapper',
-            cy\JORK::MANY_TO_ONE => 'cyclone\jork\mapper\component\ManyToOneMapper',
-            cy\JORK::MANY_TO_MANY => 'cyclone\jork\mapper\component\ManyToManyMapper'
+            cy\JORK::ONE_TO_ONE => 'cyclone\\jork\\mapper\\component\\OneToOneMapper',
+            cy\JORK::ONE_TO_MANY => 'cyclone\\jork\\mapper\\component\\OneToManyMapper',
+            cy\JORK::MANY_TO_ONE => 'cyclone\\jork\\mapper\\component\ManyToOneMapper',
+            cy\JORK::MANY_TO_MANY => 'cyclone\\jork\\mapper\\component\ManyToManyMapper'
         );
 
-        if (array_key_exists('mapped_by', $comp_def)) {
-            $remote_schema = jork\model\AbstractModel::schema_by_class($comp_def['class']);
+        if (isset($comp_def->mapped_by)) {
+            $remote_schema = jork\model\AbstractModel::schema_by_class($comp_def->class);
 
-            $remote_comp_def = $remote_schema->get_property_schema($comp_def['mapped_by']);
+            $remote_comp_def = $remote_schema->get_property_schema($comp_def->mapped_by);
 
-            $class = $impls[$remote_comp_def['type']];
+            $class = $impls[$remote_comp_def->type];
 
             return new $class($parent_mapper, $comp_name, $select_item);
 
         } else {
-            if ( ! array_key_exists($comp_def['type'], $impls))
-                throw new jork\Exception("unknown component type: {$comp_def['type']}");
-            $class = $impls[$comp_def['type']];
+            if ( ! isset($comp_def->type, $impls))
+                throw new jork\Exception("unknown component type: {$comp_def->type}");
+            $class = $impls[$comp_def->type];
 
             return new $class($parent_mapper, $comp_name, $select_item);
         }
@@ -91,10 +94,10 @@ abstract class AbstractMapper extends jork\mapper\EntityMapper {
         return $tbl_name == $this->_entity_schema->table;
         if (NULL == $primary_join_tables) {
             $primary_join_tables = array();
-            if (array_key_exists('join_column', $this->_comp_schema)) {
-                $join_col_schema = $this->_parent_mapper->_entity_schema->columns[$this->_comp_schema['join_column']];
-                $primary_join_tables []= array_key_exists('table', $join_col_schema)
-                        ? $join_col_schema['table']
+            if (isset($this->_comp_schema->join_column)) {
+                $join_col_schema = $this->_parent_mapper->_entity_schema->columns[$this->_comp_schema->join_column];
+                $primary_join_tables []= isset($join_col_schema->table)
+                        ? $join_col_schema->table
                         : $this->_entity_schema->table;
             } else { //TODO composite foreign key
 

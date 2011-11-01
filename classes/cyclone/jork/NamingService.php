@@ -103,16 +103,19 @@ class NamingService {
                 $walked_segments []= $seg;
                 foreach ($current_schema->components as $cmp_name => $cmp_def) {
                     if ($cmp_name == $seg) {
-                        if ($cmp_def instanceof schema\EmbeddableSchema) {
-                            $current_schema = $cmp_def;
-                        } else {
-                            $current_schema = model\AbstractModel::schema_by_class($cmp_def->class);
-                        }
+                        $current_schema = model\AbstractModel::schema_by_class($cmp_def->class);
                         $this->_entity_aliases[implode('.', $walked_segments)] = $current_schema;
                         $found = TRUE; break;
                     }
                 }
-                foreach ($current_schema->atomics as $col_name => $col_def) {
+                foreach ($current_schema->embedded_components as $cmp_name => $cmp_def) {
+                    if ($cmp_name == $seg) {
+                        $current_schema = $cmp_def;
+                        $this->_entity_aliases[implode('.', $walked_segments)] = $current_schema;
+                        $found = TRUE; break;
+                    }
+                }
+                foreach ($current_schema->primitives as $col_name => $col_def) {
                     if ($col_name == $seg) {
                         $this->_entity_aliases[implode('.', $walked_segments)] = $col_def;
                         //the schema in the next iteration will be NULL if column

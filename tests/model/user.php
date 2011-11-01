@@ -10,7 +10,7 @@ class Model_User extends model\AbstractModel {
         $this->_schema->db_conn = 'jork_test';
         $this->_schema->table = 't_users';
         $this->_schema->secondary_table(cy\JORK::secondary_table(
-                'user_contact_info', 'user_fk', 'id'
+                'user_contact_info', 'id', 'user_fk'
                 ));
         $this->_schema->primitive(cy\JORK::primitive('id', 'int')
                     ->primary_key()

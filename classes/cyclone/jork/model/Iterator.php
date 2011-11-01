@@ -4,8 +4,10 @@ namespace cyclone\jork\model;
 
 /**
  * Iterator for implementation used both to
- * - iterate through model collections
- * - iterate through the properties of a model instance
+ * <ul>
+ *  <li> iterate through model collections</li>
+ *  <li> iterate through the properties of a model instance</li>
+ * </ul>
  */
 class Iterator extends \ArrayIterator {
 

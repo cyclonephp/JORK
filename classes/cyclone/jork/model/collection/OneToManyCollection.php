@@ -14,9 +14,9 @@ class OneToManyCollection extends AbstractCollection {
 
     public function  __construct($owner, $comp_name, $comp_schema) {
         parent::__construct($owner, $comp_name, $comp_schema);
-        $this->_join_column = $comp_schema['join_column'];
-        $this->_inverse_join_column = array_key_exists('inverse_join_column', $comp_schema)
-                ? $comp_schema['inverse_join_column']
+        $this->_join_column = $comp_schema->join_column;
+        $this->_inverse_join_column = isset($comp_schema->inverse_join_column)
+                ? $comp_schema->inverse_join_column
                 : $owner->schema()->primary_key();
     }
 
@@ -34,9 +34,9 @@ class OneToManyCollection extends AbstractCollection {
 
     public function  notify_pk_creation($entity) {
         if ($entity == $this->_owner) {
-            if (array_key_exists('inverse_join_column', $this->_comp_schema)
+            if (isset($this->_comp_schema->inverse_join_column)
                     && ($this->_owner->schema()->primary_key()
-                    != $this->_comp_schema['inverse_join_column'])) {
+                        != $this->_comp_schema->inverse_join_column)) {
                 //we are not joining on the primary key of the owner
                 return;
             }
@@ -55,22 +55,22 @@ class OneToManyCollection extends AbstractCollection {
     }
 
     public function  notify_owner_deletion(db\ParamExpression $owner_pk) {
-        if ( !array_key_exists('on_delete', $this->_comp_schema))
+        if ( ! isset($this->_comp_schema->on_delete))
             return;
-        $on_delete = $this->_comp_schema['on_delete'];
+        $on_delete = $this->_comp_schema->on_delete;
         if (cy\JORK::SET_NULL == $on_delete) {
             $upd_stmt = new db\query\Update;
             $children_schema = jork\model\AbstractModel::schema_by_class($this->_comp_class);
-            $join_atomic = $this->_comp_schema['join_column'];
+            $join_primitive = $this->_comp_schema->join_column;
 
-            $join_atomic_schema = $children_schema->atomics[$join_atomic];
+            $join_primitive_schema = $children_schema->primitives[$join_primitive];
 
-            $join_column = array_key_exists('column', $join_atomic_schema)
-                    ? $join_atomic_schema['column']
-                    : $join_atomic;
+            $join_column = isset($join_primitive_schema->column)
+                    ? $join_primitive_schema->column
+                    : $join_primitive;
 
-            $upd_stmt->table = array_key_exists('table', $join_atomic_schema)
-                    ? $join_atomic_schema['table']
+            $upd_stmt->table = isset($join_primitive_schema->table)
+                    ? $join_primitive_schema->table
                     : $children_schema->table;
 
             $upd_stmt->values = array($join_column => NULL);
@@ -81,9 +81,9 @@ class OneToManyCollection extends AbstractCollection {
             );
             $upd_stmt->exec($this->_owner->schema()->db_conn);
         } elseif (cy\JORK::CASCADE == $on_delete) {
-            throw new cy\JORK_Exception('cascade delete is not yet implemented');
+            throw new jork\Exception('cascade delete is not yet implemented');
         } else
-            throw new cy\JORK_Exception('invalid value for on_delete');
+            throw new jork\Exception('invalid value for on_delete');
     }
 
     public function save() {

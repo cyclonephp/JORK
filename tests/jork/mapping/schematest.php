@@ -12,18 +12,28 @@ class JORK_Mapping_SchemaTest extends Kohana_Unittest_TestCase {
      */
     public function testGetPropSchema() {
         $schema = jork\model\AbstractModel::schema_by_class('Model_User');
-        $this->assertEquals($schema->get_property_schema('id'), array(
+        /*$this->assertEquals($schema->get_property_schema('id'), array(
                 'type' => 'int',
                 'primary' => true,
                 'geneneration_strategy' => 'auto'
-            ));
+            ));*/
 
-        $this->assertEquals($schema->get_property_schema('posts'), array(
+        $this->assertEquals(cy\JORK::primitive('id', 'int')
+                ->primary_key()->generation_strategy('auto')
+                , $schema->get_property_schema('id'));
+
+        /*$this->assertEquals($schema->get_property_schema('posts'), array(
                 'class' => 'Model_Post',
                 'type' => cy\JORK::ONE_TO_MANY,
                 'join_column' => 'user_fk',
                 'on_delete' => cy\JORK::SET_NULL
-            ));
+            ));*/
+
+        $this->assertEquals(cy\JORK::component('posts', 'Model_Post')
+                ->type(cy\JORK::ONE_TO_MANY)->join_column('user_fk')
+                ->on_delete(cy\JORK::SET_NULL)
+                , $schema->get_property_schema('posts'));
+        
         $schema->get_property_schema('dummy');
     }
 

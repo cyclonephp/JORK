@@ -35,21 +35,21 @@ class ManyToManyCollection extends AbstractCollection {
         $db_conn = $this->_owner->schema()->db_conn;
         if ( ! empty($this->_deleted)) {
             $del_stmt = new db\query\Delete;
-            $del_stmt->table = $this->_comp_schema['join_table']['name'];
+            $del_stmt->table = $this->_comp_schema->join_table->name;
             $del_stmt->conditions = array(
-                new db\BinaryExpression($this->_comp_schema['join_table']['join_column']
+                new db\BinaryExpression($this->_comp_schema->join_table->join_column
                         , '=', DB::esc($pk)),
-                new db\BinaryExpression($this->_comp_schema['join_table']['inverse_join_column']
+                new db\BinaryExpression($this->_comp_schema->join_table->inverse_join_column
                         , 'IN', new db\SetExpression(array_keys($this->_deleted)))
             );
             $del_stmt->exec($db_conn);
         }
         if ( ! empty($this->_storage)) {
             $ins_stmt = new db\query\Insert;
-            $ins_stmt->table = $this->_comp_schema['join_table']['name'];
+            $ins_stmt->table = $this->_comp_schema->join_table->name;
             $ins_stmt->values = array();
-            $local_join_col = $this->_comp_schema['join_table']['join_column'];
-            $inverse_join_col = $this->_comp_schema['join_table']['inverse_join_column'];
+            $local_join_col = $this->_comp_schema->join_table->join_column;
+            $inverse_join_col = $this->_comp_schema->join_table->inverse_join_column;
             foreach ($this->_storage as $itm) {
                 if (FALSE == $itm['persistent']) {
                     $itm['value']->save();

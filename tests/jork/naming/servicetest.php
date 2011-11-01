@@ -1,6 +1,7 @@
 <?php
 
 use cyclone\jork;
+use cyclone as cy;
 
 
 class JORK_Naming_ServiceTest extends Kohana_Unittest_TestCase {
@@ -11,19 +12,12 @@ class JORK_Naming_ServiceTest extends Kohana_Unittest_TestCase {
         $schema = $service->get_schema('user.posts');
         $this->assertEquals($schema, jork\model\AbstractModel::schema_by_class('Model_Post'));
 
-
         $service->set_alias('user.posts', 'post');
         $schema = $service->get_schema('post.topic');
         $this->assertEquals($schema, jork\model\AbstractModel::schema_by_class('Model_Topic'));
 
         $schema = $service->get_schema('post.topic.name');
-        $this->assertEquals($schema, array(
-            'type' => 'string',
-            'constraints' => array(
-                'max_length' => 64,
-                'not null' => true
-            )
-        ));
+        $this->assertEquals(cy\JORK::primitive('name', 'string'), $schema);
     }
 
     public function testTableAlias() {

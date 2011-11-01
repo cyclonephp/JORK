@@ -83,18 +83,18 @@ class JORK {
      * @param <type> $name
      * @return schema\SecondaryTableSchema
      */
-    public static function secondary_table($name) {
-        return new schema\SecondaryTableSchema($name);
+    public static function secondary_table($name, $join_col, $inverse_join_col) {
+        return new schema\SecondaryTableSchema($name, $join_col, $inverse_join_col);
     }
 
     /**
      *
      * @param <type> $join_column
      * @param <type> $inverse_join_column
-     * @return schema\JoinColumnSchema
+     * @return schema\JoinTableSchema
      */
     public static function join_table($name, $join_column, $inverse_join_column) {
-        return new schema\JoinColumnSchema($name, $join_column, $inverse_join_column);
+        return new schema\JoinTableSchema($name, $join_column, $inverse_join_column);
     }
 
 

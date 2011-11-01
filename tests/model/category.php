@@ -12,8 +12,8 @@ class Model_Category extends model\AbstractModel {
         $this->_schema->table = 't_categories';
         $this->_schema->primitive(cy\JORK::primitive('id', 'int')
                     ->primary_key()->generation_strategy('auto')
-                )->primitive(cy\JORK::primitive('name', 'string')
-                )->primitive(cy\JORK::primitive('id', 'int')
+                )->primitive(cy\JORK::primitive('name', 'string')->column('c_name')
+                )->primitive(cy\JORK::primitive('moderator_fk', 'int')
                 );
 
         /*$this->_schema->atomics = array(
@@ -40,7 +40,7 @@ class Model_Category extends model\AbstractModel {
                 )->component(cy\JORK::component('moderator', 'Model_User')
                     ->type(cy\JORK::ONE_TO_ONE)->join_column('moderator_fk')
                 )->embedded_component('modinfo', 'Model_ModInfo');
-        $this->_schema->components = array(
+        /*$this->_schema->components = array(
             'topics' => array(
                 'class' => 'Model_Topic',
                 'type' => cy\JORK::MANY_TO_MANY,
@@ -52,7 +52,7 @@ class Model_Category extends model\AbstractModel {
                 'join_column' => 'moderator_fk'
             ),
             'modinfo' => 'Model_ModInfo'
-        );
+        );*/
     }
 
     public static function inst() {

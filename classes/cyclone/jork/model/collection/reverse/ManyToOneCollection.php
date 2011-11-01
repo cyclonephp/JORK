@@ -14,13 +14,13 @@ class ManyToOneCollection extends jork\model\collection\AbstractCollection {
 
     public function  __construct($owner, $comp_name, $comp_schema) {
         parent::__construct($owner, $comp_name, $comp_schema);
-        $remote_comp_schema = jork\model\AbstractModel::schema_by_class($comp_schema['class'])
-            ->components[$comp_schema['mapped_by']];
+        $remote_comp_schema = jork\model\AbstractModel::schema_by_class($comp_schema->class)
+            ->components[$comp_schema->mapped_by];
 
-        $this->_inverse_join_column = $remote_comp_schema['join_column'];
-        $this->_join_column = array_key_exists('inverse_join_column', $remote_comp_schema)
-                ? $remote_comp_schema['inverse_join_column']
-                : jork\model\AbstractModel::schema_by_class($comp_schema['class'])->primary_key();
+        $this->_inverse_join_column = $remote_comp_schema->join_column;
+        $this->_join_column = isset($remote_comp_schema->inverse_join_column)
+                ? $remote_comp_schema->inverse_join_column
+                : jork\model\AbstractModel::schema_by_class($comp_schema->class)->primary_key();
     }
 
     public function append($value) {
@@ -38,9 +38,9 @@ class ManyToOneCollection extends jork\model\collection\AbstractCollection {
     public function notify_pk_creation($entity) {
         if ($entity == $this->_owner) {
             $owner_pk = $entity->pk();
-            if (array_key_exists('inverse_join_column', $this->_comp_schema)
+            if (isset($this->_comp_schema->inverse_join_column)
                     && ($this->_owner->schema()->primary_key()
-                    != $this->_comp_schema['inverse_join_column'])) {
+                    != $this->_comp_schema->inverse_join_column)) {
                 //we are not joining on the primary key of the owner
                 return;
             }
@@ -55,27 +55,27 @@ class ManyToOneCollection extends jork\model\collection\AbstractCollection {
     }
 
     public function  notify_owner_deletion(db\ParamExpression $owner_pk) {
-        if ( ! array_key_exists('on_delete', $this->_comp_schema))
+        if ( ! isset($this->_comp_schema->on_delete))
             return;
-        $on_delete = $this->_comp_schema['on_delete'];
-        if (JORK::SET_NULL === $on_delete) {
+        $on_delete = $this->_comp_schema->on_delete;
+        if (cy\JORK::SET_NULL === $on_delete) {
             $upd_stmt = new db\query\Update;
             $children_schema = jork\model\AbstractModel
-                ::schema_by_class($this->_comp_schema['class']);
+                ::schema_by_class($this->_comp_schema->class);
             $remote_comp_schema = $children_schema
-                ->get_property_schema($this->_comp_schema['mapped_by']);
+                ->get_property_schema($this->_comp_schema->mapped_by);
 
-            $atomic_name = $remote_comp_schema['join_column'];
+            $primitive_name = $remote_comp_schema->join_column;
 
-            $col_schema = $children_schema->get_property_schema($atomic_name);
+            $col_schema = $children_schema->get_property_schema($primitive_name);
             
-            $upd_stmt->table = array_key_exists('table', $col_schema)
-                    ? $col_schema['table']
+            $upd_stmt->table = isset($col_schema->table)
+                    ? $col_schema->table
                     : $children_schema->table;
 
-            $col_name = array_key_exists('column', $col_schema)
-                    ? $col_schema['column']
-                    : $atomic_name;
+            $col_name = isset($col_schema->column)
+                    ? $col_schema->column
+                    : $primitive_name;
 
             $upd_stmt->values = array(
                 $col_name => NULL

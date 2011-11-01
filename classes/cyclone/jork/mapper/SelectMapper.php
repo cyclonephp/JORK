@@ -179,10 +179,10 @@ abstract class SelectMapper {
 //                    throw new JORK_Exception("unable to check equality of class '"
 //                            . $left_ent_schema->components[$left_last_prop]['class'] . "' with class '"
 //                            . $right_ent_schema->components[$right_last_prop]['class'] . "'");
-            $left_class = $left_ent_schema->components[$left_last_prop]['class'];
+            $left_class = $left_ent_schema->components[$left_last_prop]->class;
 
             $left_prop_chain = array($left_last_prop
-                , jork\model\AbstractModel::schema_by_class($left_ent_schema->components[$left_last_prop]['class'])->primary_key());
+                , jork\model\AbstractModel::schema_by_class($left_ent_schema->components[$left_last_prop]->class)->primary_key());
             $left_mapper->merge_prop_chain($left_prop_chain, EntityMapper::SELECT_NONE);
             $expr->left_operand = $left_mapper->resolve_prop_chain($left_prop_chain);
         } elseif ($left_is_model) {
@@ -193,9 +193,9 @@ abstract class SelectMapper {
         if ($right_is_array) {
             list($right_mapper, $right_ent_schema, $right_last_prop)
                     = $expr->right_operand;
-            $right_class = $right_ent_schema->components[$right_last_prop]['class'];
+            $right_class = $right_ent_schema->components[$right_last_prop]->class;
             $right_prop_chain = array($right_last_prop
-                , jork\model\AbstractModel::schema_by_class($right_ent_schema->components[$right_last_prop]['class'])->primary_key());
+                , jork\model\AbstractModel::schema_by_class($right_ent_schema->components[$right_last_prop]->class)->primary_key());
             $right_mapper->merge_prop_chain($right_prop_chain, EntityMapper::SELECT_NONE);
             $expr->right_operand = $right_mapper->resolve_prop_chain($right_prop_chain);
         } elseif ($right_is_model) {

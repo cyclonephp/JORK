@@ -19,7 +19,7 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
     public static function for_component($owner, $comp_name) {
         $comp_schema = $owner->schema()->components[$comp_name];
         if (isset($comp_schema->mapped_by)) {
-            $remote_comp_schema = jork\model\AbstractModel::schema_by_class($comp_schema['class'])
+            $remote_comp_schema = jork\model\AbstractModel::schema_by_class($comp_schema->class)
                 ->components[$comp_schema->mapped_by];
             if (cy\JORK::MANY_TO_ONE == $remote_comp_schema->type)
                 return new reverse\ManyToOneCollection($owner

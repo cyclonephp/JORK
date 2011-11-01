@@ -130,6 +130,7 @@ use cyclone as cy;
             if ($def->is_primary_key)
                 return $name;
         }
+        throw new jork\Exception("no primary key found for schema " . $this->class);
     }
 
     public function get_property_schema($name) {
@@ -138,18 +139,27 @@ use cyclone as cy;
 
         if (isset($this->components[$name]))
             return $this->components[$name];
+
+        if (isset($this->embedded_components[$name]))
+            return $this->embedded_components[$name];
         
         throw new jork\SchemaException("property '$name' of {$this->class} does not exist");
     }
 
     public function table_name_for_column($col_name) {
         return isset($this->primitives[$col_name]->table)
-                ? $this->prmitives[$col_name]->table
+                ? $this->primitives[$col_name]->table
                 : $this->table;
     }
 
     public function is_to_many_component($comp_name) {
+        if (isset($this->embedded_components[$comp_name]))
+            return FALSE;
+        
         $comp_schema = $this->components[$comp_name];
+        if ( ! is_object($comp_schema)) {
+            //var_dump($comp_schema); die();
+        }
         if ($comp_schema instanceof EmbeddableSchema)
             // embedded components are always to-one components by nature
             return FALSE;
@@ -157,7 +167,7 @@ use cyclone as cy;
             return $comp_schema->type == cy\JORK::ONE_TO_MANY
                 || $comp_schema->type == cy\JORK::MANY_TO_MANY;
 
-        $remote_comp_schema = jork\model\AbstractModel::schema_by_class($comp_schema['class'])
+        $remote_comp_schema = jork\model\AbstractModel::schema_by_class($comp_schema->class)
             ->components[$comp_schema->mapped_by];
 
         return $remote_comp_schema->type == cy\JORK::MANY_TO_MANY

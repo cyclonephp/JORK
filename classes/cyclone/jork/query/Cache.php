@@ -132,12 +132,12 @@ class Cache {
             $this->_delete_sql = array($prim_tbl_del);
             if ($this->_schema->secondary_tables != NULL) {
                 foreach ($this->_schema->secondary_tables as $tbl_name => $tbl_def) {
-                    if (isset($tbl_def['on_delete'])
-                            && $tbl_def['on_delete'] === JORK::CASCADE) {
+                    if (isset($tbl_def->on_delete)
+                            && $tbl_def->on_delete === cy\JORK::CASCADE) {
                         $del_stmt = new db\query\Delete;
                         $del_stmt->table = $tbl_name;
                         $del_stmt->conditions = array(
-                            new db\BinaryExpression($tbl_def['join_column'], '=', NULL)
+                            new db\BinaryExpression($tbl_def->join_column, '=', NULL)
                         );
                         $this->_delete_sql [] = $del_stmt;
                     }

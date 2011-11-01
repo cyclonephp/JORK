@@ -164,7 +164,7 @@ class EntityMapper implements RowMapper {
     public function get_mapper_for_propchain($prop_chain) {
         $root_prop = array_shift($prop_chain);
         if (empty ($prop_chain)) {
-            if (array_key_exists($root_prop, $this->_entity_schema->atomics)) 
+            if (isset($this->_entity_schema->primitives[$root_prop]))
                 return array($this, $root_prop);
 
             return array($this->_next_mappers[$root_prop], FALSE);
@@ -192,8 +192,8 @@ class EntityMapper implements RowMapper {
      * @return string the generated alias
      */
     protected function add_table($tbl_name) {
-        if ( ! array_key_exists($tbl_name, $this->_table_aliases)) {
-            if ( ! array_key_exists($this->_entity_schema->table, $this->_table_aliases)) {
+        if ( ! isset($this->_table_aliases[$tbl_name])) {
+            if ( ! isset($this->_table_aliases[ $this->_entity_schema->table ])) {
                 $tbl_alias = $this->_table_aliases[$tbl_name] = $this->_naming_srv->table_alias($this->_entity_alias, $tbl_name);
                 $this->_db_query->tables []= array($tbl_name, $tbl_alias);
             }
@@ -211,7 +211,7 @@ class EntityMapper implements RowMapper {
      * @see JORK_Naming_Service::table_alias($tbl_name)
      */
     protected function table_alias($tbl_name) {
-        if ( !array_key_exists($tbl_name, $this->_table_aliases)) {
+        if ( ! isset($this->_table_aliases[$tbl_name])) {
             $this->_table_aliases[$tbl_name] = $this->_naming_srv
                     ->table_alias($this->_entity_alias, $tbl_name);
         }
@@ -230,17 +230,17 @@ class EntityMapper implements RowMapper {
         if (in_array($prop_name, $this->_result_atomics))
                 return;
 
-        $tbl_name = array_key_exists('table', $prop_schema)
-                ? $prop_schema['table']
+        $tbl_name = isset($prop_schema->table)
+                ? $prop_schema->table
                 : $this->_entity_schema->table;
         
-        if ( ! array_key_exists($tbl_name, $this->_table_aliases)) {
+        if ( ! isset($this->_table_aliases[$tbl_name])) {
             $tbl_alias = $this->add_table($tbl_name);
         }
         $tbl_alias = $this->_table_aliases[$tbl_name];
         
-        $col_name = array_key_exists('column', $prop_schema)
-                ? $prop_schema['column']
+        $col_name = isset($prop_schema->column)
+                ? $prop_schema->column
                 : $prop_name;
 
         $full_column = $tbl_alias.'.'.$col_name;
@@ -255,18 +255,18 @@ class EntityMapper implements RowMapper {
     }
 
     protected function join_secondary_table($tbl_name) {
-        if ( ! is_array($this->_entity_schema->secondary_tables)
-                || ! array_key_exists($tbl_name, $this->_entity_schema->secondary_tables)) 
+        if (empty($this->_entity_schema->secondary_tables)
+                || ! isset($this->_entity_schema->secondary_tables[$tbl_name]))
             throw new jork\SchemaException ('class '.$this->_entity_schema->class
                     .' has no secondary table "'.$tbl_name.'"');
-        if ( ! array_key_exists($tbl_name, $this->_table_aliases)) {
+        if ( ! isset($this->_table_aliases[$tbl_name])) {
             $this->add_table($this->_entity_schema->table);
         }
         $table_schema = $this->_entity_schema->secondary_tables[$tbl_name];
 
 
-        $inverse_join_col = array_key_exists('inverse_join_column', $table_schema)
-                ? $table_schema['inverse_join_column']
+        $inverse_join_col = isset($table_schema->inverse_join_column)
+                ? $table_schema->inverse_join_column
                 : $this->_entity_schema->primary_key();
 
         $tbl_alias = $this->table_alias($tbl_name);
@@ -276,9 +276,9 @@ class EntityMapper implements RowMapper {
             'type' => 'LEFT',
             'conditions' => array(
                 new db\BinaryExpression(
-                    $this->table_alias($this->_entity_schema->table).'.'.$inverse_join_col
+                    $this->table_alias($this->_entity_schema->table).'.'.$table_schema->join_column
                     , '='
-                    , $tbl_alias.'.'.$table_schema['join_column']
+                    , $tbl_alias.'.'.$inverse_join_col
                 )
             )
         );
@@ -291,11 +291,15 @@ class EntityMapper implements RowMapper {
      * @return jork\mapper\EntityMapper
      */
     protected function get_component_mapper($prop_name, $prop_schema = NULL) {
-        if (array_key_exists($prop_name, $this->_next_mappers))
+        if (isset($this->_next_mappers[$prop_name]))
             return $this->_next_mappers[$prop_name];
 
         if (NULL == $prop_schema) {
+            if (isset($this->_entity_schema->components[$prop_name])) {
             $prop_schema = $this->_entity_schema->components[$prop_name];
+            } else {
+                $prop_schema = $this->_entity_schema->embedded_components[$prop_name];
+            }
         }
 
         $select_item = $this->_entity_alias == '' ? $prop_name
@@ -329,7 +333,7 @@ class EntityMapper implements RowMapper {
             
         }
         if ( ! empty($prop_chain)) {
-            if ( is_array($schema) && ! array_key_exists('class', $schema))
+            if ( ! isset($schema->class))
                 throw new jork\SyntaxException('only the last item of a property
                     chain can be an atomic property');
             $next_mapper = $this->get_component_mapper($root_prop, $schema);
@@ -338,12 +342,12 @@ class EntityMapper implements RowMapper {
             }
             $next_mapper->merge_prop_chain($prop_chain, $select_policy);
         } else {
-            if (array_key_exists('class', $schema)) { // component
+            if (isset($schema->class)) { // component
                 $next_mapper = $this->get_component_mapper($root_prop, $schema);
                 if ($select_policy != self::SELECT_NONE) {
                     $next_mapper->select_all_atomics();
                 }
-            } elseif (is_array($schema)) { // atomic property
+            } elseif (isset($schema->type)) { // atomic property
                 $this->add_atomic_property($root_prop, $schema);
             } else { // embedded component
                 $next_mapper = $this->get_component_mapper($root_prop, $schema);
@@ -355,7 +359,7 @@ class EntityMapper implements RowMapper {
                 // dirty hack, must be cleaned up
                 && ! ($this instanceof component\EmbeddedMapper)) {
             $pk = $this->_entity_schema->primary_key();
-            $this->add_atomic_property($pk, $this->_entity_schema->atomics[$pk]);
+            $this->add_atomic_property($pk, $this->_entity_schema->primitives[$pk]);
         }
     }
 
@@ -364,7 +368,7 @@ class EntityMapper implements RowMapper {
      * Called if the select list is empty.
      */
     public function select_all_atomics() {
-        foreach ($this->_entity_schema->atomics as $prop_name => $prop_schema) {
+        foreach ($this->_entity_schema->primitives as $prop_name => $prop_schema) {
             $this->add_atomic_property($prop_name, $prop_schema);
         }
     }
@@ -382,25 +386,26 @@ class EntityMapper implements RowMapper {
     public function resolve_prop_chain($prop_chain) {
         $root_prop = array_shift($prop_chain);
         if (empty($prop_chain)) { //we are there
-            if ( ! array_key_exists($root_prop, $this->_entity_schema->atomics)) {
-                if (array_key_exists($root_prop, $this->_entity_schema->components)) {
+            if ( ! isset($this->_entity_schema->primitives[$root_prop])) {
+                if (isset($this->_entity_schema->components[$root_prop])) {
                     // if the last property of the property chain is not an atomic
                     // property, then we return the mapper ($this), the entity
                     // schema of the mapper, and the final property
                     return array($this, $this->_entity_schema, $root_prop);
                 }
-                throw new JORK_Exception('property "'.$root_prop.'" of class "'
+                throw new jork\Exception('property "'.$root_prop.'" of class "'
                         .$this->_entity_schema->class.'" does not exist');
             }
-            $col_schema = $this->_entity_schema->atomics[$root_prop];
-            $table = array_key_exists('table', $col_schema)
-                    ? $col_schema['table']
+            $col_schema = $this->_entity_schema->primitives[$root_prop];
+            $table = isset($col_schema->table)
+                    ? $col_schema->table
                     : $this->_entity_schema->table;
             $this->add_table($table);
             return $this->_table_aliases[$table].'.'.$root_prop;
         } else { //going on with the next component mapper
-            if ( ! array_key_exists($root_prop, $this->_entity_schema->components))
-                throw new JORK_Exception('class '.$this->_entity_schema->class
+            if ( ! isset($this->_entity_schema->components[$root_prop])
+                    && ! isset($this->_entity_schema->embedded_components[$root_prop]))
+                throw new jork\Exception('class '.$this->_entity_schema->class
                         .' has no component '.$root_prop);
             return $this->get_component_mapper($root_prop)->resolve_prop_chain($prop_chain);
         }

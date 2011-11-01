@@ -110,7 +110,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     protected $_schema;
 
     /**
-     * Used to store the atomic properties of the entity. All items are 2-item
+     * Used to store the primitive properties of the entity. All items are 2-item
      * arrays with the following keys:
      * * 'value': the typecasted value of the property
      * * 'persistent': (boolean) determines if the property has been saved since
@@ -119,7 +119,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      *
      * @var array
      */
-    protected $_atomics = array();
+    protected $_primitives = array();
 
     /**
      * Used to store the loaded components of the entity. The items are instances
@@ -161,8 +161,8 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      */
     public function pk() {
         $pk = $this->schema()->primary_key();
-        return array_key_exists($pk, $this->_atomics)
-                ? $this->_atomics[$pk]['value']
+        return array_key_exists($pk, $this->_primitives)
+                ? $this->_primitives[$pk]['value']
                 : NULL;
     }
 
@@ -221,14 +221,14 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
         $schema = $this->schema();
         if (self::$_cfg['force_type']) {
             foreach ($atomics as $k => $v) {
-                $this->_atomics[$k] = array(
-                    'value' => $this->force_type($v, $schema->atomics[$k]['type']),
+                $this->_primitives[$k] = array(
+                    'value' => $this->force_type($v, $schema->primitives[$k]->type),
                     'persistent' => TRUE
                 );
             }
         } else {
             foreach ($atomics as $k => $v) {
-                $this->_atomics[$k] = array(
+                $this->_primitives[$k] = array(
                     'value' => $v,
                     'persistent' => TRUE
                 );
@@ -276,31 +276,31 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * @param array $comp_schema
      */
     protected function update_component_fks_reverse($key, $val, $comp_schema) {
-        $remote_schema = $val->schema()->components[$comp_schema['mapped_by']];
+        $remote_schema = $val->schema()->components[$comp_schema->mapped_by];
         if (NULL === $val) {
-            switch ($remote_schema['type']) {
+            switch ($remote_schema->type) {
                 case cy\JORK::ONE_TO_MANY:
-                    $this->_atomics[$remote_schema['join_column']]['value'] = NULL;
-                    $this->_atomics[$remote_schema['join_column']]['persistent'] = FALSE;
+                    $this->_primitives[$remote_schema->join_column]['value'] = NULL;
+                    $this->_primitives[$remote_schema->join_column]['persistent'] = FALSE;
                     break;
                 case cy\JORK::ONE_TO_ONE:
-                    $val->_atomics[$remote_schema['join_column']]['value'] = NULL;
-                    $val->_atomics[$remote_schema['join_column']]['persistent'] = FALSE;
+                    $val->_atomics[$remote_schema->join_column]['value'] = NULL;
+                    $val->_atomics[$remote_schema->join_column]['persistent'] = FALSE;
                     break;
             }
         } else {
-            switch ($remote_schema['type']) {
+            switch ($remote_schema->type) {
                 case cy\JORK::ONE_TO_MANY:
-                    $this->_atomics[$remote_schema['join_column']]['value'] = array_key_exists('inverse_join_column', $remote_schema) 
-                        ? $val->_atomics[$remote_schema['inverse_join_column']]['value']
+                    $this->_primitives[$remote_schema->join_column]['value'] = isset($remote_schema->inverse_join_column)
+                        ? $val->_primitives[$remote_schema->inverse_join_column]['value']
                         : $val->pk();
-                    $this->_atomics[$remote_schema['join_column']]['persistent'] = FALSE;
+                    $this->_primitives[$remote_schema->join_column]['persistent'] = FALSE;
                     break;
                 case cy\JORK::ONE_TO_ONE:
-                    $val->_atomics[$remote_schema['join_column']]['value'] = array_key_exists('inverse_join_column', $remote_schema) 
-                        ? $this->_atomics[$remote_schema['inverse_join_column']]['value']
+                    $val->_primitives[$remote_schema->join_column]['value'] = isset($remote_schema->inverse_join_column)
+                        ? $this->_primitives[$remote_schema->inverse_join_column]['value']
                         : $this->pk();
-                    $val->_atomics[$remote_schema['join_column']]['persistent'] = FALSE;
+                    $val->_primitives[$remote_schema->join_column]['persistent'] = FALSE;
                     break;
             }
         }
@@ -316,34 +316,34 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     protected function update_component_fks($key, AbstractModel $val = NULL) {
         $schema = $this->schema();
         $comp_schema = $schema->components[$key];
-        if (array_key_exists('mapped_by', $comp_schema)) {
+        if (isset($comp_schema->mapped_by)) {
             $this->update_component_fks_reverse($key, $val, $comp_schema);
             return;
         }
         if (NULL === $val) {
-            switch ($comp_schema['type']) {
+            switch ($comp_schema->type) {
                 case cy\JORK::MANY_TO_ONE:
-                    $this->_atomics[$comp_schema['join_column']]['value'] = NULL;
-                    $this->_atomics[$comp_schema['join_column']]['persistent'] = FALSE;
+                    $this->_primitives[$comp_schema->join_column]['value'] = NULL;
+                    $this->_primitives[$comp_schema->join_column]['persistent'] = FALSE;
                     break;
                 case cy\JORK::ONE_TO_ONE:
-                    $this->_atomics[$comp_schema['join_column']]['value'] = NULL;
-                    $this->_atomics[$comp_schema['join_column']]['persistent'] = FALSE;
+                    $this->_primitives[$comp_schema->join_column]['value'] = NULL;
+                    $this->_primitives[$comp_schema->join_column]['persistent'] = FALSE;
                     break;
             }
         } else {
-            switch ($comp_schema['type']) {
+            switch ($comp_schema->type) {
                 case cy\JORK::MANY_TO_ONE:
-                    $this->_atomics[$comp_schema['join_column']]['value'] = array_key_exists('inverse_join_column', $comp_schema) 
-                        ? $val->_atomics[$comp_schema['inverse_join_column']]['value']
+                    $this->_primitives[$comp_schema->join_column]['value'] = isset($comp_schema->inverse_join_column)
+                        ? $val->_primitives[$comp_schema->inverse_join_column]['value']
                         : $val->pk();
-                    $this->_atomics[$comp_schema['join_column']]['persistent'] = FALSE;
+                    $this->_primitives[$comp_schema->join_column]['persistent'] = FALSE;
                     break;
                 case cy\JORK::ONE_TO_ONE:
-                    $this->_atomics[$comp_schema['join_column']]['value'] = array_key_exists('inverse_join_column', $comp_schema)
-                        ? $val->_atomics[$comp_schema['inverse_join_column']]['value']
+                    $this->_primitives[$comp_schema->join_column]['value'] = isset($comp_schema->inverse_join_column)
+                        ? $val->_primitives[$comp_schema->inverse_join_column]['value']
                         : $val->pk();
-                    $this->_atomics[$comp_schema['join_column']]['persistent'] = FALSE;
+                    $this->_primitives[$comp_schema->join_column]['persistent'] = FALSE;
                     break;
             }
         }
@@ -368,13 +368,13 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      */
     public function  __get($key) {
         $schema = $this->schema();
-        if (array_key_exists($key, $schema->atomics)) {
-            return array_key_exists($key, $this->_atomics)
-                    ? $this->_atomics[$key]['value']
+        if (isset($schema->primitives[$key])) {
+            return isset($this->_primitives[$key])
+                    ? $this->_primitives[$key]['value']
                     : NULL;
         }
-        if (array_key_exists($key, $schema->components)) {
-            if (array_key_exists($key, $this->_components))
+        if (isset($schema->components[$key])) {
+            if (isset($this->_components[$key]))
                 // return if the component value is already initialized
                 return $this->_components[$key]['value'];
             if ($schema->is_to_many_component($key)) {
@@ -391,6 +391,15 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             }
             return $this->_components[$key]['value'];
                    
+        }
+        if (isset($schema->embedded_components[$key])) {
+            if ( ! isset($this->_components[$key])) {
+                $this->_components[$key] = array(
+                    'persistent' => TRUE,
+                    'value' => NULL
+                );
+            }
+            return $this->_components[$key]['value'];
         }
         throw new jork\Exception("class '{$schema->class}' has no property '$key'");
     }
@@ -414,6 +423,9 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             switch ($type) {
                 case 'string':
                 case 'datetime':
+                case 'date':
+                case 'time':
+                case 'timestamp':
                     return (string) $val;
                 case 'int':
                     return (int) $val;
@@ -433,19 +445,19 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
 
     public function __set($key, $val) {
         $schema = $this->schema();
-        if (array_key_exists($key, $schema->atomics)) {
-            if ( ! array_key_exists($key, $this->_atomics)) {
-                $this->_atomics[$key] = array();
+        if (isset($schema->primitives[$key])) {
+            if ( ! isset($this->_primitives[$key])) {
+                $this->_primitives[$key] = array();
             }
-            $this->_atomics[$key]['value'] = self::$_cfg['force_type'] 
-                    ? $this->force_type($val, $schema->atomics[$key]['type'])
+            $this->_primitives[$key]['value'] = self::$_cfg['force_type']
+                    ? $this->force_type($val, $schema->primitives[$key]->type)
                     : $val;
-            $this->_atomics[$key]['persistent'] = FALSE;
+            $this->_primitives[$key]['persistent'] = FALSE;
             $this->_persistent = FALSE;
-        } elseif (array_key_exists($key, $schema->components)) {
-            if ( ! $val instanceof  $schema->components[$key]['class'])
-                throw new jork\Exception("value of {$schema->class}::$key must be an instance of {$schema->components[$key]['class']}");
-            if ( ! array_key_exists($key, $this->_components)) {
+        } elseif (isset($schema->components[$key])) {
+            if ( ! $val instanceof  $schema->components[$key]->class)
+                throw new jork\Exception("value of {$schema->class}::$key must be an instance of {$schema->components[$key]->class}");
+            if ( ! isset($this->_components[$key])) {
                 $this->_components[$key] = array(
                     'value' => $val,
                     'persistent' => FALSE
@@ -487,28 +499,28 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             $ins_tables = array();
             $values = array();
             $prim_table = NULL;
-            foreach ($schema->atomics as $col_name => $col_def) {
-                if (array_key_exists($col_name, $this->_atomics)) {
-                    if ($this->_atomics[$col_name]['persistent'] == FALSE) {
-                        $ins_table = array_key_exists('table', $col_def) 
-                                ? $col_def['table']
+            foreach ($schema->primitives as $col_name => $col_def) {
+                if (isset($this->_primitives[$col_name])) {
+                    if ($this->_primitives[$col_name]['persistent'] == FALSE) {
+                        $ins_table = isset($col_def->table)
+                                ? $col_def->table
                                 : $schema->table;
                         if ( ! in_array($ins_table, $ins_tables)) {
                             $ins_tables [] = $ins_table;
                         }
-                        if ( ! array_key_exists($ins_table, $values)) {
+                        if ( ! isset($values[$ins_table])) {
                             $values[$ins_table] = array();
                         }
-                        $col = array_key_exists('column', $col_def)
-                                ? $col_def['column']
+                        $col = isset($col_def->column)
+                                ? $col_def->column
                                 : $col_name;
-                        $values[$ins_table][$col] = $this->_atomics[$col_name]['value'];
+                        $values[$ins_table][$col] = $this->_primitives[$col_name]['value'];
 
                         // In fact the value is not yet persistent, but we assume
                         // that no problem will happen until the insertions
-                        $this->_atomics[$col_name]['persistent'] = TRUE;
+                        $this->_primitives[$col_name]['persistent'] = TRUE;
                     }
-                } elseif (array_key_exists('primary', $col_def)) {
+                } elseif ($col_def->is_primary_key == TRUE) {
                     // The primary key does not exist in the record
                     // therefore we save the table name for the table
                     // containing the primary key
@@ -525,10 +537,10 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                     $insert_sqls[$tbl_name]->values = array($ins_values);
                     $tmp_id = $insert_sqls[$tbl_name]->exec($schema->db_conn);
                     if ($prim_table == $tbl_name) {
-                        $pk_atomic = $schema->primary_key();
-                        $this->_atomics[$pk_atomic] = array(
+                        $pk_primitive = $schema->primary_key();
+                        $this->_primitives[$pk_primitive] = array(
                             'value' => self::$_cfg['force_type']
-                                ? $this->force_type($tmp_id, $schema->atomics[$pk_atomic]['type'])
+                                ? $this->force_type($tmp_id, $schema->primitives[$pk_primitive]->type)
                                 : $tmp_id,
                             'persistent' => TRUE
                         );
@@ -565,23 +577,23 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
 
             $upd_tables = array();
             $values = array();
-            foreach ($schema->atomics as $col_name => $col_def) {
-                if (array_key_exists($col_name, $this->_atomics)
-                        && (FALSE == $this->_atomics[$col_name]['persistent'])) {
-                    $tbl_name = array_key_exists('table', $col_def)
-                            ? $col_def['table']
+            foreach ($schema->primitives as $col_name => $col_def) {
+                if (isset($this->_primitives[$col_name])
+                        && (FALSE == $this->_primitives[$col_name]['persistent'])) {
+                    $tbl_name = isset($col_def->table)
+                            ? $col_def->table
                             : $schema->table;
                     if ( ! in_array($tbl_name, $upd_tables)) {
                         $upd_tables []= $tbl_name;
                     }
-                    if ( ! array_key_exists($tbl_name, $values)) {
+                    if ( ! isset($values[$tbl_name])) {
                         $values[$tbl_name] = array();
                     }
-                    $col = array_key_exists('column', $col_def)
-                                ? $col_def['column']
+                    $col = isset($col_def->column)
+                                ? $col_def->column
                                 : $col_name;
-                    $values[$tbl_name][$col] = $this->_atomics[$col_name]['value'];
-                    $this->_atomics[$col_name]['persistent'] = TRUE;
+                    $values[$tbl_name][$col] = $this->_primitives[$col_name]['value'];
+                    $this->_primitives[$col_name]['persistent'] = TRUE;
                 }
             }
             //TODO should be improved for proper secondary table handling
@@ -677,25 +689,25 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
         }
 
         foreach ($schema->components as $comp_name => $comp_def) {
-            if (array_key_exists('on_delete', $comp_def)) {
-                $on_delete = $comp_def['on_delete'];
+            if (isset($comp_def->on_delete)) {
+                $on_delete = $comp_def->on_delete;
                 if (cy\JORK::CASCADE === $on_delete) {
                     
                     //$component['value']->delete();
                 } elseif (cy\JORK::SET_NULL == $on_delete) {
                     if ($schema->is_to_many_component($comp_name)) {
                         // to-many component
-                        if ( ! array_key_exists($comp_name, $this->_components)) {
+                        if ( ! isset($this->_components[$comp_name])) {
                             $this->_components[$comp_name] = array(
                                 'value' => collection\AbstractCollection::for_component($this, $comp_name)
                             );
                         }
                         $this->_components[$comp_name]['value']->notify_owner_deletion($pk);
-                    } elseif (array_key_exists('mapped_by', $comp_def)) {
+                    } elseif (isset($comp_def->mapped_by)) {
                         // we handle reverse one-to-one components here
-                        $remote_class_schema = self::schema_by_class($comp_def['class']);
+                        $remote_class_schema = self::schema_by_class($comp_def->class);
                         if (cy\JORK::ONE_TO_ONE == $remote_class_schema
-                                ->components[$comp_def['mapped_by']]['type']) {
+                                ->components[$comp_def->mapped_by]->type) {
                             $this->set_null_fk_for_reverse_one_to_one($remote_class_schema
                                     , $comp_def, $pk);
                         }
@@ -708,26 +720,30 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     private function set_null_fk_for_reverse_one_to_one(jork\schema\ModelSchema $remote_class_schema
             , $comp_def, db\ParamExpression $pk) {
         $remote_comp_schema = $remote_class_schema
-                                ->components[$comp_def['mapped_by']];
+                                ->components[$comp_def->mapped_by];
         $schema = $this->schema();
 
         $upd_stmt = new db\query\Update;
 
-        $remote_atomic_schema = $remote_class_schema->atomics[$remote_comp_schema['join_column']];
+        $remote_primitive_schema = $remote_class_schema->primitives[$remote_comp_schema->join_column];
 
-        $remote_join_col = array_key_exists('column', $remote_atomic_schema) ? $remote_atomic_schema['column'] : $remote_comp_schema['join_column'];
+        $remote_join_col = isset($remote_primitive_schema->column) ? $remote_primitive_schema->column : $remote_comp_schema->join_column;
 
         $upd_stmt->values = array(
             $remote_join_col => NULL
         );
 
-        $local_join_atomic = array_key_exists('inverse_join_column'
-                        , $remote_comp_schema) ? $remote_comp_schema['join_column'] : $schema->primary_key();
+        $local_join_atomic = isset($remote_comp_schema->inverse_join_column)
+                ? $remote_comp_schema->join_column
+                : $schema->primary_key();
 
-        $local_join_col = array_key_exists('column'
-                        , $schema->atomics[$local_join_atomic]) ? $schema->atomics[$local_join_atomic]['column'] : $local_join_atomic;
+        $local_join_col = isset($schema->primitives[$local_join_atomic]->column)
+                ? $schema->atomics[$local_join_atomic]->column
+                : $local_join_atomic;
 
-        $upd_stmt->table = array_key_exists('table', $remote_atomic_schema) ? $remote_atomic_schema['table'] : $remote_class_schema->table;
+        $upd_stmt->table = isset($remote_primitive_schema->table)
+                ? $remote_primitive_schema->table
+                : $remote_class_schema->table;
 
         if ($local_join_atomic == $schema->primary_key()) {
             // we are simply happy, the primary key is the
@@ -735,9 +751,9 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             $local_join_cond = $pk;
         } else {
             // the local join column is not the primary key
-            if (array_key_exists($local_join_atomic, $this->_atomics)) {
+            if (isset($this->_primitives[$local_join_atomic])) {
                 // but if it's loaded then we are still happy
-                $local_join_cond = new DB_Expression_Param($this->_atomics[$local_join_atomic]);
+                $local_join_cond = new DB_Expression_Param($this->_primitives[$local_join_atomic]);
             } else {
                 // otherwise we have to create a subselect to
                 // get the value of the local join column based on the primary key
@@ -745,8 +761,8 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                 $local_join_cond = new db\query\SelectQuery;
                 $local_join_cond->columns = array($local_join_col);
                 $local_join_cond->tables = array(
-                    array_key_exists('table', $schema->atomics[$local_join_atomic])
-                            ? $schema->atomics[$local_join_atomic]['table']
+                    isset($schema->atomics[$local_join_atomic]->table)
+                            ? $schema->atomics[$local_join_atomic]->table
                             : $schema->table
                 );
                 $local_join_cond->where_conditions = array(
@@ -776,7 +792,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
         $prim_key = $this->schema()->primary_key();
 
         $lines = array($tabs  . "\033[36;1m" . get_class($this) . "\033[0m");
-        foreach ($this->_atomics as $name => $itm) {
+        foreach ($this->_primitives as $name => $itm) {
             if ($name == $prim_key) {
                 $color = "\033[37;1m";
             } else {
@@ -800,9 +816,12 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
         $rval = array();
         $schema = $this->schema();
         foreach ($schema->atomics as $k => $dummy) {
-            $rval[$k] = isset($this->_atomics[$k]) ? $this->_atomics[$k]['value'] : NULL;
+            $rval[$k] = primitives($this->_primitives[$k]) ? $this->_primitives[$k]['value'] : NULL;
         }
         foreach ($schema->components as $k => $dummy) {
+            $rval[$k] = isset($this->_components[$k]) ? $this->_components[$k]['value'] : NULL;
+        }
+        foreach ($schema->embedded_components as $k => $dummy) {
             $rval[$k] = isset($this->_components[$k]) ? $this->_components[$k]['value'] : NULL;
         }
         return $rval;
@@ -810,8 +829,8 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
 
     public function __unset($key) {
         $schema = $this->schema();
-        if (isset($schema->atomics[$key])) {
-            $this->_atomics[$key] = array(
+        if (isset($schema->primitives[$key])) {
+            $this->_primitives[$key] = array(
                 'value' => NULL,
                 'persistent' => FALSE
             );
@@ -833,7 +852,8 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
 
     public function  __isset($key) {
         $schema = $this->_schema;
-        return isset($schema->atomics[$key]) || isset($schema->components[$key]);
+        return isset($schema->primitives[$key])
+                || isset($schema->components[$key]);
     }
 
     public function offsetGet($key) {
@@ -853,7 +873,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     }
 
     public function  getIterator() {
-        return new Iterator($this->_atomics + $this->_components);
+        return new Iterator($this->_primitives + $this->_components);
     }
 
 }
