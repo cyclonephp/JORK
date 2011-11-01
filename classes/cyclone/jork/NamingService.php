@@ -72,17 +72,19 @@ class NamingService {
                 $this->_entity_aliases[$name] = model\AbstractModel::schema_by_class($name);
                 return;
             } else {
-                foreach ($this->_implicit_root_schema->primitives as $col_name => $col_def) {
-                    if ($name == $col_name) {
-                        $this->_entity_aliases[$name] = $col_def;
-                        return;
-                    }
+                if (isset($this->_implicit_root_schema->primitives[$name])) {
+                    $this->_entity_aliases[$name] = $this->_implicit_root_schema->primitives[$name];
+                    return;
                 }
-                foreach ($this->_implicit_root_schema->components as $cmp_name => $cmp_def) {
-                    if ($name == $cmp_name) {
-                        $this->_entity_aliases[$name] = model\AbstractModel::schema_by_class($cmp_def->class);
-                        return;
-                    }
+                if (isset($this->_implicit_root_schema->components[$name])) {
+                    $cmp_schema = $this->_implicit_root_schema->components[$name];
+                    $this->_entity_aliases[$name] = model\AbstractModel::schema_by_class($cmp_schema->class);
+                    return;
+                }
+                if (isset($this->_implicit_root_schema->embedded_components[$name])) {
+                    $cmp_schema = $this->_implicit_root_schema->embedded_components[$name];
+                    $this->_entity_aliases[$name] = model\AbstractModel::schema_by_class($cmp_schema->class);
+                    return;
                 }
             }
         } else {
@@ -101,30 +103,21 @@ class NamingService {
                     throw new jork\Exception('invalid identifier: '.$name); // otherwise the search fails
                 $found = FALSE;
                 $walked_segments []= $seg;
-                foreach ($current_schema->components as $cmp_name => $cmp_def) {
-                    if ($cmp_name == $seg) {
-                        $current_schema = model\AbstractModel::schema_by_class($cmp_def->class);
-                        $this->_entity_aliases[implode('.', $walked_segments)] = $current_schema;
-                        $found = TRUE; break;
-                    }
-                }
-                foreach ($current_schema->embedded_components as $cmp_name => $cmp_def) {
-                    if ($cmp_name == $seg) {
-                        $current_schema = $cmp_def;
-                        $this->_entity_aliases[implode('.', $walked_segments)] = $current_schema;
-                        $found = TRUE; break;
-                    }
-                }
-                foreach ($current_schema->primitives as $col_name => $col_def) {
-                    if ($col_name == $seg) {
-                        $this->_entity_aliases[implode('.', $walked_segments)] = $col_def;
-                        //the schema in the next iteration will be NULL if column
-                        // (atomic property) found
-                        $current_schema = NULL;
-                        $found = TRUE; break;
-                    }
-                }
-                if ( ! $found)
+                if (isset($current_schema->components[$seg])) {
+                    $current_schema = model\AbstractModel
+                        ::schema_by_class($current_schema->components[$seg]->class);
+                    $this->_entity_aliases[implode('.', $walked_segments)] = $current_schema;
+                    $found = TRUE;
+                } elseif (isset($current_schema->embedded_components[$seg])) {
+                    $current_schema = $current_schema->embedded_components[$seg];
+                    $this->_entity_aliases[implode('.', $walked_segments)] = $current_schema;
+                    $found = TRUE;
+                } elseif (isset($current_schema->primitives[$seg])) {
+                    $this->_entity_aliases[implode('.', $walked_segments)] = $current_schema->primitives[$seg];
+                    //the schema in the next iteration will be NULL if column
+                    // (primitive property) found
+                    $current_schema = NULL;
+                } else
                     throw new Exception('invalid identifier: '.$name);
             }
         }
