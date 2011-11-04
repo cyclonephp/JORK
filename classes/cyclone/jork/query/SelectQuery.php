@@ -129,7 +129,7 @@ class SelectQuery {
      */
     public function from_array($args) {
         foreach ($args as $arg) {
-            preg_match('/^(?<class>[a-zA-Z_0-9]+)( +(?<alias>[a-zA-Z_0-9]+))?$/', $arg, $matches);
+            preg_match('/^(?<class>[a-zA-Z_0-9\\\\]+)( +(?<alias>[a-zA-Z_0-9]+))?$/', $arg, $matches);
             if (empty($matches))
                 throw new jork\SyntaxException ('invalid from list item: '.$arg);
             $item = array(
