@@ -101,6 +101,9 @@ class EntityMapper implements RowMapper {
     protected $_previous_result_entity;
 
     public function map_row(&$db_row) {
+        if (NULL === $this->_result_primary_key_column)
+            return array(NULL, FALSE);
+        
         $pk = $db_row[$this->_result_primary_key_column];
         if (NULL === $pk)
             return array($this->_previous_result_entity = NULL, FALSE);

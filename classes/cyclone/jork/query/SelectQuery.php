@@ -275,7 +275,7 @@ class SelectQuery {
     }
 
     public function compile($database = 'default') {
-        $mapper = jork\mapper\Select::for_query($this);
+        $mapper = jork\mapper\SelectMapper::for_query($this);
         list($db_query, $mappers) = $mapper->map();
 
         if (cy\Config::inst()->get('jork.show_sql')) {

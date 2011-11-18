@@ -72,5 +72,17 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess {
     public function  offsetExists($offset) {
         return isset($this->_result[$offset]);
     }
-    
+
+    public function as_array() {
+        $rval = array();
+        foreach ($this as $k => $v) {
+            $rval[$k] = method_exists($v, 'as_array') ? $v->as_array() : $v;
+        }
+        return $rval;
+    }
+
+	public function jsonSerializable() {
+		return $this->as_array();
+	}
+
 }
