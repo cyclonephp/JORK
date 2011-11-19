@@ -78,7 +78,7 @@ class DefaultResult extends AbstractResult {
                 continue;
             }
 
-            $alias = array_key_exists('alias', $select_itm)
+            $alias = isset($select_itm['alias'])
                     ? $select_itm['alias']
                     : $select_itm['prop_chain']->as_string();
             
@@ -91,6 +91,7 @@ class DefaultResult extends AbstractResult {
             }
             if (empty($prop_chain)) {
                 $itm_mapper = $root_mapper;
+                $this->_entity_mappers[$alias] = $itm_mapper;
             } else {
                 list($itm_mapper, $atomic_prop) = $root_mapper
                         ->get_mapper_for_propchain($prop_chain);

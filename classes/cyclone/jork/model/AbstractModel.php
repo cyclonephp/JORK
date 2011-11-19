@@ -3,6 +3,7 @@
 namespace cyclone\jork\model;
 
 use cyclone\jork;
+use cyclone\jork\query;
 use cyclone\db;
 use cyclone as cy;
 
@@ -472,6 +473,47 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             throw new jork\Exception("class '{$schema->class}' has no property '$key'");
     }
 
+    public function  __call($name, $args) {
+        switch(count($args)) {
+            case 0:
+                $schema = $this->schema();
+                if (isset($schema->primitives[$name])) {
+                    if ( ! isset($this->_primitives[$name])) {
+                        $this->_primitives[$name] = array(
+                            'value' => $this->fetch_primitive($name),
+                            'persistent' => TRUE
+                        );
+                    }
+                    return $this->_primitives[$name]['value'];
+                }
+                break;
+            case 1:
+                
+                break;
+            default:
+                throw new jork\Exception("unknown method '$name'");
+        }
+    }
+
+    private function fetch_primitive($prop_name) {
+        $pk_val = $this->pk();
+        if (NULL === $pk_val)
+            return NULL;
+        
+        $model_schema = $this->schema();
+        $prop_schema = $model_schema->primitives[$prop_name];
+        $db_column = isset($prop_schema->column) ? $prop_schema->column : $prop_name;
+
+        $select_query = query\Cache::inst($model_schema->class)->fetch_prop_sql($prop_name);
+        $select_query->where_conditions[0]->right_operand = new db\ParamExpression($pk_val);
+
+        $result = $select_query->exec($model_schema->db_conn);
+        if (count($result) == 0)
+            return NULL;
+
+        return $result[0][$prop_name];
+    }
+
     /**
      * The <code>insert()</code> method should be called explicitly called typically
      * in one case: if this entity is in one-to-one relation with an other entity
@@ -495,7 +537,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
         if ( ! $this->_persistent) {
 
             $schema = $this->schema();
-            $insert_sqls = jork\query\Cache::inst(get_class($this))->insert_sql();
+            $insert_sqls = query\Cache::inst(get_class($this))->insert_sql();
             $ins_tables = array();
             $values = array();
             $prim_table = NULL;
@@ -573,7 +615,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             $this->_save_in_progress = TRUE;
 
             $schema = $this->schema();
-            $update_sqls = jork\query\Cache::inst(get_class($this))->update_sql();
+            $update_sqls = query\Cache::inst(get_class($this))->update_sql();
 
             $upd_tables = array();
             $values = array();
@@ -681,7 +723,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             return;
 
         $schema = $this->schema();
-        $delete_sqls = jork\query\Cache::inst(get_class($this))->delete_sql();
+        $delete_sqls = query\Cache::inst(get_class($this))->delete_sql();
         $pk = new db\ParamExpression($pk);
         foreach ($delete_sqls as $del_stmt) {
             $del_stmt->conditions[0]->right_operand = $pk;

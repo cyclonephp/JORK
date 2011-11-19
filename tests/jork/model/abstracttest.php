@@ -242,4 +242,13 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $this->assertEquals(3, count($categories));
     }
 
+    public function testLazyLoadingPrimitive() {
+        $result = cy\JORK::select('u{id}')->from('Model_User u')
+                ->where('u.id', '=', cy\DB::esc(1))->exec('jork_test')->as_array();
+        $user = $result[0]['u'];
+        $this->assertEquals(1, $user->id);
+        $this->assertNull($user->name);
+        $this->assertEquals('user1', $user->name());
+    }
+
 }

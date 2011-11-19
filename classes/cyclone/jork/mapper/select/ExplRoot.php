@@ -24,7 +24,7 @@ class ExplRoot extends jork\mapper\SelectMapper {
 
                 $this->_naming_srv->set_alias($from_item['class'], $from_item['alias']);
                 $this->_mappers[$from_item['alias']] =
-                $this->create_entity_mapper($from_item['alias']);
+                    $this->create_entity_mapper($from_item['alias']);
 
                 $this->_jork_query->select_list []= array(
                     'prop_chain' => jork\query\PropChain::from_string($from_item['alias'])
@@ -118,7 +118,9 @@ class ExplRoot extends jork\mapper\SelectMapper {
                 throw new JORK_Syntax_Exception('invalid property chain in select clause:'
                         . $select_item['prop_chain']->as_string());
             if (empty($prop_chain)) {
-                $this->_mappers[$root_entity]->select_all_atomics();
+                if ( ! isset($select_item['projection'])) {
+                    $this->_mappers[$root_entity]->select_all_atomics();
+                }
             } else {
                 $this->_mappers[$root_entity]->merge_prop_chain($prop_chain, jork\mapper\EntityMapper::SELECT_LAST);
             }
@@ -131,10 +133,17 @@ class ExplRoot extends jork\mapper\SelectMapper {
     protected function add_projections(jork\query\PropChain $prop_chain, $projections) {
         $prop_chain_arr = $prop_chain->as_array();
         $root_prop = array_shift($prop_chain_arr);
-        list($mapper,, $last_prop) = $this->_mappers[$root_prop]->resolve_prop_chain($prop_chain_arr);
+        if (empty($prop_chain_arr)) {
+            $mapper = $this->_mappers[$root_prop];
+            $last_prop = NULL;
+        } else {
+            list($mapper,, $last_prop) = $this->_mappers[$root_prop]->resolve_prop_chain($prop_chain_arr);
+        }
         foreach ($projections as $raw_projection) {
             $proj = explode('.', $raw_projection);
-            array_unshift($proj, $last_prop);
+            if ($last_prop !== NULL) {
+                array_unshift($proj, $last_prop);
+            }
             $mapper->merge_prop_chain($proj, jork\mapper\EntityMapper::SELECT_ALL);
         }
     }

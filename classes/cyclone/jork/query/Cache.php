@@ -73,6 +73,14 @@ class Cache {
      */
     private $_delete_sql;
 
+    /**
+     * An array of property name => select query pairs.
+     *
+     * @var array<cyclone\db\query\Select>
+     * @usedby fetch_prop_sql()
+     */
+    private $_fetch_prop_sqls = array();
+
     private function  __construct($class) {
         $this->_class = $class;
         $this->_schema = jork\model\AbstractModel::schema_by_class($class);
@@ -145,6 +153,34 @@ class Cache {
             }
         }
         return $this->_delete_sql;
+    }
+
+    public function fetch_prop_sql($prop_name) {
+        if ( ! isset($this->_fetch_prop_sqls[$prop_name])) {
+            $model_schema = $this->_schema;
+            $prop_schema = $model_schema->primitives[$prop_name];
+            $sql = new db\query\Select;
+            $sql->columns = array(
+                // aliasing the column name to the property name, which may potentially differ
+                array(NULL === $prop_schema->column ? $prop_name : $prop_schema->column, $prop_name)
+            );
+            $sql->tables = array(
+                NULL === $prop_schema->table ? $model_schema->table : $prop_schema->table
+            );
+            $primary_key = $schema->primary_key();
+            $prim_key_schema = $model_schema->primitives[$primary_key];
+            if (NULL === $prim_key_schema->table
+                    || $prim_key_schema->table == $model_schema->table) {
+                $sql->where[0] = new db\BinaryExpression(
+                    NULL === $prim_key_schema->table ? $model_schema->table : $prim_key_schema->table
+                    , '='
+                    , NULL
+                );
+            } else {
+                
+            }
+        }
+        return $this->_fetch_prop_sqls[$prop_name];
     }
 
 }
