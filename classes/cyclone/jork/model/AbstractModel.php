@@ -485,6 +485,8 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                         );
                     }
                     return $this->_primitives[$name]['value'];
+                } elseif (isset($schema->components[$name])) {
+                    
                 }
                 break;
             case 1:
@@ -507,7 +509,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
         $select_query = query\Cache::inst($model_schema->class)->fetch_prop_sql($prop_name);
         $select_query->where_conditions[0]->right_operand = new db\ParamExpression($pk_val);
 
-        $result = $select_query->exec($model_schema->db_conn);
+        $result = $select_query->exec($model_schema->db_conn)->as_array();
         if (count($result) == 0)
             return NULL;
 

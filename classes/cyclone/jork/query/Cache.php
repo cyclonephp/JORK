@@ -167,18 +167,19 @@ class Cache {
             $sql->tables = array(
                 NULL === $prop_schema->table ? $model_schema->table : $prop_schema->table
             );
-            $primary_key = $schema->primary_key();
+            $primary_key = $model_schema->primary_key();
             $prim_key_schema = $model_schema->primitives[$primary_key];
             if (NULL === $prim_key_schema->table
                     || $prim_key_schema->table == $model_schema->table) {
-                $sql->where[0] = new db\BinaryExpression(
-                    NULL === $prim_key_schema->table ? $model_schema->table : $prim_key_schema->table
+                $sql->where_conditions[0] = new db\BinaryExpression(
+                    NULL === $prim_key_schema->column ? $prim_key_schema->name : $prim_key_schema->column
                     , '='
                     , NULL
                 );
             } else {
-                
+                throw new jork\Exception("primary key column shouldn't be in secondary table");
             }
+            $this->_fetch_prop_sqls[$prop_name] = $sql;
         }
         return $this->_fetch_prop_sqls[$prop_name];
     }
