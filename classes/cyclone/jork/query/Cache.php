@@ -155,7 +155,7 @@ class Cache {
         return $this->_delete_sql;
     }
 
-    public function fetch_prop_sql($prop_name) {
+    public function fetch_primitive_sql($prop_name) {
         if ( ! isset($this->_fetch_prop_sqls[$prop_name])) {
             $model_schema = $this->_schema;
             $prop_schema = $model_schema->primitives[$prop_name];
@@ -182,6 +182,10 @@ class Cache {
             $this->_fetch_prop_sqls[$prop_name] = $sql;
         }
         return $this->_fetch_prop_sqls[$prop_name];
+    }
+
+    public function fetch_component_sql($prop_name) {
+        
     }
 
 }

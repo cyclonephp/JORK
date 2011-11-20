@@ -486,7 +486,12 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                     }
                     return $this->_primitives[$name]['value'];
                 } elseif (isset($schema->components[$name])) {
-                    
+                    if ( ! isset($this->_components[$name])
+                            || $this->_components[$name]['value'] === NULL
+                            || count($this->_components[$name]['value']) == 0) {
+                        $this->fetch_component($name);
+                    }
+                    return $this->_components[$name]['value'];
                 }
                 break;
             case 1:
@@ -506,7 +511,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
         $prop_schema = $model_schema->primitives[$prop_name];
         $db_column = isset($prop_schema->column) ? $prop_schema->column : $prop_name;
 
-        $select_query = query\Cache::inst($model_schema->class)->fetch_prop_sql($prop_name);
+        $select_query = query\Cache::inst($model_schema->class)->fetch_primitive_sql($prop_name);
         $select_query->where_conditions[0]->right_operand = new db\ParamExpression($pk_val);
 
         $result = $select_query->exec($model_schema->db_conn)->as_array();
@@ -514,6 +519,14 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             return NULL;
 
         return $result[0][$prop_name];
+    }
+
+    private function fetch_component($prop_name) {
+        $schema = $this->schema();
+
+        cy\JORK::from($schema->class)->with($prop_name)
+                ->where($schema->primary_key(), '=', cy\DB::esc($this->pk()))
+                ->exec($schema->db_conn);
     }
 
     /**

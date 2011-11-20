@@ -251,4 +251,22 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $this->assertEquals('user1', $user->name());
     }
 
+    public function testLazyLoadingComponent() {
+        $result = cy\JORK::from('Model_Post')
+            ->where('id', '=', cy\DB::esc(1))->exec('jork_test');
+
+        $post = $result[0];
+
+        $this->assertEquals(1, $post->id);
+        $this->assertNull($post->topic);
+        $this->assertInstanceOf('Model_Topic', $post->topic());
+        $this->assertEquals(1, $post->topic->id);
+
+        $topic = Model_Topic::inst()->get(2);
+        $this->assertEquals(0, count($topic->posts));
+        $this->assertEquals(1, count($topic->posts()));
+        $this->assertEquals(3, $topic->posts[3]->id);
+
+    }
+
 }
