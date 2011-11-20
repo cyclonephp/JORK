@@ -876,7 +876,8 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             $rval[$k] = isset($this->_primitives[$k]) ? $this->_primitives[$k]['value'] : NULL;
         }
         foreach ($schema->components as $k => $dummy) {
-            $rval[$k] = isset($this->_components[$k]) ? $this->_components[$k]['value'] : NULL;
+            $rval[$k] = isset($this->_components[$k]) && isset($this->_components[$k]['value'])
+                    ? $this->_components[$k]['value']->as_array() : NULL;
         }
         foreach ($schema->embedded_components as $k => $dummy) {
             $rval[$k] = isset($this->_components[$k]) ? $this->_components[$k]['value'] : NULL;

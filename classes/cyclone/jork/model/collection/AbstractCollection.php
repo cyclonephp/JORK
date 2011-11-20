@@ -274,4 +274,16 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
     public function  __toString() {
         return $this->as_string();
     }
+
+    public function as_array() {
+        $rval = array();
+        foreach ($this as $item) {
+            $rval []= NULL === $item ? NULL : $item->as_array();
+        }
+        return $rval;
+    }
+
+    public function jsonSerializable() {
+        return $this->as_array();
+    }
 }

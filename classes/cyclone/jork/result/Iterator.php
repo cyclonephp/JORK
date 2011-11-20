@@ -81,8 +81,8 @@ class Iterator implements \Iterator, \Countable, \ArrayAccess {
         return $rval;
     }
 
-	public function jsonSerializable() {
-		return $this->as_array();
-	}
+    public function jsonSerializable() {
+        return $this->as_array();
+    }
 
 }
