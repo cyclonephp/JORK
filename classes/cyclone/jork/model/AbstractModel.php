@@ -453,13 +453,13 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
 
             list($pk_primitive, $pk_strategy) = $schema->primary_key_info();
             if ($pk_strategy === cy\JORK::ASSIGN
-                    && isset($this->_primitives[$pk_primitive])
+                    && $key === $pk_primitive
+                    && isset($this->_primitives[$pk_primitive]['persistent'])
                     && $this->_primitives[$pk_primitive]['persistent'] === TRUE) {
                 AssignedPrimaryKeyUtils::inst()->register_old_pk($schema->class
                         , $this->_primitives[$pk_primitive]['value']
                         , $val);
             }
-            
             $this->_primitives[$key]['value'] = self::$_cfg['force_type']
                     ? $this->force_type($val, $schema->primitives[$key]->type)
                     : $val;
@@ -603,7 +603,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             if (NULL === $prim_table) {
                 foreach ($values as $tbl_name => $ins_values) {
                     $insert_sqls[$tbl_name]->values = array($ins_values);
-                    $insert_sqls[$tbl_name]->exec($schema->db_conn);
+                    $insert_sqls[$tbl_name]->exec($schema->db_conn, FALSE);
                 }
             } else {
                 foreach ($values as $tbl_name => $ins_values) {
