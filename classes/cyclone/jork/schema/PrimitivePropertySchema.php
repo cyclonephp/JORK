@@ -2,6 +2,8 @@
 
 namespace cyclone\jork\schema;
 
+use cyclone as cy;
+
 /**
  * This class represents the mapping schema to be used for mapping a primitive
  * (scalar) proprety of the instances of a given JORK model class.
@@ -26,12 +28,14 @@ class PrimitivePropertySchema {
     public $type;
 
     /**
-     * Should be <code>TRUE</code> if the property is the primary key of the model
-     * or is a part of a composite primary key.
+     * This value indicates if the property is a primary key or not. If it is
+     * not the primary key of the model, then its value must be <code>NULL</code>.
+     * Otherwise <code>cyclone\JORK::AUTO</code> or <code>cyclone\JORK::ASSIGN</code>
+     * indicating the primary key generation strategy.
      *
-     * @var boolean
+     * @var string
      */
-    public $is_primary_key;
+    public $primary_key_strategy = NULL;
 
     /**
      * TODO
@@ -93,13 +97,13 @@ class PrimitivePropertySchema {
 
 
     /**
-     * Setter for the <code>$is_primary_key</code> property.
+     * Setter for the <code>$primary_key_strategy</code> property.
      *
-     * @param boolean $is_primary_key
+     * @param string $primary_key_strategy
      * @return PrimitivePropertySchema
      */
-    public function primary_key($is_primary_key = TRUE) {
-        $this->is_primary_key = $is_primary_key;
+    public function primary_key($primary_key_strategy = cy\JORK::AUTO) {
+        $this->primary_key_strategy = $primary_key_strategy;
         return $this;
     }
 

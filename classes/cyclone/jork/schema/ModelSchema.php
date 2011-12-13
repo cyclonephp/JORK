@@ -56,6 +56,10 @@ use cyclone as cy;
      */
     public $embedded_components = array();
 
+    private $_pk_primitive;
+
+    private $_pk_strategy;
+
     /**
      * Setter for the <code>$db_conn</code> property.
      *
@@ -126,9 +130,36 @@ use cyclone as cy;
     
 
     public function primary_key() {
+        if ( ! is_null($this->_pk_primitive))
+            return $this->_pk_primitive;
+        
         foreach ($this->primitives as $name => $def) {
-            if ($def->is_primary_key)
-                return $name;
+            if ( ! is_null($def->primary_key_strategy))
+                return $this->_pk_primitive = $name;
+        }
+        throw new jork\Exception("no primary key found for schema " . $this->class);
+    }
+
+    public function primary_key_strategy() {
+        if ( ! is_null($this->_pk_strategy))
+            return $this->_pk_strategy;
+        
+        foreach ($this->primitives as $name => $def) {
+            $candidate = $def->primary_key_strategy;
+            if ( ! is_null($candidate))
+                return $this->_pk_strategy = $candidate;
+        }
+        throw new jork\Exception("no primary key found for schema " . $this->class);
+    }
+
+    public function primary_key_info() {
+        if ( ! (is_null($this->_pk_primitive) || is_null($this->_pk_strategy)))
+            return array($this->_pk_primitive, $this->_pk_strategy);
+        
+        foreach ($this->primitives as $name => $def) {
+            if ( ! is_null($def->primary_key_strategy))
+                return array($this->_pk_primitive = $name
+                    , $this->_pk_strategy = $def->primary_key_strategy);
         }
         throw new jork\Exception("no primary key found for schema " . $this->class);
     }

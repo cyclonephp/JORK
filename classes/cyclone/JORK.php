@@ -22,6 +22,10 @@ class JORK {
 
     const SET_NULL = 6;
 
+    const AUTO = 'auto';
+
+    const ASSIGN = 'assign';
+
     private static $_instance;
 
     /**

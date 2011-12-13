@@ -93,7 +93,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     /**
      * Gets the mapping schema of the current entity.
      * 
-     * @return JORK_Mapping_Schema
+     * @return cyclone\jork\schema\ModelSchema
      */
     public function schema() {
         if ( ! isset(self::$_instances[get_class($this)])) {
@@ -450,6 +450,16 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             if ( ! isset($this->_primitives[$key])) {
                 $this->_primitives[$key] = array();
             }
+
+            list($pk_primitive, $pk_strategy) = $schema->primary_key_info();
+            if ($pk_strategy === cy\JORK::ASSIGN
+                    && isset($this->_primitives[$pk_primitive])
+                    && $this->_primitives[$pk_primitive]['persistent'] === TRUE) {
+                AssignedPrimaryKeyUtils::inst()->register_old_pk($schema->class
+                        , $this->_primitives[$pk_primitive]['value']
+                        , $val);
+            }
+            
             $this->_primitives[$key]['value'] = self::$_cfg['force_type']
                     ? $this->force_type($val, $schema->primitives[$key]->type)
                     : $val;
@@ -543,7 +553,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * @usedby AbstractCollection::save()
      * 
      */
-    public function insert($cascade) {
+    public function insert($cascade = TRUE) {
         if ($this->_save_in_progress)
             // avoiding infinite recursion when cascaded
             // saving bi-directional relationships
@@ -556,6 +566,12 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             $ins_tables = array();
             $values = array();
             $prim_table = NULL;
+            list($pk_primitive, $pk_strategy) = $schema->primary_key_info();
+            if ($pk_strategy == cy\JORK::ASSIGN && ! isset($this->_primitives[$pk_primitive]))
+                throw new jork\Exception("can not save '"
+                        . $schema->class
+                        . "' instance: primary key is not assigned");
+            
             foreach ($schema->primitives as $col_name => $col_def) {
                 if (isset($this->_primitives[$col_name])) {
                     if ($this->_primitives[$col_name]['persistent'] == FALSE) {
@@ -577,7 +593,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                         // that no problem will happen until the insertions
                         $this->_primitives[$col_name]['persistent'] = TRUE;
                     }
-                } elseif ($col_def->is_primary_key == TRUE) {
+                } elseif ($col_def->primary_key_strategy == cy\JORK::AUTO) {
                     // The primary key does not exist in the record
                     // therefore we save the table name for the table
                     // containing the primary key
@@ -594,7 +610,6 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                     $insert_sqls[$tbl_name]->values = array($ins_values);
                     $tmp_id = $insert_sqls[$tbl_name]->exec($schema->db_conn);
                     if ($prim_table == $tbl_name) {
-                        $pk_primitive = $schema->primary_key();
                         $this->_primitives[$pk_primitive] = array(
                             'value' => self::$_cfg['force_type']
                                 ? $this->force_type($tmp_id, $schema->primitives[$pk_primitive]->type)
@@ -620,7 +635,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      *
      * @usedby JORK_Model_Abstract::save()
      */
-    public function update($cascade) {
+    public function update($cascade = TRUE) {
          if ($this->_save_in_progress)
             // avoiding infinite recursion when cascaded
             // saving bi-directional relationships
@@ -630,6 +645,13 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             $this->_save_in_progress = TRUE;
 
             $schema = $this->schema();
+
+            list($pk_primitive, $pk_strategy) = $schema->primary_key_info();
+            if ($pk_strategy == cy\JORK::ASSIGN && ! isset($this->_primitives[$pk_primitive]))
+                throw new jork\Exception("can not save '"
+                        . $schema->class
+                        . "' instance: primary key is not assigned");
+
             $update_sqls = query\Cache::inst(get_class($this))->update_sql();
 
             $upd_tables = array();
@@ -657,8 +679,23 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             // (otherwise i'm so fuckin' fed up with secondary tables :P)
             foreach ($values as $tbl_name => $upd_vals) {
                 $update_sqls[$tbl_name]->values = $upd_vals;
+
+                $pk = $this->pk();
+                if ($pk_strategy == cy\JORK::ASSIGN) {
+                    // if the primary key strategy is ASSIGN then maybe
+                    // the assigned primary key has been modified
+                    try {
+                        // we try to fetch here the optionally existent
+                        // old primary key - in this case it should be in the condition
+                        // of the WHERE clause
+                        $pk = AssignedPrimaryKeyUtils::inst()->get_old_pk($schema->class, $pk);
+                    } catch (jork\Exception $ex) {
+                        
+                    }
+                }
+
                 $update_sqls[$tbl_name]->where($schema->primary_key(), '='
-                        , DB::esc($this->pk()));
+                        , DB::esc($pk));
                 $update_sqls[$tbl_name]->exec($schema->db_conn);
             }
 
@@ -691,10 +728,41 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * @see JORK_Model_Abstract::update()
      */
     public function save($cascade = TRUE) {
-        if ($this->pk() === NULL) {
-            $this->insert($cascade);
+        $schema = $this->schema();
+        $pk_strategy = $schema->primary_key_strategy();
+        if ($pk_strategy == cy\JORK::AUTO) {
+            if ($this->pk() === NULL) {
+                $this->insert($cascade);
+            } else {
+                $this->update($cascade);
+            }
         } else {
-            $this->update($cascade);
+            // generation strategy is assigned
+            $pk_name = $schema->primary_key();
+            
+            // fail here if the primary key doesn't have a manually assigned value
+            if ( ! isset($this->_primitives[$pk_name]))
+                throw new jork\Exception("can not save '"
+                        . $schema->class
+                        . "' instance: primary key is not assigned");
+            $pk_primitive = $this->_primitives[$pk_name];
+            if ($pk_primitive['persistent'] == TRUE) {
+                // if the primary key is persistent then it will be an update
+                $this->update($cascade);
+            } else {
+                if (AssignedPrimaryKeyUtils::inst()->old_pk_exists($schema->class
+                        , $pk_primitive['value'])) {
+                    // the assigned primary key is not persistent
+                    // but the primary key has been reassigned
+                    // so the entity needs to be updated
+                    // and its primary key column will be updated too
+                    $this->update($cascade);
+                } else {
+                    // the entity has got a new primary key, and no
+                    // previous primary keys found - it will be an insert
+                    $this->insert($cascade);
+                }
+            }
         }
         
     }
