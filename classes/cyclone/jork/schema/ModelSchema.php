@@ -4,6 +4,7 @@ namespace cyclone\jork\schema;
 
 use cyclone\jork;
 use cyclone as cy;
+use cyclone\jork\schema;
 
 /**
  * @author Bence Erős <crystal@cyclonephp.com>
@@ -55,6 +56,26 @@ use cyclone as cy;
      * @var array<string>
      */
     public $embedded_components = array();
+
+    /**
+     * The object representing the inheritance mapping strategy.
+     * It is recommended to create it using one of the following static
+     * factory methods:
+     * <ul>
+     *  <li>\c cyclone\JORK::single_table()</li>
+     *  <li>\c cyclone\JORK::joined_subclass()</li>
+     *  <li>\c cyclone\JORK::table_per_class()</li>
+     * </ul>
+     *
+     * @var cyclone\jork\schema\Inheritance
+     */
+    public $inheritance_strategy;
+
+    /**
+     *
+     * @var 
+     */
+    public $discriminator_value;
 
     private $_pk_primitive;
 
@@ -125,6 +146,16 @@ use cyclone as cy;
      */
     public function embedded_component($name, $classname) {
         $this->embedded_components[$name] = $classname;
+        return $this;
+    }
+
+
+    /**
+     * @param schema\Inheritance $inheritance_strategy
+     * @return ModelSchema 
+     */
+    public function inheritance_strategy(schema\Inheritance $inheritance_strategy) {
+        $this->inheritance_strategy = $inheritance_strategy;
         return $this;
     }
     

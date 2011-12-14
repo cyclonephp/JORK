@@ -26,6 +26,12 @@ class JORK {
 
     const ASSIGN = 'assign';
 
+    const SINGLE_TABLE = 'single-table';
+
+    const JOINED_SUBCLASS = 'joined-subclass';
+
+    const TABLE_PER_CLASS = 'table-per-class';
+
     private static $_instance;
 
     /**
@@ -74,8 +80,8 @@ class JORK {
 
     /**
      *
-     * @param <type> $name
-     * @param <type> $class
+     * @param string $name
+     * @param string $class
      * @return schema\ComponentSchema
      */
     public static function component($name, $class) {
@@ -84,7 +90,7 @@ class JORK {
 
     /**
      *
-     * @param <type> $name
+     * @param string $name
      * @return schema\SecondaryTableSchema
      */
     public static function secondary_table($name, $join_col, $inverse_join_col) {
@@ -93,14 +99,35 @@ class JORK {
 
     /**
      *
-     * @param <type> $join_column
-     * @param <type> $inverse_join_column
+     * @param string $join_column
+     * @param string $inverse_join_column
      * @return schema\JoinTableSchema
      */
     public static function join_table($name, $join_column, $inverse_join_column) {
         return new schema\JoinTableSchema($name, $join_column, $inverse_join_column);
     }
 
+    /**
+     *
+     * @param string $discriminator_column
+     * @return schema\SingleTableInheritance
+     */
+    public static function single_table($discriminator_column) {
+        return new schema\SingleTableInheritance($discriminator_column);
+    }
 
+    /**
+     * @return schema\JoinedSubclassInheritance
+     */
+    public static function joined_subclass() {
+        return new schema\JoinedSubclassInheritance;
+    }
+
+    /**
+     * @return schema\TablePerClassInheritance
+     */
+    public static function table_per_class() {
+        return new schema\TablePerClassInheritance;
+    }
 
 }
