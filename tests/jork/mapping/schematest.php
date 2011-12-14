@@ -19,7 +19,7 @@ class JORK_Mapping_SchemaTest extends Kohana_Unittest_TestCase {
             ));*/
 
         $this->assertEquals(cy\JORK::primitive('id', 'int')
-                ->primary_key()->generation_strategy('auto')
+                ->primary_key()
                 , $schema->get_property_schema('id'));
 
         /*$this->assertEquals($schema->get_property_schema('posts'), array(

@@ -11,7 +11,7 @@ class Model_Post extends model\AbstractModel {
         $this->_schema->db_conn = 'jork_test';
         $this->_schema->table = 't_posts';
         $this->_schema->primitive(cy\JORK::primitive('id', 'int')
-                    ->primary_key()->generation_strategy('auto')
+                    ->primary_key()
                 )->primitive(cy\JORK::primitive('name', 'string')
                 )->primitive(cy\JORK::primitive('topic_fk', 'int')
                 )->primitive(cy\JORK::primitive('user_fk', 'int')

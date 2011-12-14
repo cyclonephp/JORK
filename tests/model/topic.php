@@ -8,7 +8,7 @@ class Model_Topic extends model\AbstractModel {
         $this->_schema->db_conn = 'jork_test';
         $this->_schema->table = 't_topics';
         $this->_schema->primitive(cy\JORK::primitive('id', 'int')
-                    ->primary_key()->generation_strategy('auto')
+                    ->primary_key()
                 )->primitive(cy\JORK::primitive('name', 'string'));
         /*$this->_schema->atomics = array(
             'id' => array(

@@ -14,7 +14,6 @@ class Model_User extends model\AbstractModel {
                 ));
         $this->_schema->primitive(cy\JORK::primitive('id', 'int')
                     ->primary_key()
-                    ->generation_strategy('auto')
                 )->primitive(cy\JORK::primitive('name', 'string')
                 )->primitive(cy\JORK::primitive('password', 'string')
                 )->primitive(cy\JORK::primitive('created_at', 'datetime')

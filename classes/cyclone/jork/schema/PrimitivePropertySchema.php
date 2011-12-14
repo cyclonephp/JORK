@@ -38,13 +38,6 @@ class PrimitivePropertySchema {
     public $primary_key_strategy = NULL;
 
     /**
-     * TODO
-     *
-     * @var 
-     */
-    public $generation_strategy;
-
-    /**
      *
      * @var array
      */
@@ -115,17 +108,6 @@ class PrimitivePropertySchema {
      */
     public function column($column) {
         $this->column = $column;
-        return $this;
-    }
-
-
-    /**
-     *
-     * @param string $generation_strategy
-     * @return PrimitivePropertySchema <code>$this</code>
-     */
-    public function generation_strategy($generation_strategy) {
-        $this->generation_strategy = $generation_strategy;
         return $this;
     }
 

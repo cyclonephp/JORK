@@ -11,7 +11,7 @@ class Model_Category extends model\AbstractModel {
         $this->_schema->db_conn = 'jork_test';
         $this->_schema->table = 't_categories';
         $this->_schema->primitive(cy\JORK::primitive('id', 'int')
-                    ->primary_key()->generation_strategy('auto')
+                    ->primary_key()
                 )->primitive(cy\JORK::primitive('name', 'string')->column('c_name')
                 )->primitive(cy\JORK::primitive('moderator_fk', 'int')
                 );
