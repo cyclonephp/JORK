@@ -238,6 +238,39 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     }
 
     /**
+     *
+     * @param array $properties
+     */
+    public function populate($properties) {
+        $schema = $this->schema();
+        foreach ($properties as $name => $value) {
+            if (isset($schema->primitives[$name])) {
+                $this->__set($name, $value);
+            } elseif (isset($schema->components[$name])) {
+                $comp_elem_class = $schema->components[$name]->class;
+                if ($schema->is_to_many_component($name)) {
+                    $coll = $this->__get($name);
+                    foreach ($properties[$name] as $elem_arr) {
+                        $elem = new $comp_elem_class;
+                        $elem->populate($elem_arr);
+                        $coll->append($elem);
+                    }
+                } else {
+                    $elem = new $comp_elem_class;
+                    $elem->populate($value);
+                    $this->__set($name, $elem);
+                }
+            } elseif (isset($schema->embedded_components[$name])) {
+                $comp_elem_class = $schema->embedded_components[$name]->class;
+                $elem = new $comp_elem_class;
+                $elem->populate($value);
+                $this->__set($name, $elem);
+            } else
+                throw new jork\Exception("unknown property '$name' of entity '{$schema->class}'");
+        }
+    }
+
+    /**
      * Only for internal usage.
      *
      * Used by <code>JORK_Mapper_Entity::map_row()</code> to quickly load the to-one components
@@ -451,20 +484,21 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                 $this->_primitives[$key] = array();
             }
 
-            list($pk_primitive, $pk_strategy) = $schema->primary_key_info();
-            if ($pk_strategy === cy\JORK::ASSIGN
-                    && $key === $pk_primitive
-                    && isset($this->_primitives[$pk_primitive]['persistent'])
-                    && $this->_primitives[$pk_primitive]['persistent'] === TRUE) {
-                AssignedPrimaryKeyUtils::inst()->register_old_pk($schema->class
-                        , $this->_primitives[$pk_primitive]['value']
-                        , $val);
+            if ( ! $this instanceof EmbeddableModel) { // TODO it should be cleaned up
+                list($pk_primitive, $pk_strategy) = $schema->primary_key_info();
+                if ($pk_strategy === cy\JORK::ASSIGN
+                        && $key === $pk_primitive
+                        && isset($this->_primitives[$pk_primitive]['persistent'])
+                        && $this->_primitives[$pk_primitive]['persistent'] === TRUE) {
+                    AssignedPrimaryKeyUtils::inst()->register_old_pk($schema->class
+                            , $this->_primitives[$pk_primitive]['value']
+                            , $val);
+                }
             }
             $this->_primitives[$key]['value'] = self::$_cfg['force_type']
                     ? $this->force_type($val, $schema->primitives[$key]->type)
                     : $val;
             $this->_primitives[$key]['persistent'] = FALSE;
-            $this->_persistent = FALSE;
         } elseif (isset($schema->components[$key])) {
             if ( ! $val instanceof  $schema->components[$key]->class)
                 throw new jork\Exception("value of {$schema->class}::$key must be an instance of {$schema->components[$key]->class}");
@@ -478,9 +512,22 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                 $this->_components[$key]['value'] = $val;
                 $this->_components[$key]['persistent'] = FALSE;
             }
-            $this->_persistent = FALSE;
+        } elseif (isset($schema->embedded_components[$key])) {
+            if ( ! $val instanceof  $schema->embedded_components[$key]->class)
+                throw new jork\Exception("value of {$schema->class}::$key must be an instance of {$schema->components[$key]->class}");
+            if ( ! isset($this->_components[$key])) {
+                $this->_components[$key] = array(
+                    'value' => $val,
+                    'persistent' => FALSE
+                );
+            } else {
+                $this->_components[$key]['value'] = $val;
+                $this->_components[$key]['persistent'] = FALSE;
+            }
         } else
             throw new jork\Exception("class '{$schema->class}' has no property '$key'");
+
+        $this->_persistent = FALSE;
     }
 
     public function  __call($name, $args) {

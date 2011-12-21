@@ -266,7 +266,40 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $this->assertEquals(0, count($topic->posts));
         $this->assertEquals(1, count($topic->posts()));
         $this->assertEquals(3, $topic->posts[3]->id);
+    }
 
+    public function testPopulate() {
+        $user = new Model_User;
+        $user->populate(array(
+            'id' => 1,
+            'name' => 'user #1',
+            'email' => 'user1@example.com',
+            'posts' => array(
+                array(
+                    'id' => 2,
+                    'name' => 'post #2',
+                    'topic' => array(
+                        'id' => 3,
+                        'name' => 'topic #3'
+                    ),
+                    'modinfo' => array(
+                        'creator_fk' => 2
+                    )
+                )
+            )
+        ));
+        $this->assertEquals(1, $user->id);
+        $this->assertEquals('user #1', $user->name);
+        $this->assertInstanceOf('Model_Post', $user->posts[2]);
+        $post = $user->posts[2];
+        $this->assertEquals(2, $post->id);
+        $this->assertEquals('post #2', $post->name);
+        $this->assertInstanceOf('Model_ModInfo', $post->modinfo);
+        $this->assertEquals(2, $post->modinfo->creator_fk);
+
+        $this->assertInstanceOf('Model_Topic', $post->topic);
+        $this->assertEquals(3, $post->topic->id);
+        $this->assertEquals('topic #3', $post->topic->name);
     }
 
 }
