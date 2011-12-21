@@ -256,18 +256,18 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                     $coll = $this->__get($name);
                     foreach ($properties[$name] as $elem_arr) {
                         $elem = new $comp_elem_class;
-                        $elem->populate($elem_arr);
+                        $elem->populate($elem_arr, $strict);
                         $coll->append($elem);
                     }
                 } else {
                     $elem = new $comp_elem_class;
-                    $elem->populate($value);
+                    $elem->populate($value, $strict);
                     $this->__set($name, $elem);
                 }
             } elseif (isset($schema->embedded_components[$name])) {
                 $comp_elem_class = $schema->embedded_components[$name]->class;
                 $elem = new $comp_elem_class;
-                $elem->populate($value);
+                $elem->populate($value, $strict);
                 $this->__set($name, $elem);
             } elseif ($strict)
                 throw new jork\Exception("unknown property '$name' of entity '{$schema->class}'");
