@@ -240,8 +240,12 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     /**
      *
      * @param array $properties
+     * @param boolean $strict if FALSE then the properties in <code>$properties</code>
+     * 	which don't exist in the model properties will be skipped without any warnings.
+     *  Otherwise an exception will be thrown on non-existent properties.
+     * @throws cyclone\jork\Exception
      */
-    public function populate($properties) {
+    public function populate($properties, $strict = TRUE) {
         $schema = $this->schema();
         foreach ($properties as $name => $value) {
             if (isset($schema->primitives[$name])) {
@@ -265,7 +269,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                 $elem = new $comp_elem_class;
                 $elem->populate($value);
                 $this->__set($name, $elem);
-            } else
+            } elseif ($strict)
                 throw new jork\Exception("unknown property '$name' of entity '{$schema->class}'");
         }
     }
