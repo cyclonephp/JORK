@@ -470,6 +470,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                 case 'float':
                     return (float) $val;
                 case 'bool':
+                case 'boolean':
                     return (bool) $val;
                 case 'blob':
                     return $val;
@@ -556,7 +557,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                 }
                 break;
             case 1:
-                
+                $this->__set($name, $args[0]);
                 break;
             default:
                 throw new jork\Exception("unknown method '$name'");
@@ -588,6 +589,12 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
         cy\JORK::from($schema->class)->with($prop_name)
                 ->where($schema->primary_key(), '=', cy\DB::esc($this->pk()))
                 ->exec($schema->db_conn);
+        if ( ! isset($this->_components[$prop_name]) && $schema->is_to_many_component($prop_name)) {
+            $this->_components[$prop_name] = array(
+                'persistent' => TRUE,
+                'value' => collection\AbstractCollection::for_component($this, $prop_name)
+            );
+        }
     }
 
     /**
@@ -651,6 +658,10 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                     $prim_table = $schema->table_name_for_column($col_name);
                 }
             }
+            
+            if (empty($values))
+                throw new jork\Exception("error while saving '{$schema->class}' instance: no values to be inserted");
+
             if (NULL === $prim_table) {
                 foreach ($values as $tbl_name => $ins_values) {
                     $insert_sqls[$tbl_name]->values = array($ins_values);
