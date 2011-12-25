@@ -173,7 +173,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      */
     public function get($pk) {
         $result = cy\JORK::from($this->_schema->class)
-                ->where($this->_schema->primary_key(), '=', DB::esc($pk))
+                ->where($this->_schema->primary_key(), '=', cy\DB::esc($pk))
                 ->exec($this->_schema->db_conn);
         switch (count($result)) {
             case 0:
