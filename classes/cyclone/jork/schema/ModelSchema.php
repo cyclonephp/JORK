@@ -77,6 +77,17 @@ use cyclone\jork\schema;
      */
     public $discriminator_value;
 
+    /**
+     * Stores the natural ordering of the entity. Every \c Ordering instance
+     * defines a property name / direction pair.
+     *
+     * These ordering will be applied on JORK queries which' root entity (explicit
+     * or implicit) is \c $class .
+     *
+     * @var array<Ordering>
+     */
+    public $natural_ordering;
+
     private $_pk_primitive;
 
     private $_pk_strategy;
@@ -156,6 +167,19 @@ use cyclone\jork\schema;
      */
     public function inheritance_strategy(schema\Inheritance $inheritance_strategy) {
         $this->inheritance_strategy = $inheritance_strategy;
+        return $this;
+    }
+
+    /**
+     *
+     * @param string $property a valid property name of the entity class
+     *  which exists as an array key in \c $primitives
+     * @param string $direction the direction of the ordering. It's possible
+     *  values are <code>asc</code> and <code>desc</code>
+     * @return ModelSchema
+     */
+    public function natural_ordering($property, $direction = 'asc') {
+        $this->natural_ordering []= new Ordering($property, $direction);
         return $this;
     }
     
