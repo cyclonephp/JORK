@@ -250,7 +250,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
         foreach ($properties as $name => $value) {
             if (isset($schema->primitives[$name])) {
                 $this->__set($name, $value);
-            } elseif (isset($schema->components[$name]) && is_array($value)) {
+            } elseif (isset($schema->components[$name]) && ! empty($value)) {
                 $comp_elem_class = $schema->components[$name]->class;
                 if ($schema->is_to_many_component($name)) {
                     $coll = $this->__get($name);
