@@ -304,7 +304,8 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
             $this->_cmp_provider = ComparatorProvider::for_schema($model_schema);
         }
         $cmp_fn = $this->_cmp_provider->get_comparator($order, $comparator);
-        usort($this->_storage, $cmp_fn);
+        uasort($this->_storage, $cmp_fn);
+        return $this;
     }
 
 }

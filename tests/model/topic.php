@@ -27,7 +27,7 @@ class Model_Topic extends model\AbstractModel {
         $this->_schema->component(cy\JORK::component('categories', 'Model_Category')->type(cy\JORK::MANY_TO_MANY)
                 ->join_table(cy\JORK::join_table('categories_topics', 'topic_fk', 'category_fk'))
                 )->component(cy\JORK::component('posts', 'Model_Post')->mapped_by('topic')->on_delete(cy\JORK::SET_NULL))
-                ;
+                ->natural_ordering('name');
         /*$this->_schema->components = array(
             'categories' => array(
                 'class' => 'Model_Category',

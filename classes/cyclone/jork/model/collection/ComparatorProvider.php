@@ -21,8 +21,7 @@ class ComparatorProvider {
             self::$_instance_pool[$schema->class]
                     = new ComparatorProvider($schema);
         }
-        
-        self::$_instance_pool[$schema->class];
+        return self::$_instance_pool[$schema->class];
     }
 
     /**
