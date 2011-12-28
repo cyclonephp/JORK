@@ -86,7 +86,7 @@ use cyclone\jork\schema;
      *
      * @var array<Ordering>
      */
-    public $natural_ordering;
+    public $natural_ordering = array();
 
     private $_pk_primitive;
 

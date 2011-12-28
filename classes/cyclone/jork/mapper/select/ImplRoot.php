@@ -104,9 +104,27 @@ class ImplRoot extends jork\mapper\SelectMapper {
         return $expr;
     }
 
+    private function add_natural_ordering() {
+        foreach ($this->_implicit_root->natural_ordering as $ordering) {
+            $property = $this->_implicit_root->primitives[$ordering->property];
+            if ( ! is_null($property->column)) {
+                $column = $property->column;
+            } else {
+                $column = $ordering->property;
+            }
+            $table_name = NULL === $property->table 
+                    ? $this->_implicit_root->table
+                    : $property->table;
+            $table_name = $this->_naming_srv->table_alias(NULL, $table_name);
+            $this->_db_query->order_by($table_name . '.' . $column, $ordering->direction);
+        }
+    }
+
     protected function map_order_by() {
-        if ($this->_jork_query->order_by === NULL)
+        if ($this->_jork_query->order_by === NULL) {
+            $this->add_natural_ordering();
             return;
+        }
 
         foreach ($this->_jork_query->order_by as $ord) {
             if ($ord['column'] instanceof db\CustomExpression) {

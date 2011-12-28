@@ -20,6 +20,9 @@ class JORK_Mapper_Select_ImplRootTest extends Kohana_Unittest_TestCase {
             , array('user_contact_info_0.email', 'user_contact_info_0_email')
             , array('user_contact_info_0.phone_num', 'user_contact_info_0_phone_num')
         ));
+        $this->assertEquals(array(
+            array('column' => 't_users_0.name', 'direction' => 'asc')
+        ), $db_query->order_by);
         $this->assertEquals($db_query->tables, array(
             array('t_users', 't_users_0'),
         ));

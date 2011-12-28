@@ -187,10 +187,16 @@ class ExplRoot extends jork\mapper\SelectMapper {
         return $expr;
     }
 
+    private function add_natural_ordering() {
+        // TODO
+    }
+
 
     protected function map_order_by() {
-        if ($this->_jork_query->order_by === NULL)
+        if ($this->_jork_query->order_by === NULL) {
+            $this->add_natural_ordering();
             return;
+        }
 
         foreach ($this->_jork_query->order_by as $ord) {
             if ($ord['column'] instanceof db\CustomExpression) {

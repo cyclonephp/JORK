@@ -19,7 +19,7 @@ class Model_User extends model\AbstractModel {
                 )->primitive(cy\JORK::primitive('created_at', 'datetime')
                 )->primitive(cy\JORK::primitive('email', 'string')->table('user_contact_info')
                 )->primitive(cy\JORK::primitive('phone_num', 'string')->table('user_contact_info')
-                );
+                )->natural_ordering('name');
         /*$this->_schema->atomics = array(
             'id' => array(
                 'type' => 'int',
