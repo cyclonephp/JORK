@@ -42,7 +42,7 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
     /**
      * The owner of the components, the left side of the to-many relationship.
      *
-     * @var JORK_Model_Abstract
+     * @var cyclone\jork\model\AbstractModel
      */
     protected $_owner;
 
@@ -115,6 +115,13 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
      * @var boolean
      */
     protected $_persistent = TRUE;
+
+    /**
+     * Initialized by \c sort()
+     *
+     * @var ComparatorProvider
+     */
+    private $_cmp_provider;
 
     public function  __construct($owner, $comp_name, $comp_schema) {
         $this->_owner = $owner;
@@ -286,4 +293,18 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
     public function jsonSerializable() {
         return $this->as_array();
     }
+
+    private function get_comparator_fn($order, $comparator) {
+        
+    }
+
+    public function sort($order = cy\JORK::SORT_REGULAR, $comparator = NULL) {
+        if (NULL === $this->_cmp_provider) {
+            $model_schema = jork\model\AbstractModel::schema_by_class($this->_comp_class);
+            $this->_cmp_provider = ComparatorProvider::for_schema($model_schema);
+        }
+        $cmp_fn = $this->_cmp_provider->get_comparator($order, $comparator);
+        usort($this->_storage, $cmp_fn);
+    }
+
 }

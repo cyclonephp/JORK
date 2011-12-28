@@ -32,6 +32,10 @@ class JORK {
 
     const TABLE_PER_CLASS = 'table-per-class';
 
+    const SORT_REGULAR = 'regular';
+
+    const SORT_REVERSE = 'reverse';
+
     private static $_instance;
 
     /**
