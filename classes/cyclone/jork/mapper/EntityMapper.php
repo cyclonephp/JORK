@@ -226,7 +226,8 @@ class EntityMapper implements RowMapper {
      * Adds an atomic property join to the db query. Also joins the table of
      * the db column if it's not joined yet.
      *
-     * @param string $property
+     * @param string $prop_name
+     * @param cyclone\jork\schema\PrimitivePropertySchema $prop_schema
      * @return the full column name (with table alias)
      */
     protected function add_atomic_property($prop_name, &$prop_schema) {

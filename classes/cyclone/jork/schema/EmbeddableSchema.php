@@ -4,7 +4,7 @@ namespace cyclone\jork\schema;
 use cyclone\jork;
 
 /**
- * @author Bence Erős <crystal@cyclonephp.com>
+ * @author Bence Erős <crystal@cyclonephp.org>
  * @package JORK
  */
 class EmbeddableSchema {
@@ -19,7 +19,7 @@ class EmbeddableSchema {
 
     /**
      * @param PrimitivePropertySchema $schema
-     * @return ModelSchema
+     * @return EmbeddableSchema
      */
     public function primitive(PrimitivePropertySchema $schema) {
         $this->primitives[$schema->name] = $schema;
@@ -27,10 +27,8 @@ class EmbeddableSchema {
     }
 
     /**
-     *
-     * @param <type> $name
      * @param ComponentSchema $schema
-     * @return ModelSchema
+     * @return EmbeddableSchema
      */
     public function component(ComponentSchema $schema) {
         $this->components[$schema->name] = $schema;
@@ -39,7 +37,7 @@ class EmbeddableSchema {
 
     /**
      *
-     * @var JORK_Mapping_Schema
+     * @var ModelSchema
      */
     protected $_parent_schema;
 
@@ -52,6 +50,10 @@ class EmbeddableSchema {
         return $this->_parent_schema->primary_key();
     }
 
+    /**
+     * @param string $name the name of the property which' schema will be queried
+     * @return mixed \c PrimitivePropertySchema or \c ComponentSchema
+     */
     public function get_property_schema($name) {
         if (isset($this->primitives[$name]))
             return $this->primitives[$name];
@@ -62,7 +64,15 @@ class EmbeddableSchema {
         throw new jork\SchemaException("property '$name' of {$this->class} does not exist");
     }
 
+    /**
+     * @param string $comp_name
+     * @return boolean <code>TRUE</code> if the component is a to-many component
+     * @throws cyclone\jork\SchemaException if this model doesn't have a component named <code>$comp_name</code>
+     */
     public function is_to_many_component($comp_name) {
+        if ( ! isset($this->components[$comp_name]))
+             throw new jork\SchemaException("embeddable model schema '{$this->class}' does not have property '$comp_name'");
+             
         $comp_schema = $this->components[$comp_name];
         
         if ( ! isset($comp_schema->mapped_by))

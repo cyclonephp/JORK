@@ -10,7 +10,7 @@ use cyclone as cy;
 /**
  * The base class for all JORK model classes.
  * 
- * @author Bence Eros <crystal@cyclonephp.com>
+ * @author Bence Eros <crystal@cyclonephp.org>
  * @package JORK
  */
 abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
@@ -215,7 +215,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * Used by <code>JORK_Mapper_Entity::map_row()</code> to quickly load the atomic properties
      * instead of executing <code>JORK_Model_Abstract::__set()</code> each time.
      *
-     * @param array<JORK_Model_Abstract> $components
+     * @param array $atomics
      * @usedby JORK_Mapper_Entity::map_row()
      */
     public function populate_atomics($atomics) {

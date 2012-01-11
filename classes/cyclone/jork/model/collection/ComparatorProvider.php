@@ -6,14 +6,17 @@ use cyclone as cy;
 use cyclone\jork;
 use cyclone\jork\schema;
 
+/**
+ * @author Bence Eros <crystal@cyclonephp.org>
+ * @package JORK
+ */
 class ComparatorProvider {
 
     private static $_instance_pool = array();
 
     /**
-     *
-     * @param string $owner_class
-     * @param string $property_name
+     * @param ModelSchema $schema the schema of the model instances which
+     *  the provider will create comparators for
      * @return ComparatorProvider
      */
     public static function for_schema(schema\ModelSchema $schema) {

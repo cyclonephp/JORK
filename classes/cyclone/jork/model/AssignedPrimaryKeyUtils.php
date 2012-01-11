@@ -4,6 +4,10 @@ namespace cyclone\jork\model;
 
 use cyclone\jork;
 
+/**
+ * @author Bence Eros <crystal@cyclonephp.org>
+ * @package JORK
+ */
 class AssignedPrimaryKeyUtils {
 
     private static $_inst;

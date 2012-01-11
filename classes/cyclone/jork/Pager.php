@@ -10,6 +10,9 @@ use cyclone\db;
  * @property int $page_size
  * @property int $total_count
  * @property int $page_count
+ *
+ * @author Bence Eros <crystal@cyclonephp.com>
+ * @package JORK
  */
 class Pager {
 
