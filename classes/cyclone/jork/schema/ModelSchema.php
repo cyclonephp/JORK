@@ -140,7 +140,6 @@ use cyclone\jork\schema;
 
     /**
      *
-     * @param <type> $name
      * @param ComponentSchema $schema
      * @return ModelSchema 
      */

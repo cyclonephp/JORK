@@ -2,6 +2,10 @@
 
 namespace cyclone\jork\schema;
 
+/**
+ * @package jork
+ * @author Bence Eros <crystal@cyclonephp.org>
+ */
 class JoinTableSchema {
 
     public $name;
