@@ -93,7 +93,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     /**
      * Gets the mapping schema of the current entity.
      * 
-     * @return cyclone\jork\schema\ModelSchema
+     * @return \cyclone\jork\schema\ModelSchema
      */
     public function schema() {
         if ( ! isset(self::$_instances[get_class($this)])) {
