@@ -38,6 +38,7 @@ class SchemaValidator {
         array(__CLASS__, 'test_primary_keys')
         , array(__CLASS__, 'test_table_name')
         , array(__CLASS__, 'test_primitives')
+        , array(__CLASS__, 'test_secondary_tables')
         , array(__CLASS__, 'test_comp_classes')
         , array(__CLASS__, 'test_mapped_by')
         , array(__CLASS__, 'test_component_foreign_keys')
@@ -275,6 +276,20 @@ class SchemaValidator {
                                 . ' doesn\'t exist but referenced by '
                                 . $schema->class . '::$' . $comp_schema->name);
                     }
+                }
+            }
+        }
+        return $rval;
+    }
+
+    public static function test_secondary_tables($schemas) {
+        $rval = new ValidationResult;
+        foreach ($schemas as $schema) {
+            foreach ($schema->secondary_tables as $sec_tbl) {
+                if ( ! $schema->column_exists($sec_tbl->join_column)) {
+                    $rval->add_error('column ' . $schema->class . '::$'
+                            . $sec_tbl->join_column . ' doesn\'t exist but referenced by secondary table \''
+                            . $sec_tbl->name . '\'');
                 }
             }
         }

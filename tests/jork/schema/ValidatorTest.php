@@ -122,5 +122,17 @@ class Schema_ValidatorTest extends Kohana_Unittest_TestCase {
             'TestModel1::$prim1 has invalid type \'x\''
         ), $rval->error);
     }
+
+    public function testSecondaryTablesTest() {
+        $schema = new schema\ModelSchema;
+        $schema->class = 'TestModel1';
+        $schema->secondary_table(cy\JORK::secondary_table('sec_tbl', 'id', 'fk'));
+        $rval = schema\SchemaValidator::test_secondary_tables(array(
+            'TestModel1' => $schema
+        ));
+        $this->assertEquals(array(
+            'column TestModel1::$id doesn\'t exist but referenced by secondary table \'sec_tbl\''
+        ), $rval->error);
+    }
     
 }
