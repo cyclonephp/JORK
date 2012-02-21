@@ -7,9 +7,9 @@ use cyclone\jork\model;
 class Model_ModInfo extends model\EmbeddableModel {
 
     public function setup() {
-        $this->_schema->primitive(cy\JORK::primitive('created_at', 'datetime')
+        $this->_schema->primitive(cy\JORK::primitive('created_at', 'string')
                 )->primitive(cy\JORK::primitive('creator_fk', 'int')
-                )->primitive(cy\JORK::primitive('modified_at', 'datetime')
+                )->primitive(cy\JORK::primitive('modified_at', 'string')
                 )->primitive(cy\JORK::primitive('modifier_fk', 'int'));
         /*$this->_schema->atomics = array(
             'created_at' => array(

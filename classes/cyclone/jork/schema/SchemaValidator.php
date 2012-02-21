@@ -37,6 +37,7 @@ class SchemaValidator {
     private $_validators = array(
         array(__CLASS__, 'test_primary_keys')
         , array(__CLASS__, 'test_table_name')
+        , array(__CLASS__, 'test_primitives')
         , array(__CLASS__, 'test_comp_classes')
         , array(__CLASS__, 'test_mapped_by')
         , array(__CLASS__, 'test_component_foreign_keys')
@@ -88,6 +89,25 @@ class SchemaValidator {
         foreach ($schemas as $schema) {
             if (empty($schema->table)) {
                 $rval->add_error("class {$schema->class} does not have table");
+            }
+        }
+        return $rval;
+    }
+
+    public static function test_primitives($schemas) {
+        $rval = new ValidationResult;
+        $valid_types = array(
+            'int', 'integer'
+            , 'bool', 'boolean'
+            , 'float'
+            , 'string'
+        );
+        foreach ($schemas as $schema) {
+            foreach ($schema->primitives as $primitive) {
+                if ( ! in_array($primitive->type, $valid_types)) {
+                    $rval->add_error($schema->class . '::$' . $primitive->name
+                            . ' has invalid type \'' . $primitive->type . "'");
+                }
             }
         }
         return $rval;

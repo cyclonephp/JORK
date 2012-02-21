@@ -460,20 +460,15 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             // doing type casts
             switch ($type) {
                 case 'string':
-                case 'datetime':
-                case 'date':
-                case 'time':
-                case 'timestamp':
                     return (string) $val;
                 case 'int':
+                case 'integer':
                     return (int) $val;
                 case 'float':
                     return (float) $val;
                 case 'bool':
                 case 'boolean':
                     return (bool) $val;
-                case 'blob':
-                    return $val;
                 default:
                     $schema = $this->schema();
                     throw new jork\Exception("invalid type for atomic propery '$val' in class '{$schema->class}': '{$type}.'

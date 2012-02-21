@@ -110,5 +110,17 @@ class Schema_ValidatorTest extends Kohana_Unittest_TestCase {
             'property TestModel2::$m1_prop_missing doesn\'t exist but referenced by TestModel1::$m2_prop'
         ), $rval->error);
     }
+
+    public function testPrimitivesTest() {
+        $schema = new schema\ModelSchema;
+        $schema->class = 'TestModel1';
+        $schema->primitive(cy\JORK::primitive('prim1', 'x'));
+        $rval = schema\SchemaValidator::test_primitives(array(
+            'TestModel1' => $schema
+        ));
+        $this->assertEquals(array(
+            'TestModel1::$prim1 has invalid type \'x\''
+        ), $rval->error);
+    }
     
 }
