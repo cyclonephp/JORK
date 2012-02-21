@@ -37,6 +37,9 @@ class SchemaValidator {
     private $_validators = array(
         array(__CLASS__, 'test_primary_keys')
         , array(__CLASS__, 'test_table_name')
+        , array(__CLASS__, 'test_comp_classes')
+        , array(__CLASS__, 'test_mapped_by')
+        , array(__CLASS__, 'test_component_foreign_keys')
     );
 
     public function validate() {
@@ -95,10 +98,21 @@ class SchemaValidator {
         foreach ($schemas as $schema) {
             foreach ($schema->components as $comp_schema) {
                 if (empty($comp_schema->mapped_by)) {
+                    $type_range = array(cy\JORK::ONE_TO_ONE
+                        , cy\JORK::ONE_TO_MANY
+                        , cy\JORK::MANY_TO_ONE
+                        , cy\JORK::MANY_TO_MANY);
+                    if ( ! in_array($comp_schema->type, $type_range)
+                            || is_null($comp_schema->type)) {
+                        $rval->add_error('unknown component cardinality "'
+                                . $comp_schema->type
+                                . '" at ' . $schema->class . '::$' . $comp_schema->name);
+                        continue;
+                    }
                     switch($comp_schema->type) {
                         case cy\JORK::ONE_TO_ONE:
                             $join_column = empty($comp_schema->join_column)
-                                ? $comp_schema->primary_key()
+                                ? $schemas[$comp_schema->class]->primary_key()
                                 : $comp_schema->join_column;
                             if ( ! isset($schema->primitives[$join_column])) {
                                 $rval->add_error('local join column ' . $schema->class
@@ -116,6 +130,19 @@ class SchemaValidator {
                             }
                             break;
                         case cy\JORK::ONE_TO_MANY:
+                            if ( ! isset($comp_schema->join_column)) {
+                                $rval->add_error('one-to-many component '
+                                        . $schema->class . '::$' . $comp_schema->name
+                                        . ' doesn\'t have join column');
+                                break;
+                            }
+                            $comp_class_schema = $schemas[$comp_schema->class];
+                            if ( ! $comp_class_schema->column_exists($comp_schema->join_column)) {
+                                $rval->add_error('property ' . $comp_schema->class
+                                        . '::$' . $comp_schema->join_column
+                                        . ' doesn\'t exist but referenced by '
+                                        . $schema->class . '::$' . $comp_schema->name);
+                            }
                             break;
                         case cy\JORK::MANY_TO_ONE:
                             break;
@@ -128,7 +155,7 @@ class SchemaValidator {
         return $rval;
     }
 
-    public function test_comp_classes($schemas) {
+    public static function test_comp_classes($schemas) {
         $rval = new ValidationResult;
         foreach ($schemas as $schema) {
             foreach ($schema->components as $comp_schema) {
@@ -136,6 +163,24 @@ class SchemaValidator {
                     $rval->add_error('class ' . $comp_schema->class
                             . ' is not mapped but referenced using '
                             . $schema->class . '::$' . $comp_schema->name);
+                }
+            }
+        }
+        return $rval;
+    }
+
+    public static function test_mapped_by($schemas) {
+        $rval = new ValidationResult;
+        foreach ($schemas as $schema) {
+            foreach ($schema->components as $comp_schema) {
+                if ( ! empty($comp_schema->mapped_by)) {
+                    $inverse_schema = $schemas[$comp_schema->class];
+                    if ( ! isset($inverse_schema->components[$comp_schema->mapped_by])) {
+                        $rval->add_error('property ' . $inverse_schema->class
+                                . '::$' . $comp_schema->mapped_by
+                                . ' doesn\'t exist but referenced by '
+                                . $schema->class . '::$' . $comp_schema->name);
+                    }
                 }
             }
         }

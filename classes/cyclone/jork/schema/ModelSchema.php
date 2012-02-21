@@ -13,6 +13,13 @@ use cyclone\jork\schema;
  class ModelSchema {
 
      /**
+      * @return ModelSchema
+      */
+     public static function factory() {
+         return new ModelSchema;
+     }
+
+     /**
       * The name of the database connection.
       *
       * @var string
@@ -229,6 +236,18 @@ use cyclone\jork\schema;
             return $this->embedded_components[$name];
         
         throw new jork\SchemaException("property '$name' of {$this->class} does not exist");
+    }
+
+    public function column_exists($col_name) {
+        if (isset($this->primitives[$col_name])
+                && is_null($this->primitives[$col_name]->column))
+            return TRUE;
+        
+        foreach ($this->primitives as $prim_schema) {
+            if ($prim_schema->column == $col_name)
+                 return TRUE;
+        }
+        return FALSE;
     }
 
     public function table_name_for_column($col_name) {

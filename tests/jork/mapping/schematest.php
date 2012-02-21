@@ -4,6 +4,7 @@ use cyclone as cy;
 use cyclone\db;
 use cyclone\jork;
 use cyclone\jork\query;
+use cyclone\jork\schema;
 
 class JORK_Mapping_SchemaTest extends Kohana_Unittest_TestCase {
 
@@ -56,6 +57,36 @@ class JORK_Mapping_SchemaTest extends Kohana_Unittest_TestCase {
             array('Model_Category', 'topics', TRUE),
             array('Model_Topic', 'categories', TRUE)
         );
+    }
+
+    /**
+     * @dataProvider providerColumnExists
+     */
+    public function testColumnExists($schema, $col_name, $expected) {
+        $this->assertEquals($expected, $schema->column_exists($col_name));
+    }
+
+    public function providerColumnExists() {
+        $rval = array();
+        $rval []= array(
+            schema\ModelSchema::factory()
+                ->primitive(cy\JORK::primitive('prop1', 'int')),
+            'prop1',
+            TRUE
+        );
+        $rval []= array(
+            schema\ModelSchema::factory()
+                ->primitive(cy\JORK::primitive('prop1', 'int')->column('col1')),
+            'col1',
+            TRUE
+        );
+        $rval []= array(
+            schema\ModelSchema::factory()
+                ->primitive(cy\JORK::primitive('prop1', 'int')->column('col1')),
+            'prop1',
+            FALSE
+        );
+        return $rval;
     }
 
     

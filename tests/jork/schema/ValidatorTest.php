@@ -27,7 +27,7 @@ class Schema_ValidatorTest extends Kohana_Unittest_TestCase {
         $schema = new schema\ModelSchema;
         $schema->class = 'TestModel1';
         $schema->component(cy\JORK::component('dummy', 'NonExistentClass'));
-        $rval = schema\ScemaValidator::test_comp_classes(array(
+        $rval = schema\SchemaValidator::test_comp_classes(array(
             'TestModel1' => $schema
         ));
         $this->assertEquals(array(
@@ -39,8 +39,16 @@ class Schema_ValidatorTest extends Kohana_Unittest_TestCase {
         $schema1 = new schema\ModelSchema;
         $schema1->class = 'TestModel1';
         $schema1->component(cy\JORK::component('model2', 'TestModel2')
-                ->type(cy\JORK::ONE_TO_ONE)->join_column('m1_id')
-                ->inverse_join_column('m2_id'));
+                ->type(cy\JORK::ONE_TO_ONE)->join_column('m1_prop_nonexistent')
+                ->inverse_join_column('m2_prop_nonexistent'));
+
+        $schema1->component(cy\JORK::component('model_nontyped', 'TestModel2'));
+        $schema1->component(cy\JORK::component('model2_1_N_no_join_col', 'TestModel2')
+                ->type(cy\JORK::ONE_TO_MANY));
+
+        $schema1->component(cy\JORK::component('model2_1_N_bad_join_col', 'TestModel2')
+                ->type(cy\JORK::ONE_TO_MANY)->join_column('model1_fk_nonexistent'));
+
         $schema2 = new schema\ModelSchema;
         $schema2->class = 'TestModel2';
         $rval = schema\SchemaValidator::test_component_foreign_keys(array(
@@ -48,8 +56,29 @@ class Schema_ValidatorTest extends Kohana_Unittest_TestCase {
             , 'TestModel2' => $schema2
         ));
         $this->assertEquals(array(
-            'local join column TestModel1::$m1_id doesn\'t exist',
-            'inverse join column TestModel2::$m2_id doesn\'t exist'
+            'local join column TestModel1::$m1_prop_nonexistent doesn\'t exist'
+            , 'inverse join column TestModel2::$m2_prop_nonexistent doesn\'t exist'
+            , 'unknown component cardinality "" at TestModel1::$model_nontyped'
+            , 'one-to-many component TestModel1::$model2_1_N_no_join_col doesn\'t have join column'
+            , 'property TestModel2::$model1_fk_nonexistent doesn\'t exist but referenced by TestModel1::$model2_1_N_bad_join_col'
+        ), $rval->error);
+    }
+
+    public function testMappedByTest() {
+        $schema1 = new schema\ModelSchema;
+        $schema1->class = 'TestModel1';
+        $schema1->component(cy\JORK::component('m2_prop', 'TestModel2')
+                ->mapped_by('m1_prop_missing'));
+
+        $schema2 = new schema\ModelSchema;
+        $schema2->class = 'TestModel2';
+
+        $rval = schema\SchemaValidator::test_mapped_by(array(
+            'TestModel1' => $schema1
+            , 'TestModel2' => $schema2
+        ));
+        $this->assertEquals(array(
+            'property TestModel2::$m1_prop_missing doesn\'t exist but referenced by TestModel1::$m2_prop'
         ), $rval->error);
     }
     
