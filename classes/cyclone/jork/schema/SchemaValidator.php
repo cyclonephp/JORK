@@ -128,4 +128,18 @@ class SchemaValidator {
         return $rval;
     }
 
+    public function test_comp_classes($schemas) {
+        $rval = new ValidationResult;
+        foreach ($schemas as $schema) {
+            foreach ($schema->components as $comp_schema) {
+                if ( ! isset($schemas[$comp_schema->class])) {
+                    $rval->add_error('class ' . $comp_schema->class
+                            . ' is not mapped but referenced using '
+                            . $schema->class . '::$' . $comp_schema->name);
+                }
+            }
+        }
+        return $rval;
+    }
+
 }

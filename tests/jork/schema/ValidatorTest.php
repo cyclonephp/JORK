@@ -23,7 +23,17 @@ class Schema_ValidatorTest extends Kohana_Unittest_TestCase {
         ), $result->error);
     }
 
-    
+    public function testCompClassTest() {
+        $schema = new schema\ModelSchema;
+        $schema->class = 'TestModel1';
+        $schema->component(cy\JORK::component('dummy', 'NonExistentClass'));
+        $rval = schema\ScemaValidator::test_comp_classes(array(
+            'TestModel1' => $schema
+        ));
+        $this->assertEquals(array(
+            "class NonExistentClass is not mapped but referenced using TestModel1::\$dummy"
+        ), $rval->error);
+    }
 
     public function testJoinColumnTest() {
         $schema1 = new schema\ModelSchema;
