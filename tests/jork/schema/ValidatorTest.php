@@ -38,6 +38,7 @@ class Schema_ValidatorTest extends Kohana_Unittest_TestCase {
     public function testJoinColumnTest() {
         $schema1 = new schema\ModelSchema;
         $schema1->class = 'TestModel1';
+        $schema1->primitive(cy\JORK::primitive('model2_fk', 'int'));
         $schema1->component(cy\JORK::component('model2', 'TestModel2')
                 ->type(cy\JORK::ONE_TO_ONE)->join_column('m1_prop_nonexistent')
                 ->inverse_join_column('m2_prop_nonexistent'));
@@ -54,6 +55,16 @@ class Schema_ValidatorTest extends Kohana_Unittest_TestCase {
                 ->join_column('model1_fk')
                 ->inverse_join_column('model2_fk_nonexistent'));
 
+        $schema1->component(cy\JORK::component('model2_N_1_no_join_col', 'TestModel2')
+                ->type(cy\JORK::MANY_TO_ONE));
+
+        $schema1->component(cy\JORK::component('model2_N_1_bad_join_col', 'TestModel2')
+                ->type(cy\JORK::MANY_TO_ONE)->join_column('model2_fk_nonexistent'));
+
+        $schema1->component(cy\JORK::component('model2_N_1_bad_inv_join_col', 'TestModel2')
+                ->type(cy\JORK::MANY_TO_ONE)->join_column('model2_fk')
+                ->inverse_join_column('model1_fk_nonexistent'));
+
         $schema2 = new schema\ModelSchema;
         $schema2->class = 'TestModel2';
         $schema2->primitive(cy\JORK::primitive('model1_fk', 'int'));
@@ -68,6 +79,9 @@ class Schema_ValidatorTest extends Kohana_Unittest_TestCase {
             , 'one-to-many component TestModel1::$model2_1_N_no_join_col doesn\'t have join column'
             , 'column TestModel2::$model1_fk_nonexistent doesn\'t exist but referenced by TestModel1::$model2_1_N_bad_join_col'
             , 'column TestModel1::$model2_fk_nonexistent doesn\'t exist but referenced by TestModel1::$model2_1_N_bad_inv_join_col'
+            , 'many-to-one component TestModel1::$model2_N_1_no_join_col doesn\'t have join column'
+            , 'column TestModel1::$model2_fk_nonexistent doesn\'t exist but referenced by TestModel1::$model2_N_1_bad_join_col'
+            , 'column TestModel2::$model1_fk_nonexistent doesn\'t exist but referenced by TestModel1::$model2_N_1_bad_inv_join_col'
         ), $rval->error);
     }
 

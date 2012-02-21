@@ -153,7 +153,27 @@ class SchemaValidator {
                             }
                             break;
                         case cy\JORK::MANY_TO_ONE:
-                            
+                            if ( ! isset($comp_schema->join_column)) {
+                                $rval->add_error('many-to-one component '
+                                        . $schema->class . '::$' . $comp_schema->name
+                                        . ' doesn\'t have join column');
+                                break;
+                            }
+                            if ( ! $schema->column_exists($comp_schema->join_column)) {
+                                $rval->add_error('column ' . $schema->class
+                                        . '::$' . $comp_schema->join_column
+                                        . ' doesn\'t exist but referenced by '
+                                        . $schema->class . '::$' . $comp_schema->name);
+                            }
+                            $comp_class_schema = $schemas[$comp_schema->class];
+                            if ( ! empty($comp_schema->inverse_join_column)) {
+                                if ( ! $comp_class_schema->column_exists($comp_schema->inverse_join_column)) {
+                                    $rval->add_error('column ' . $comp_class_schema->class . '::$'
+                                            . $comp_schema->inverse_join_column
+                                            . ' doesn\'t exist but referenced by '
+                                            . $schema->class . '::$' . $comp_schema->name);
+                                }
+                            }
                             break;
                         case cy\JORK::MANY_TO_MANY:
                             break;
