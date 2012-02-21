@@ -93,10 +93,88 @@ class SchemaValidator {
         return $rval;
     }
 
+    private static function test_one_to_one_foreign_keys($schemas
+            , ModelSchema $schema
+            , ComponentSchema $comp_schema
+            , ValidationResult $result) {
+        $join_column = empty($comp_schema->join_column) ? $schemas[$comp_schema->class]->primary_key() : $comp_schema->join_column;
+        if ( ! isset($schema->primitives[$join_column])) {
+            $result->add_error('local join column ' . $schema->class
+                    . '::$' . $comp_schema->join_column
+                    . ' doesn\'t exist');
+        }
+        $inverse_schema = $schemas[$comp_schema->class];
+        $inverse_join_col = empty($comp_schema->inverse_join_column) ? $inverse_schema->primary_key() : $comp_schema->inverse_join_column;
+        if ( ! isset($inverse_schema->primitives[$inverse_join_col])) {
+            $result->add_error('inverse join column ' . $comp_schema->class
+                    . '::$' . $comp_schema->inverse_join_column
+                    . ' doesn\'t exist');
+        }
+    }
+
+    private static function test_one_to_many_foreign_keys($schemas
+            , ModelSchema $schema
+            , ComponentSchema $comp_schema
+            , ValidationResult $result) {
+        if ( ! isset($comp_schema->join_column)) {
+            $result->add_error('one-to-many component '
+                    . $schema->class . '::$' . $comp_schema->name
+                    . ' doesn\'t have join column');
+            return;
+        }
+        $comp_class_schema = $schemas[$comp_schema->class];
+        if ( ! $comp_class_schema->column_exists($comp_schema->join_column)) {
+            $result->add_error('column ' . $comp_schema->class
+                    . '::$' . $comp_schema->join_column
+                    . ' doesn\'t exist but referenced by '
+                    . $schema->class . '::$' . $comp_schema->name);
+        }
+        if ( ! empty($comp_schema->inverse_join_column)) {
+            if ( ! $schema->column_exists($comp_schema->inverse_join_column)) {
+                $result->add_error('column ' . $schema->class . '::$'
+                        . $comp_schema->inverse_join_column
+                        . ' doesn\'t exist but referenced by '
+                        . $schema->class . '::$' . $comp_schema->name);
+            }
+        }
+    }
+
+    private static function test_many_to_one_foreign_keys($schemas
+            , ModelSchema $schema
+            , ComponentSchema $comp_schema
+            , ValidationResult $result) {
+        if ( ! isset($comp_schema->join_column)) {
+            $result->add_error('many-to-one component '
+                    . $schema->class . '::$' . $comp_schema->name
+                    . ' doesn\'t have join column');
+            return;
+        }
+        if ( ! $schema->column_exists($comp_schema->join_column)) {
+            $result->add_error('column ' . $schema->class
+                    . '::$' . $comp_schema->join_column
+                    . ' doesn\'t exist but referenced by '
+                    . $schema->class . '::$' . $comp_schema->name);
+        }
+        $comp_class_schema = $schemas[$comp_schema->class];
+        if ( ! empty($comp_schema->inverse_join_column)) {
+            if (!$comp_class_schema->column_exists($comp_schema->inverse_join_column)) {
+                $result->add_error('column ' . $comp_class_schema->class . '::$'
+                        . $comp_schema->inverse_join_column
+                        . ' doesn\'t exist but referenced by '
+                        . $schema->class . '::$' . $comp_schema->name);
+            }
+        }
+    }
+
     public static function test_component_foreign_keys($schemas) {
         $rval = new ValidationResult;
         foreach ($schemas as $schema) {
-            foreach ($schema->components as $comp_schema) {
+            foreach ($schema->components as $name => $comp_schema) {
+                if ( ! $comp_schema instanceof ComponentSchema) {
+                    $rval->add_error('mapping schema of ' . $schema->class . '::$'
+                            . $name . ' is not a ComponentSchema instance');
+                    continue;
+                }
                 if (empty($comp_schema->mapped_by)) {
                     $type_range = array(cy\JORK::ONE_TO_ONE
                         , cy\JORK::ONE_TO_MANY
@@ -111,69 +189,13 @@ class SchemaValidator {
                     }
                     switch($comp_schema->type) {
                         case cy\JORK::ONE_TO_ONE:
-                            $join_column = empty($comp_schema->join_column)
-                                ? $schemas[$comp_schema->class]->primary_key()
-                                : $comp_schema->join_column;
-                            if ( ! isset($schema->primitives[$join_column])) {
-                                $rval->add_error('local join column ' . $schema->class
-                                        . '::$' . $comp_schema->join_column
-                                        . ' doesn\'t exist');
-                            }
-                            $inverse_schema = $schemas[$comp_schema->class];
-                            $inverse_join_col = empty($comp_schema->inverse_join_column)
-                                    ? $inverse_schema->primary_key()
-                                    : $comp_schema->inverse_join_column;
-                            if ( ! isset($inverse_schema->primitives[$inverse_join_col])) {
-                                $rval->add_error('inverse join column ' . $comp_schema->class
-                                        . '::$' . $comp_schema->inverse_join_column
-                                        . ' doesn\'t exist');
-                            }
+                            self::test_one_to_one_foreign_keys($schemas, $schema, $comp_schema, $rval);
                             break;
                         case cy\JORK::ONE_TO_MANY:
-                            if ( ! isset($comp_schema->join_column)) {
-                                $rval->add_error('one-to-many component '
-                                        . $schema->class . '::$' . $comp_schema->name
-                                        . ' doesn\'t have join column');
-                                break;
-                            }
-                            $comp_class_schema = $schemas[$comp_schema->class];
-                            if ( ! $comp_class_schema->column_exists($comp_schema->join_column)) {
-                                $rval->add_error('column ' . $comp_schema->class
-                                        . '::$' . $comp_schema->join_column
-                                        . ' doesn\'t exist but referenced by '
-                                        . $schema->class . '::$' . $comp_schema->name);
-                            }
-                            if ( ! empty($comp_schema->inverse_join_column)) {
-                                if ( ! $schema->column_exists($comp_schema->inverse_join_column)) {
-                                    $rval->add_error('column ' . $schema->class . '::$'
-                                            . $comp_schema->inverse_join_column
-                                            . ' doesn\'t exist but referenced by '
-                                            . $schema->class . '::$' . $comp_schema->name);
-                                }
-                            }
+                            self::test_one_to_many_foreign_keys($schemas, $schema, $comp_schema, $rval);
                             break;
                         case cy\JORK::MANY_TO_ONE:
-                            if ( ! isset($comp_schema->join_column)) {
-                                $rval->add_error('many-to-one component '
-                                        . $schema->class . '::$' . $comp_schema->name
-                                        . ' doesn\'t have join column');
-                                break;
-                            }
-                            if ( ! $schema->column_exists($comp_schema->join_column)) {
-                                $rval->add_error('column ' . $schema->class
-                                        . '::$' . $comp_schema->join_column
-                                        . ' doesn\'t exist but referenced by '
-                                        . $schema->class . '::$' . $comp_schema->name);
-                            }
-                            $comp_class_schema = $schemas[$comp_schema->class];
-                            if ( ! empty($comp_schema->inverse_join_column)) {
-                                if ( ! $comp_class_schema->column_exists($comp_schema->inverse_join_column)) {
-                                    $rval->add_error('column ' . $comp_class_schema->class . '::$'
-                                            . $comp_schema->inverse_join_column
-                                            . ' doesn\'t exist but referenced by '
-                                            . $schema->class . '::$' . $comp_schema->name);
-                                }
-                            }
+                            self::test_many_to_one_foreign_keys($schemas, $schema, $comp_schema, $rval);
                             break;
                         case cy\JORK::MANY_TO_MANY:
                             break;
