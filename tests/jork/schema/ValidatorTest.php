@@ -65,6 +65,11 @@ class Schema_ValidatorTest extends Kohana_Unittest_TestCase {
                 ->type(cy\JORK::MANY_TO_ONE)->join_column('model2_fk')
                 ->inverse_join_column('model1_fk_nonexistent'));
 
+        $schema1->component(cy\JORK::component('model2_N_N', 'TestModel2')
+                ->type(cy\JORK::MANY_TO_MANY)
+                ->join_column('model2_fk_nonexistent')
+                ->inverse_join_column('model1_fk_nonexistent'));
+
         $schema2 = new schema\ModelSchema;
         $schema2->class = 'TestModel2';
         $schema2->primitive(cy\JORK::primitive('model1_fk', 'int'));
@@ -82,6 +87,9 @@ class Schema_ValidatorTest extends Kohana_Unittest_TestCase {
             , 'many-to-one component TestModel1::$model2_N_1_no_join_col doesn\'t have join column'
             , 'column TestModel1::$model2_fk_nonexistent doesn\'t exist but referenced by TestModel1::$model2_N_1_bad_join_col'
             , 'column TestModel2::$model1_fk_nonexistent doesn\'t exist but referenced by TestModel1::$model2_N_1_bad_inv_join_col'
+            , 'no join table defined for many-to-many component TestModel1::$model2_N_N'
+            , 'column TestModel1::$model2_fk_nonexistent doesn\'t exist but referenced by TestModel1::$model2_N_N'
+            , 'column TestModel2::$model1_fk_nonexistent doesn\'t exist but referenced by TestModel1::$model2_N_N'
         ), $rval->error);
     }
 

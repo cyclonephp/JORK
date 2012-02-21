@@ -166,6 +166,28 @@ class SchemaValidator {
         }
     }
 
+    private static function test_many_to_many_foreign_keys($schemas
+            , ModelSchema $schema
+            , ComponentSchema $comp_schema
+            , ValidationResult $result) {
+        if ( ! is_object($comp_schema->join_table)
+                || ! ($comp_schema->join_table instanceof JoinTableSchema)) {
+            $result->add_error('no join table defined for many-to-many component '
+                    . $schema->class . '::$' . $comp_schema->name);
+        }
+        if ( ! $schema->column_exists($comp_schema->join_column)) {
+            $result->add_error('column ' . $schema->class . '::$'
+                    . $comp_schema->join_column . ' doesn\'t exist but referenced by '
+                    . $schema->class . '::$' . $comp_schema->name);
+        }
+        $comp_class_schema = $schemas[$comp_schema->class];
+        if ( ! $comp_class_schema->column_exists($comp_schema->inverse_join_column)) {
+            $result->add_error('column ' . $comp_schema->class . '::$'
+                    . $comp_schema->inverse_join_column . ' doesn\'t exist but referenced by '
+                    . $schema->class . '::$' . $comp_schema->name);
+        }
+    }
+
     public static function test_component_foreign_keys($schemas) {
         $rval = new ValidationResult;
         foreach ($schemas as $schema) {
@@ -198,6 +220,7 @@ class SchemaValidator {
                             self::test_many_to_one_foreign_keys($schemas, $schema, $comp_schema, $rval);
                             break;
                         case cy\JORK::MANY_TO_MANY:
+                            self::test_many_to_many_foreign_keys($schemas, $schema, $comp_schema, $rval);
                             break;
                     }
                 }
