@@ -650,7 +650,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                     // The primary key does not exist in the record
                     // therefore we save the table name for the table
                     // containing the primary key
-                    $prim_table = $schema->table_name_for_column($col_name);
+                    $prim_table = $schema->table_name_for_property($col_name);
                 }
             }
             

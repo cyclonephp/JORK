@@ -250,10 +250,41 @@ use cyclone\jork\schema;
         return FALSE;
     }
 
-    public function table_name_for_column($col_name) {
-        return isset($this->primitives[$col_name]->table)
-                ? $this->primitives[$col_name]->table
+    public function table_name_for_property($prop_name) {
+        return isset($this->primitives[$prop_name]->table)
+                ? $this->primitives[$prop_name]->table
                 : $this->table;
+    }
+
+    /**
+     * Returns the nam of the table which contains the column <code>$col_name</code>.
+     * If <code>$col_name</code> is <code>NULL</code> then the column name of
+     * the primary key property will be written to it and the return value
+     * will be the name of the table which contains the primary key (which is
+     * the same as <code>$this->table</code>).
+     *
+     * @param string $col_name
+     * @return string
+     */
+    public function table_name_for_column(&$col_name) {
+        if (NULL === $col_name) {
+            $pk_prop_name = $this->primary_key();
+            $pk_schema = $this->primitives[$pk_prop_name];
+            $col_name = NULL === $pk_schema->column
+                    ? $pk_schema->name
+                    : $pk_schema->column;
+            return $this->table;
+        }
+        foreach ($this->primitives as $prim_schema) {
+            $tmp_col_name = NULL === $prim_schema->column
+                    ? $prim_schema->name
+                    : $prim_schema->column;
+            if ($tmp_col_name == $col_name) {
+                return NULL === $prim_schema->table
+                        ? $this->table
+                        : $prim_schema->table;
+            }
+        }
     }
 
     public function is_to_many_component($comp_name) {

@@ -19,9 +19,7 @@ class OneToOneMapper extends AbstractMapper {
         $this->_parent_mapper->add_table($local_table);
         $local_table_alias = $this->_parent_mapper->table_alias($local_table);
 
-        $remote_join_col = isset($comp_schema->inverse_join_column)
-                ? $comp_schema->inverse_join_column
-                : $this->_entity_schema->primary_key();
+        $remote_join_col = $comp_schema->inverse_join_column;
 
         $remote_table = $this->_entity_schema->table_name_for_column($remote_join_col);
         $remote_table_alias = $this->table_alias($remote_table);
