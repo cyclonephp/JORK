@@ -16,8 +16,10 @@ class OneToManyFKBuilder extends ForeignKeyBuilder {
         $foreign_col = NULL;
         foreach ($comp_class_schema->primitives as $prim_schema) {
             $col_name = NULL === $prim_schema->column ? $prim_schema->name : $prim_schema->column;
-            if ($col_name === $comp_schema->join_column) {
-                $table_name = NULL === $prim_schema->table ? $comp_class_schema->table : $prim_schema->table;
+            if ($col_name === $this->_comp_schema->join_column) {
+                $table_name = NULL === $prim_schema->table
+                        ? $comp_class_schema->table
+                        : $prim_schema->table;
                 $foreign_table = schema\Table::get_by_name($table_name);
                 if (!isset($this->_table_pool[$foreign_table->name])) {
                     $this->_table_pool[$foreign_table->name] = $foreign_table;
@@ -27,23 +29,29 @@ class OneToManyFKBuilder extends ForeignKeyBuilder {
         }
         if (NULL === $foreign_table)
             throw new SchemaBuilderException("Failed to create foreign key constraint: "
-                    . "no foreign table found for {$model_schema->class}::\${$comp_schema->name}");
+                    . "no foreign table found for {$this->_model_schema->class}::\${$comp_schema->name}");
         $fk = new schema\ForeignKey;
         $fk->local_table = $foreign_table;
         // TODO composite foreign key handling
         $fk->local_columns = array($foreign_col);
 
-        $pk_schema = $model_schema->primitives[$model_schema->primary_key()];
-        if (NULL === $comp_schema->inverse_join_column) {
-            $local_col_name = NULL === $pk_schema->column ? $pk_schema->name : $pk_schema->column;
+        $pk_schema = $this->_model_schema->primitives[$this->_model_schema->primary_key()];
+        if (NULL === $this->_comp_schema->inverse_join_column) {
+            $local_col_name = NULL === $pk_schema->column
+                    ? $pk_schema->name
+                    : $pk_schema->column;
         } else {
             $local_col_name = $comp_schema->inverse_join_column;
         }
         $local_table = NULL;
-        foreach ($model_schema->primitives as $prim_schema) {
-            $tmp_col_name = NULL === $prim_schema->column ? $prim_schema->name : $prim_schema->column;
+        foreach ($this->_model_schema->primitives as $prim_schema) {
+            $tmp_col_name = NULL === $prim_schema->column
+                    ? $prim_schema->name
+                    : $prim_schema->column;
             if ($tmp_col_name === $local_col_name) {
-                $local_table = schema\Table::get_by_name(NULL === $prim_schema->table ? $model_schema->table : $prim_schema->table);
+                $local_table = schema\Table::get_by_name(NULL === $prim_schema->table
+                        ? $this->_model_schema->table
+                        : $prim_schema->table);
                 if (!isset($this->_table_pool[$local_table->name])) {
                     $this->_table_pool[$local_table->name] = $local_table;
                 }
