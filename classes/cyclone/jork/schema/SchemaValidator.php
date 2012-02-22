@@ -13,6 +13,13 @@ class SchemaValidator {
 
     private static $_inst;
 
+    public static $valid_types = array(
+        'int', 'integer'
+        , 'bool', 'boolean'
+        , 'float'
+        , 'string'
+    );
+
     /**
      *
      * @return cyclone\jork\schema\SchemaValidator
@@ -97,15 +104,9 @@ class SchemaValidator {
 
     public static function test_primitives($schemas) {
         $rval = new ValidationResult;
-        $valid_types = array(
-            'int', 'integer'
-            , 'bool', 'boolean'
-            , 'float'
-            , 'string'
-        );
         foreach ($schemas as $schema) {
             foreach ($schema->primitives as $primitive) {
-                if ( ! in_array($primitive->type, $valid_types)) {
+                if ( ! in_array($primitive->type, self::$valid_types)) {
                     $rval->add_error($schema->class . '::$' . $primitive->name
                             . ' has invalid type \'' . $primitive->type . "'");
                 }

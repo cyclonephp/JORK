@@ -8,7 +8,7 @@ return array(
                 'descr' => 'Re-generates the internal representation of the mapping schema.
 
 It is recommended to run this command after every model schema change.',
-                'callback' => array(cyclone\jork\schema\SchemaBuilder::inst(), 'build_schema')
+                'callback' => array(cyclone\jork\schema\SchemaBuilder::factory(), 'build_schema')
             ),
             'validate-schema' => array(
                 'descr' => 'Validates the model schemas.',
