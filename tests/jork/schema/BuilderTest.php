@@ -98,6 +98,11 @@ class Schema_BuilderTest extends Kohana_Unittest_TestCase {
         $tbl_1 = $rval['tbl_1'];
         $tbl_2 = $rval['tbl_2'];
         $this->assertEquals(1, count($tbl_2->foreign_keys));
+        $fk = $tbl_2->foreign_keys[0];
+        $this->assertEquals($tbl_2, $fk->local_table);
+        $this->assertEquals(array($tbl_2->get_column('model1_fk')), $fk->local_columns);
+        $this->assertEquals($tbl_1, $fk->foreign_table);
+        $this->assertEquals(array($tbl_1->get_column('id')), $fk->foreign_columns);
     }
     
 }
