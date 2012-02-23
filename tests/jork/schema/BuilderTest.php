@@ -210,5 +210,56 @@ class Schema_BuilderTest extends Kohana_Unittest_TestCase {
         $this->assertEquals(array($jt->get_column('model2_fk'))
                 , $fk->foreign_columns);
     }
+
+    public function testManyToManyForeignKeys2() {
+        $schema1 = new schema\ModelSchema;
+        $schema1->class = 'TestModel1';
+        $schema1->table('tbl_1')
+                ->primitive(cy\JORK::primitive('id', 'int')->primary_key())
+                ->primitive(cy\JORK::primitive('model2_jt_fk', 'int'))
+                ->component(cy\JORK::component('model2', 'TestModel2')
+                    ->type(cy\JORK::MANY_TO_MANY)
+                    ->join_table(cy\JORK::join_table('jt', 'model1_fk', 'model2_fk')
+                    ));
+
+        $schema2 = new schema\ModelSchema;
+        $schema2->class = 'TestModel2';
+        $schema2->table('tbl_2')
+                ->primitive(cy\JORK::primitive('id', 'int')->primary_key());
+
+        $rval = schema\SchemaBuilder::factory(array(
+            'TestModel1' => $schema1,
+            'TestModel2' => $schema2
+        ), $this->_default_types)->generate_db_schema();
+        $this->assertEquals(3, count($rval));
+        $tbl_1 = $rval['tbl_1'];
+        $this->assertEquals(0, count($tbl_1->foreign_keys), 'local table should have 1 FK');
+        
+        $jt = $rval['jt'];
+        
+        $this->assertEquals(2, count($jt->foreign_keys));
+        $fk = $jt->foreign_keys[0];
+        $this->assertEquals($tbl_1, $fk->foreign_table);
+        $this->assertEquals(array($tbl_1->get_column('id'))
+                , $fk->foreign_columns);
+        $this->assertEquals($jt, $fk->local_table);
+        $this->assertEquals($jt->get_column('model1_fk')->name
+                , $fk->local_columns[0]->name);
+
+        $this->assertEquals(2, count($jt->columns));
+
+        $tbl_2 = $rval['tbl_2'];
+        $fk = $jt->foreign_keys[1];
+        $this->assertEquals($jt, $fk->local_table);
+        $this->assertEquals(1, count($fk->local_columns));
+        $this->assertEquals($jt->get_column('model2_fk')->name
+                , $fk->local_columns[0]->name);
+
+        $this->assertEquals($tbl_2, $fk->foreign_table);
+        $this->assertEquals(array($tbl_2->get_column('id'))
+                , $fk->foreign_columns);
+
+        $this->assertEquals(0, count($tbl_2->foreign_keys));
+    }
     
 }
