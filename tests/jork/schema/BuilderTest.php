@@ -104,5 +104,37 @@ class Schema_BuilderTest extends Kohana_Unittest_TestCase {
         $this->assertEquals($tbl_1, $fk->foreign_table);
         $this->assertEquals(array($tbl_1->get_column('id')), $fk->foreign_columns);
     }
+
+    public function testManyToOneForeignKeys() {
+        $schema1 = new schema\ModelSchema;
+        $schema1->class = 'TestModel1';
+        $schema1->table('tbl_1')
+                ->primitive(cy\JORK::primitive('id', 'int')->primary_key())
+                ->primitive(cy\JORK::primitive('model2_fk', 'int'))
+                ->component(cy\JORK::component('model2', 'TestModel2')
+                    ->type(cy\JORK::MANY_TO_ONE)->join_column('model2_fk'));
+
+        $schema2 = new schema\ModelSchema;
+        $schema2->class = 'TestModel2';
+        $schema2->table('tbl_2')
+                ->primitive(cy\JORK::primitive('id', 'int')->primary_key());
+
+        $rval = schema\SchemaBuilder::factory(array(
+            'TestModel1' => $schema1,
+            'TestModel2' => $schema2
+        ), $this->_default_types)->generate_db_schema();
+        
+        $this->assertEquals(2, count($rval));
+        $tbl_1 = $rval['tbl_1'];
+        $tbl_2 = $rval['tbl_2'];
+        $this->assertEquals(1, count($tbl_1->foreign_keys));
+        $fk = $tbl_1->foreign_keys[0];
+        $this->assertEquals($tbl_1, $fk->local_table);
+        $this->assertEquals(array($tbl_1->get_column('model2_fk'))
+                , $fk->local_columns);
+        $this->assertEquals($tbl_2, $fk->foreign_table);
+        $this->assertEquals(array($tbl_2->get_column('id'))
+                , $fk->foreign_columns);
+    }
     
 }
