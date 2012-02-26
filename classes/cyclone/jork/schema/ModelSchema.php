@@ -257,6 +257,20 @@ use cyclone\jork\schema;
     }
 
     /**
+     * @param string $col_name
+     * @return PrimitivePropertySchema
+     */
+    public function primitive_by_col($col_name) {
+        foreach ($this->primitives as $prim) {
+            if ($prim->column === $col_name)
+                return $prim;
+        }
+        if (isset($this->primitives[$col_name]))
+            return $this->primitives[$col_name];
+        throw new jork\SchemaException("no property is mapped to column '$col_name' in class " . $this->class);
+    }
+
+    /**
      * Returns the nam of the table which contains the column <code>$col_name</code>.
      * If <code>$col_name</code> is <code>NULL</code> then the column name of
      * the primary key property will be written to it and the return value

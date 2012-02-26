@@ -33,6 +33,13 @@ abstract class ForeignKeyBuilder {
     protected $_table_pool;
 
     /**
+     * PHP type => default SQL type pairs
+     *
+     * @var array<string => string>
+     */
+    protected $_default_types;
+
+    /**
      * @param int $comp_type
      * @param array<\cyclone\jork\schema\ModelSchema> $schema_pool
      * @param \cyclone\jork\schema\ModelSchema $model_schema
@@ -44,7 +51,8 @@ abstract class ForeignKeyBuilder {
             , $schema_pool
             , jork\schema\ModelSchema $model_schema
             , $comp_schema
-            , &$table_pool) {
+            , &$table_pool
+            , $default_types) {
         $fk_builders = array(
             cy\JORK::ONE_TO_ONE => 'cyclone\\jork\\schema\\foreignkey\\OneToOneFKBuilder',
             cy\JORK::ONE_TO_MANY => 'cyclone\\jork\\schema\\foreignkey\\OneToManyFKBuilder',
@@ -53,7 +61,11 @@ abstract class ForeignKeyBuilder {
         );
 
         $class = $fk_builders[$comp_type];
-        return new $class($schema_pool, $model_schema, $comp_schema, $table_pool);
+        return new $class($schema_pool
+                , $model_schema
+                , $comp_schema
+                , $table_pool
+                , $default_types);
     }
 
 
@@ -63,11 +75,13 @@ abstract class ForeignKeyBuilder {
      * @param \cyclone\jork\schema\ComponentSchema $comp_schema
      * @param array<\cyclone\db\schema\Table> $table_pool
      */
-    public function __construct($schema_pool, $model_schema, $comp_schema, &$table_pool) {
+    public function __construct($schema_pool, $model_schema, $comp_schema
+            , &$table_pool, $default_types) {
         $this->_schema_pool = $schema_pool;
         $this->_model_schema = $model_schema;
         $this->_comp_schema = $comp_schema;
         $this->_table_pool = &$table_pool;
+        $this->_default_types = $default_types;
     }
 
     public abstract function create_foreign_key();

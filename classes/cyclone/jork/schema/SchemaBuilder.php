@@ -102,7 +102,8 @@ class SchemaBuilder {
                     , $this->_schemas
                     , $model_schema
                     , $comp_schema
-                    , $this->_table_pool)->create_foreign_key();
+                    , $this->_table_pool
+                    , $this->_default_types)->create_foreign_key();
 
         }
     }

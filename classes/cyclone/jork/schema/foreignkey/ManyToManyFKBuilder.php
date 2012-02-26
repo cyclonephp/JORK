@@ -36,8 +36,11 @@ class ManyToManyFKBuilder extends ForeignKeyBuilder {
         
         $fk = new schema\ForeignKey;
         $fk->local_table = $join_table;
-        $fk->local_columns = array($join_table->get_by_name($this->_comp_schema
-                ->join_table->join_column));
+        $join_local_col = $join_table->get_column($this->_comp_schema
+                ->join_table->join_column);
+        $local_prop = $this->_model_schema->primitive_by_col($this->_comp_schema->join_column);
+        $join_local_col->type = $this->_default_types[$local_prop->type];
+        $fk->local_columns = array($join_local_col);
 
         $fk->foreign_table = $local_table;
         $fk->foreign_columns = array($local_table->get_column($local_column));
@@ -50,8 +53,11 @@ class ManyToManyFKBuilder extends ForeignKeyBuilder {
 
         $fk = new schema\ForeignKey;
         $fk->local_table = $join_table;
-        $fk->local_columns = array($join_table->get_column($this->_comp_schema
-                ->join_table->inverse_join_column));
+        $join_foreign_col = $join_table->get_column($this->_comp_schema
+                ->join_table->inverse_join_column);
+        $foreign_join_prop = $comp_class_schema->primitive_by_col($inv_join_col);
+        $join_foreign_col->type = $this->_default_types[$foreign_join_prop->type];
+        $fk->local_columns = array($join_foreign_col);
         $fk->foreign_table = $inv_table;
         $fk->foreign_columns = array($inv_table->get_column($inv_join_col));
         $join_table->add_foreign_key($fk);
