@@ -4,6 +4,7 @@ namespace cyclone\jork\schema\foreignkey;
 
 use cyclone as cy;
 use cyclone\db\schema;
+use cyclone\jork;
 
 /**
  * @author Bence Eros <crystal@cyclonephp.org>
@@ -11,12 +12,24 @@ use cyclone\db\schema;
  */
 abstract class ForeignKeyBuilder {
 
+    /**
+     * @var array<\cyclone\jork\schema\ModelSchema>
+     */
     protected $_schema_pool;
 
+    /**
+     * @var \cyclone\jork\schema\ModelSchema
+     */
     protected $_model_schema;
 
+    /**
+     * @var \cyclone\jork\schema\ComponentSchema
+     */
     protected $_comp_schema;
 
+    /**
+     * @var array<\cyclone\db\schema\Table>
+     */
     protected $_table_pool;
 
     /**
@@ -29,7 +42,7 @@ abstract class ForeignKeyBuilder {
      */
     public static function factory($comp_type
             , $schema_pool
-            , $model_schema
+            , jork\schema\ModelSchema $model_schema
             , $comp_schema
             , &$table_pool) {
         $fk_builders = array(
