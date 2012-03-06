@@ -848,8 +848,10 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
 
         // turn the lock on
         $this->_save_in_progress = TRUE;
-        foreach ($comps as $comp) {
-            $comp['value']->save();
+        foreach ($comps as $k => $comp) {
+            if ( ! is_null($comp['value'])) {
+                $comp['value']->save();
+            }
         }
         $this->_save_in_progress = FALSE;
     }
