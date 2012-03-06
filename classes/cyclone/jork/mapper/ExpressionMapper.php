@@ -25,9 +25,9 @@ class ExpressionMapper implements RowMapper {
     }
 
     public function  map_row(&$row) {
-        if ( ! isset($row[$this->col_name]))
+        if ( ! array_key_exists($this->col_name, $row))
                 throw new jork\Exception('failed to detect column name for database expression "'
-                        .$this->_db_expr.'"');
+                        .$this->_db_expr.'" tried: "' . $this->col_name . '"');
         
         return array($this->_last_value = $row[$this->col_name], TRUE);
     }
