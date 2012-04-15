@@ -6,7 +6,12 @@ use cyclone\jork;
 use cyclone\jork\query;
 
 
-class JORK_Mapper_SelectTest extends Kohana_Unittest_TestCase {
+class JORK_Mapper_SelectTest extends JORK_MapperTest {
+
+    public function setUp() {
+        parent::setUp();
+        $this->load_schemas('basic');
+    }
 
     public function testSelectManyToOne() {
         $jork_query = new query\SelectQuery;

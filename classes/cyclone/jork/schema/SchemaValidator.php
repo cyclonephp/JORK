@@ -74,6 +74,7 @@ class SchemaValidator {
                 $result->merge(call_user_func($validator, $this->_schemas));
             } catch (\Exception $ex) {
                 throw new jork\Exception("fatal error during schema validation: " . $ex->getMessage()
+                            . PHP_EOL . $ex->getFile() . ' (' . $ex->getLine() . ')'
                         , $ex->getCode(), $ex);
             }
         }
@@ -286,11 +287,13 @@ class SchemaValidator {
     public static function test_secondary_tables($schemas) {
         $rval = new ValidationResult;
         foreach ($schemas as $schema) {
-            foreach ($schema->secondary_tables as $sec_tbl) {
-                if ( ! $schema->column_exists($sec_tbl->join_column)) {
-                    $rval->add_error('column ' . $schema->class . '::$'
+            if ($schema->secondary_tables !== NULL) {
+                foreach ($schema->secondary_tables as $sec_tbl) {
+                    if ( ! $schema->column_exists($sec_tbl->join_column)) {
+                        $rval->add_error('column ' . $schema->class . '::$'
                             . $sec_tbl->join_column . ' doesn\'t exist but referenced by secondary table \''
                             . $sec_tbl->name . '\'');
+                    }
                 }
             }
         }

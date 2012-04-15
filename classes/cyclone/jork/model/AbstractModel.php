@@ -46,14 +46,11 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * @return JORK_Model_Abstract
      */
     protected static function _inst($classname) {
-        if ( ! array_key_exists($classname, self::$_instances)) {
+        if ( ! isset(self::$_instances[$classname])) {
             $inst = new $classname;
             $inst->_schema = new jork\schema\ModelSchema;
             $inst->_schema->class = $classname;
             $inst->setup();
-            if (NULL === $inst->_schema->components) {
-                $inst->_schema->components = array();
-            }
             foreach ($inst->_schema->embedded_components as $k => &$v) {
                 $emb_inst = call_user_func(array($v, 'inst'));
                 $emb_schema = new jork\schema\EmbeddableSchema($inst->_schema, $v);
@@ -71,7 +68,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * Loads the JORK configuration for later usage.
      *
      * If you override the constructor in the model classes don't forget about
-     * calling \c parent::__construct()
+     * calling @c parent::__construct()
      */
     public function  __construct() {
         if (NULL === self::$_cfg) {
@@ -84,6 +81,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * @return jork\schema\ModelSchema
      */
     public static function schema_by_class($class) {
+        return jork\schema\SchemaPool::inst()->get_schema($class);
         if ( ! isset(self::$_instances[$class])) {
             self::_inst($class);
         }
@@ -106,7 +104,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * Only to be used by the singleton instance. Other instances should use
      * <code>$this->schema()</code> to get their own mapping schema.
      *
-     * @var jork\schema\ModelSchema
+     * @var \cyclone\jork\schema\ModelSchema
      */
     protected $_schema;
 
@@ -124,7 +122,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
 
     /**
      * Used to store the loaded components of the entity. The items are instances
-     * of \c jork\model\AbstractModel (for to-one components) or \c jork\model\collection\AbstractCollection
+     * of @c jork\model\AbstractModel (for to-one components) or @c jork\model\collection\AbstractCollection
      * (for to-many components).
      *
      * @var array
@@ -172,9 +170,10 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * @return JORK_Model_Abstract
      */
     public function get($pk) {
-        $result = cy\JORK::from($this->_schema->class)
-                ->where($this->_schema->primary_key(), '=', cy\DB::esc($pk))
-                ->exec($this->_schema->db_conn);
+        $schema = $this->schema();
+        $result = cy\JORK::from($schema->class)
+                ->where($schema->primary_key(), '=', cy\DB::esc($pk))
+                ->exec($schema->db_conn);
         switch (count($result)) {
             case 0:
                 return NULL;
@@ -1036,7 +1035,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     }
 
     public function  __isset($key) {
-        $schema = $this->_schema;
+        $schema = $this->schema();
         return isset($schema->primitives[$key])
                 || isset($schema->components[$key]);
     }

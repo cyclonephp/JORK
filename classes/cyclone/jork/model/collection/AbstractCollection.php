@@ -117,7 +117,7 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
     protected $_persistent = TRUE;
 
     /**
-     * Initialized by \c sort()
+     * Initialized by @c sort()
      *
      * @var ComparatorProvider
      */

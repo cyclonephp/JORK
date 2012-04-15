@@ -54,6 +54,7 @@ class InstancePool {
         return $this->_pool[$primary_key] = new $this->_class;
     }
 
+
     public function add(model\AbstractModel $instance) {
         $this->_pool[$instance->pk()] = $instance;
     }

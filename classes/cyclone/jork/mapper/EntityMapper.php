@@ -372,6 +372,9 @@ class EntityMapper implements RowMapper {
      * Called if the select list is empty.
      */
     public function select_all_atomics() {
+        if ( ! is_object($this->_entity_schema)) {
+            //var_dump($this->_entity_schema); die();
+        }
         foreach ($this->_entity_schema->primitives as $prop_name => $prop_schema) {
             $this->add_atomic_property($prop_name, $prop_schema);
         }

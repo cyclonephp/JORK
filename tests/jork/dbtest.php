@@ -4,7 +4,7 @@ use cyclone as cy;
 use cyclone\db;
 
 
-abstract class JORK_DbTest extends Kohana_Unittest_TestCase {
+abstract class JORK_DbTest extends JORK_MapperTest {
 
     public function  setUp() {
         parent::setUp();

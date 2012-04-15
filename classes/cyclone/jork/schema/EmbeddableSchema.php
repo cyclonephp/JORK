@@ -52,7 +52,7 @@ class EmbeddableSchema {
 
     /**
      * @param string $name the name of the property which' schema will be queried
-     * @return mixed \c PrimitivePropertySchema or \c ComponentSchema
+     * @return mixed @c PrimitivePropertySchema or @c ComponentSchema
      */
     public function get_property_schema($name) {
         if (isset($this->primitives[$name]))

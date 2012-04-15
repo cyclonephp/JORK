@@ -69,9 +69,9 @@ use cyclone\jork\schema;
      * It is recommended to create it using one of the following static
      * factory methods:
      * <ul>
-     *  <li>\c cyclone\JORK::single_table()</li>
-     *  <li>\c cyclone\JORK::joined_subclass()</li>
-     *  <li>\c cyclone\JORK::table_per_class()</li>
+     *  <li>@c cyclone\JORK::single_table()</li>
+     *  <li>@c cyclone\JORK::joined_subclass()</li>
+     *  <li>@c cyclone\JORK::table_per_class()</li>
      * </ul>
      *
      * @var cyclone\jork\schema\Inheritance
@@ -85,11 +85,11 @@ use cyclone\jork\schema;
     public $discriminator_value;
 
     /**
-     * Stores the natural ordering of the entity. Every \c Ordering instance
+     * Stores the natural ordering of the entity. Every @c Ordering instance
      * defines a property name / direction pair.
      *
      * These ordering will be applied on JORK queries which' root entity (explicit
-     * or implicit) is \c $class .
+     * or implicit) is @c $class .
      *
      * @var array<Ordering>
      */
@@ -179,7 +179,7 @@ use cyclone\jork\schema;
     /**
      *
      * @param string $property a valid property name of the entity class
-     *  which exists as an array key in \c $primitives
+     *  which exists as an array key in @c $primitives
      * @param string $direction the direction of the ordering. It's possible
      *  values are <code>asc</code> and <code>desc</code>
      * @return ModelSchema

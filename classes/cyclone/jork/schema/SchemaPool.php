@@ -18,7 +18,7 @@ class SchemaPool {
     /**
      *
      * @return SchemaPool
-     * @throws cyclone\jork\SchemaException if any of the
+     * @throws \cyclone\jork\SchemaException if any of the
      *  <code>modelclass::inst()</code> methods are not or not properly implemented
      */
     public static function inst() {
@@ -74,8 +74,34 @@ class SchemaPool {
         return array_keys($this->_pool);
     }
 
+    public function get_schema($class_name) {
+        if ( ! isset($this->_pool[$class_name]))
+            throw new jork\SchemaException("unknown model class: '$class_name'");
+
+        return $this->_pool[$class_name];
+    }
+
     public function get_schemas() {
         return $this->_pool;
+    }
+
+    public function set_schemas($schemas) {
+        foreach ($schemas as $classname => $schema) {
+            if (NULL === $schema->class) {
+                $schema->class = $classname;
+            } elseif ($schema->class !== $classname)
+                throw new jork\SchemaException("array key for schema '{$schema->class}' is '{$classname}'");
+
+            foreach ($schema->embedded_components as $k => &$v) {
+                $emb_inst = call_user_func(array($v, 'inst'));
+                $emb_schema = new EmbeddableSchema($schema, $v);
+                $emb_inst->set_schema($emb_schema);
+                $emb_inst->setup();
+                $emb_schema->table = $schema->table;
+                $v = $emb_schema;
+            }
+        }
+        $this->_pool = $schemas;
     }
 
 }

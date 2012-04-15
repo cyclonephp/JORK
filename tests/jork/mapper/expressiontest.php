@@ -5,7 +5,12 @@ use cyclone\db;
 use cyclone\jork;
 use cyclone\jork\query;
 
-class JORK_Mapper_ExpressionTest extends Kohana_Unittest_TestCase {
+class JORK_Mapper_ExpressionTest extends JORK_MapperTest {
+
+    public function setUp() {
+        parent::setUp();
+        $this->load_schemas('basic');
+    }
 
     /**
      * @expectedException cyclone\jork\Exception

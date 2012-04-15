@@ -6,7 +6,7 @@ use cyclone\jork;
 use cyclone\jork\query;
 use cyclone\jork\schema;
 
-class JORK_Mapping_SchemaTest extends Kohana_Unittest_TestCase {
+class JORK_Mapping_SchemaTest extends JORK_MapperTest {
 
     /**
      * @expectedException cyclone\jork\SchemaException
@@ -42,6 +42,7 @@ class JORK_Mapping_SchemaTest extends Kohana_Unittest_TestCase {
      * @dataProvider providerIsToManyComponent
      */
     public function testIsToManyComponent($class, $component, $is_to_many) {
+        $this->load_schemas('basic');
         $this->assertEquals($is_to_many, jork\model\AbstractModel::schema_by_class($class)
                 ->is_to_many_component($component));
     }

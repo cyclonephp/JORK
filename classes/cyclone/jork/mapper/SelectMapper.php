@@ -24,7 +24,7 @@ abstract class SelectMapper {
 
     /**
      * The DB query to be populated by the mapper methods. This query instance
-     * will be passed to the created \c jork\mapper\Entity instances.
+     * will be passed to the created @c jork\mapper\Entity instances.
      *
      * @var cyclone\db\query\Select
      */

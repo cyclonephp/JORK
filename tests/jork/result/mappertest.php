@@ -6,6 +6,11 @@ use cyclone\jork;
 
 class JORK_Result_MapperTest extends JORK_DbTest {
 
+    public function setUp() {
+        parent::setUp();
+        $this->load_schemas('basic');
+    }
+
     public function testConfig() {
         cy\Config::inst()->get('jork.show_sql');
         cy\DB::executor('jork_test')->exec_custom('select 1');

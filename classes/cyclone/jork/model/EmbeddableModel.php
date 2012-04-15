@@ -2,6 +2,8 @@
 
 namespace cyclone\jork\model;
 
+use cyclone\jork;
+
 /**
  * @author Bence Eros <crystal@cyclonephp.com>
  * @package JORK
@@ -15,6 +17,10 @@ abstract class EmbeddableModel extends AbstractModel {
             self::$_instances[$class] = new $class;
         }
         return self::$_instances[$class];
+    }
+
+    public function set_schema(jork\schema\EmbeddableSchema $schema) {
+        $this->_schema = $schema;
     }
 
 }

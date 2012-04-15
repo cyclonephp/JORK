@@ -4,7 +4,7 @@ use cyclone\jork;
 use cyclone as cy;
 
 
-class JORK_Naming_ServiceTest extends Kohana_Unittest_TestCase {
+class JORK_Naming_ServiceTest extends JORK_MapperTest {
 
     public function testGetSchema() {
         $service = new jork\NamingService;
