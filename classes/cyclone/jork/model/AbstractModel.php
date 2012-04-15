@@ -48,17 +48,18 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     protected static function _inst($classname) {
         if ( ! isset(self::$_instances[$classname])) {
             $inst = new $classname;
-            $inst->_schema = new jork\schema\ModelSchema;
-            $inst->_schema->class = $classname;
-            $inst->setup();
-            foreach ($inst->_schema->embedded_components as $k => &$v) {
-                $emb_inst = call_user_func(array($v, 'inst'));
-                $emb_schema = new jork\schema\EmbeddableSchema($inst->_schema, $v);
-                $emb_inst->_schema = $emb_schema;
-                $emb_inst->setup();
-                $emb_schema->table = $inst->_schema->table;
-                $v = $emb_schema;
-            }
+//            $inst->_schema = new jork\schema\ModelSchema;
+//            $inst->_schema->class = $classname;
+//            $inst->setup();
+//            foreach ($inst->_schema->embedded_components as $k => &$v) {
+//                $emb_inst = call_user_func(array($v, 'inst'));
+//                $emb_schema = new jork\schema\EmbeddableSchema($inst->_schema, $v);
+//                $emb_inst->_schema = $emb_schema;
+//                $emb_inst->setup();
+//                $emb_schema->table = $inst->_schema->table;
+//                $v = $emb_schema;
+//            }
+            $inst->_schema = jork\schema\SchemaPool::inst()->get_schema($classname);
             self::$_instances[$classname] = $inst;
         }
         return self::$_instances[$classname];
@@ -73,6 +74,12 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     public function  __construct() {
         if (NULL === self::$_cfg) {
             self::$_cfg = cy\Config::inst()->get('jork');
+        }
+        $schema_pool = jork\schema\SchemaPool::inst();
+        if ( ! $schema_pool->schema_exists(get_class($this))) {
+            $this->_schema = new jork\schema\ModelSchema();
+            $this->setup();
+            $schema_pool->add_schema(get_class($this), $this->_schema);
         }
     }
 

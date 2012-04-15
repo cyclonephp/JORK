@@ -30,7 +30,7 @@ class SchemaPool {
 
     private $_pool = array();
 
-    private function __construct() {
+    private function __construct() {return;
         $cfg = cy\Config::inst()->get('jork');
         if ( ! (isset($cfg['mapped_classes']) || isset($cfg['mapped_namespaces'])))
             throw new jork\Exception("neither 'jork.mapped_classes' nor 'jork.mapped_namespaces' configuration key has been found");;
@@ -79,6 +79,14 @@ class SchemaPool {
             throw new jork\SchemaException("unknown model class: '$class_name'");
 
         return $this->_pool[$class_name];
+    }
+
+    public function schema_exists($classname) {
+        return isset($this->_pool[$classname]);
+    }
+
+    public function add_schema($classname, jork\schema\ModelSchema $schema) {
+        $this->_pool[$classname] = $schema;
     }
 
     public function get_schemas() {
