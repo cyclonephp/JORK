@@ -28,7 +28,16 @@ abstract class JORK_MapperTest extends Kohana_Unittest_TestCase {
             , $message = '') {
         $mapper = jork\mapper\SelectMapper::for_query($jork_query);
         list($actual_db_query, ) = $mapper->map();
-        $this->assertTrue($expected_db_query->equals($actual_db_query), '');
+
+        if ( ! $expected_db_query->equals($actual_db_query)) {
+            $failure = new PHPUnit_Framework_ComparisonFailure_Object($expected_db_query, $actual_db_query, FALSE, $message);
+            $exception = new PHPUnit_Framework_ExpectationFailedException('failed to assert that the two queries are equal'
+                , $failure
+                , $message);
+            $exception->setCustomMessage('failed to assert that the two queries are equal');
+            throw $exception;
+        }
+
     }
 
 }
