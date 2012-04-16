@@ -41,8 +41,6 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
         }
         $schema_pool = jork\schema\SchemaPool::inst();
         if ( ! $schema_pool->schema_exists(get_class($this))) {
-            /*$this->_schema = new jork\schema\ModelSchema();
-            $this->setup();*/
             $schema_pool->add_schema(get_class($this), static::setup());
         }
     }

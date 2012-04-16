@@ -98,13 +98,9 @@ class SchemaPool {
 
     private function load_embedded_schemas(jork\schema\ModelSchema $schema) {
         foreach ($schema->embedded_components as $k => &$v) {
-            //$emb_inst = call_user_func(array($v, 'inst'));
             $emb_schema = new EmbeddableSchema($schema, $v);
             call_user_func(array($v, 'setup_embeddable'), $emb_schema);
-            //$emb_inst->set_schema($emb_schema);
-            //$emb_inst->setup_embeddable($emb_schema);
             $emb_schema->table = $schema->table;
-            /*$this->_pool[$v] = $emb_schema;*/
             $v = $emb_schema;
         }
     }
