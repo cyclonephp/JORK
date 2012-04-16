@@ -3,7 +3,7 @@ use cyclone as cy;
 use cyclone\jork\schema;
 use cyclone\jork;
 
-class Schema_ValidatorTest extends Kohana_Unittest_TestCase {
+class JORK_Schema_ValidatorTest extends Kohana_Unittest_TestCase {
 
     public function testTableNameTest() {
         $schema = new schema\ModelSchema;

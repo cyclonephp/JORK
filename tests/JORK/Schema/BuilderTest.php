@@ -6,7 +6,7 @@ use cyclone\jork;
 use cyclone\jork\schema;
 use cyclone\db;
 
-class Schema_BuilderTest extends Kohana_Unittest_TestCase {
+class JORK_Schema_BuilderTest extends Kohana_Unittest_TestCase {
 
     private $_default_types = array(
         'int' => 'INT',
