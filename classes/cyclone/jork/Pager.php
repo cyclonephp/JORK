@@ -4,7 +4,7 @@ namespace cyclone\jork;
 
 use cyclone as cy;
 use cyclone\db;
-köszi hogy megvártátok hogy befejezzük a délutáni dugást, de mostmár jöhetnétek
+
 /**
  * @property int $page
  * @property int $page_size
