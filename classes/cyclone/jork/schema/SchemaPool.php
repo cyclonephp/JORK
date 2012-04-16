@@ -8,16 +8,23 @@ use cyclone\autoloader;
 use cyclone\jork;
 
 /**
+ * This class is a singleton which is responsible for the in-memory management of the
+ * mapping schemas of the model classes.
+ *
  * @package jork
  * @author Bence Eros <crystal@cyclonephp.com>
  */
 class SchemaPool {
 
+    /**
+     * @var ShemaPool the singleton instance.
+     */
     private static $_inst;
 
     /**
+     * Singleton accessor method.
      *
-     * @return SchemaPool
+     * @return SchemaPool singleton instance
      * @throws \cyclone\jork\SchemaException if any of the
      *  <code>modelclass::inst()</code> methods are not or not properly implemented
      */
@@ -70,10 +77,22 @@ class SchemaPool {
         }
     }
 
+    /**
+     * Returns the names of the classes which a mapping schema belongs to.
+     *
+     * @return array<string>
+     */
     public function get_mapped_classes() {
         return array_keys($this->_pool);
     }
 
+    /**
+     * Returns the mapping schema belonging to the class <code>$class_name</code>.
+     *
+     * @param $class_name string
+     * @return \cyclone\jork\schema\ModelSchema
+     * @throws \cyclone\jork\SchemaException
+     */
     public function get_schema($class_name) {
         if ( ! isset($this->_pool[$class_name]))
             throw new jork\SchemaException("unknown model class: '$class_name'");
@@ -105,10 +124,29 @@ class SchemaPool {
         }
     }
 
+    /**
+     * Returns the currently loaded schemas. Array keys are classnames (strings),
+     * values are @c \cyclone\jork\schema\ModelSchema or @c \cyclone\jork\schema\EmbeddableSchema
+     * instances.
+     *
+     * @return array
+     */
     public function get_schemas() {
         return $this->_pool;
     }
 
+    /**
+     * Replaces the currently loaded mapping schemas with <code>$schemas</code>. Only
+     * for unit testing purposes.
+     *
+     * <p>
+     * <strong>Do NOT use this method!</strong>
+     * </p>
+     *
+     * @param $schemas array<\cyclone\jork\schema\ModelSchema> array keys must be
+     *  class names, values should be @v \cyclone\jork\schema\ModelSchema instances.
+     * @throws \cyclone\jork\SchemaException
+     */
     public function set_schemas($schemas) {
         foreach ($schemas as $classname => $schema) {
             if (NULL === $schema->class) {

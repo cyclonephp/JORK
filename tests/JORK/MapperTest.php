@@ -2,6 +2,8 @@
 
 use cyclone as cy;
 use cyclone\jork;
+use cyclone\jork\query;
+use cyclone\db;
 
 /**
  * @author Bence Erős <crystal@cyclonephp.org>
@@ -19,6 +21,14 @@ abstract class JORK_MapperTest extends Kohana_Unittest_TestCase {
             throw new jork\SchemaException("failed to load test schemas '$rel_filename'");
 
         jork\schema\SchemaPool::inst()->set_schemas(require $abs_filename);
+    }
+
+    protected function assertCompiledTo(query\SelectQuery $jork_query
+            , db\query\Select $expected_db_query
+            , $message = '') {
+        $mapper = jork\mapper\SelectMapper::for_query($jork_query);
+        list($actual_db_query, ) = $mapper->map();
+        $this->assertTrue($expected_db_query->equals($actual_db_query), '');
     }
 
 }
