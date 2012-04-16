@@ -47,7 +47,7 @@ class ComponentSchema {
      *
      * @var string
      */
-    public $join_column;
+    public $join_columns = array();
 
     /**
      * In the case of one-to-one and many-to-one connections, it is the name of
@@ -56,7 +56,7 @@ class ComponentSchema {
      *
      * @var string
      */
-    public $inverse_join_column;
+    public $inverse_join_columns = array();
 
     /**
      * The mapping schema of the join table used to map a many-to-many relation.
@@ -139,7 +139,7 @@ class ComponentSchema {
      * @return ComponentSchema
      */
     public function join_column($column) {
-        $this->join_column = $column;
+        $this->join_columns []= $column;
         return $this;
     }
 
@@ -150,7 +150,7 @@ class ComponentSchema {
      * @return ComponentSchema
      */
     public function inverse_join_column($column) {
-        $this->inverse_join_column = $column;
+        $this->inverse_join_columns []= $column;
         return $this;
     }
 
