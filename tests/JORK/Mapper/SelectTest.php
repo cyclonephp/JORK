@@ -31,65 +31,59 @@ class JORK_Mapper_SelectTest extends JORK_MapperTest {
     }
 
     public function testSelectManyToOne2() {
-        $jork_query = new jork\query\SelectQuery;
-        $jork_query->select('post', 'post.topic.modinfo.creator')
+        $jork_query = cy\JORK::select('post', 'post.topic.modinfo.creator')
                 ->from('Model_Post post');
-        $mapper = jork\mapper\SelectMapper::for_query($jork_query);
-        list($db_query, ) = $mapper->map();
-        $this->assertEquals($db_query->tables, array(
-            array('t_posts', 't_posts_0')
-        ));
-        //print_r($db_query->joins);
-        $this->assertEquals($db_query->joins, array(
-             array(
-                'table' => array('t_topics', 't_topics_0'),
-                'type' => 'LEFT',
-                'conditions' => array(
-                    new db\BinaryExpression('t_posts_0.topic_fk', '=', 't_topics_0.id')
-                )
-            ),
-            array(
-                'table' => array('t_users', 't_users_0'),
-                'type' => 'LEFT',
-                'conditions' => array(
-                    new db\BinaryExpression('t_topics_0.creator_fk', '=', 't_users_0.id')
-                )
-            ),
-            array(
-                'table' => array('user_contact_info', 'user_contact_info_0'),
-                'type' => 'LEFT',
-                'conditions' => array(
-                    new db\BinaryExpression('t_users_0.id', '=', 'user_contact_info_0.user_fk')
-                )
-            )
-           
-        ));
 
+        $db_query = cy\DB::select(array('t_posts_0.id', 't_posts_0_id')
+            , array('t_posts_0.name', 't_posts_0_name')
+            , array('t_posts_0.topic_fk', 't_posts_0_topic_fk')
+            , array('t_posts_0.user_fk', 't_posts_0_user_fk')
+            , array('t_users_0.id', 't_users_0_id')
+            , array('t_users_0.name', 't_users_0_name')
+            , array('t_users_0.password', 't_users_0_password')
+            , array('t_users_0.created_at', 't_users_0_created_at')
+            , array('user_contact_info_0.email', 'user_contact_info_0_email')
+            , array('user_contact_info_0.phone_num', 'user_contact_info_0_phone_num')
+            , array('t_topics_0.id', 't_topics_0_id')
+        )->from(array('t_posts', 't_posts_0'))
+            ->left_join(array('t_topics', 't_topics_0'))
+                ->on('t_posts_0.topic_fk', '=', 't_topics_0.id')
+            ->left_join(array('t_users', 't_users_0'))
+                ->on('t_topics_0.creator_fk', '=', 't_users_0.id')
+            ->left_join(array('user_contact_info', 'user_contact_info_0'))
+                ->on('t_users_0.id', '=', 'user_contact_info_0.user_fk');
+
+        $this->assertCompiledTo($jork_query, $db_query);
     }
 
     public function testSelectManyToOneReverse() {
-        $jork_query = new query\SelectQuery;
-        $jork_query->select('t', 't.posts')->from('Model_Topic t');
-        $mapper = jork\mapper\SelectMapper::for_query($jork_query);
-        list($db_query, ) = $mapper->map();
-        $this->assertEquals($db_query->tables, array(
-            array('t_topics', 't_topics_0')
-        ));
-        $this->assertEquals($db_query->joins, array(array(
-            'table' => array('t_posts', 't_posts_0'),
-            'type' => 'LEFT',
-            'conditions' => array(
-                new db\BinaryExpression('t_topics_0.id', '=', 't_posts_0.topic_fk')
-            )
-        )));
-        
+        $jork_query = cy\JORK::select('t', 't.posts')->from('Model_Topic t');
+        $db_query = cy\DB::select(array('t_topics_0.id', 't_topics_0_id')
+                , array('t_topics_0.name', 't_topics_0_name')
+                , array('t_posts_0.id', 't_posts_0_id')
+                , array('t_posts_0.name', 't_posts_0_name')
+                , array('t_posts_0.topic_fk', 't_posts_0_topic_fk')
+                , array('t_posts_0.user_fk', 't_posts_0_user_fk'))
+            ->from(array('t_topics', 't_topics_0'))
+            ->left_join(array('t_posts', 't_posts_0'))
+                ->on('t_topics_0.id', '=', 't_posts_0.topic_fk');
+        $this->assertCompiledTo($jork_query, $db_query);
     }
 
     public function testSelectOneToMany() {
-        $jork_query = new query\SelectQuery;
-        $jork_query->select('posts')->from('Model_User');
-        $mapper = jork\mapper\SelectMapper::for_query($jork_query);
-        list($db_query, ) = $mapper->map();
+        $jork_query = cy\JORK::select('posts')
+            ->from('Model_User');
+        $db_query =cy\DB::select(array('t_posts_0.id', 't_posts_0_id')
+            , array('t_posts_0.name', 't_posts_0_name')
+            , array('t_posts_0.topic_fk', 't_posts_0_topic_fk')
+            , array('t_posts_0.user_fk', 't_posts_0_user_fk')
+            , array('t_users_0.id', 't_users_0_id')
+        )->from(array('t_users', 't_users_0'))
+            ->left_join(array('t_posts', 't_posts_0'))
+                ->on('t_users_0.id', '=', 't_posts_0.user_fk')
+        ->order_by('t_users_0.name', 'asc');
+
+        $this->assertCompiledTo($jork_query, $db_query);
         $this->assertEquals($db_query->tables, array(
             array('t_users', 't_users_0')
         ));
@@ -105,30 +99,20 @@ class JORK_Mapper_SelectTest extends JORK_MapperTest {
     }
 
     public function testSelectOneToManyReverse() {
-        $jork_query = new query\SelectQuery;
-        $jork_query->select('author')->from('Model_Post');
-        $mapper = jork\mapper\SelectMapper::for_query($jork_query);
-        list($db_query, ) = $mapper->map();
-        $this->assertEquals($db_query->tables, array(
-            array('t_posts', 't_posts_0')
-        ));
-        $this->assertEquals($db_query->joins, array(
-            array(
-                'table' => array('t_users', 't_users_0'),
-                'type' => 'LEFT',
-                'conditions' => array(
-                    new db\BinaryExpression('t_posts_0.user_fk', '=', 't_users_0.id')
-                )
-            ),
-            array(
-                'table' => array('user_contact_info', 'user_contact_info_0'),
-                'type' => 'LEFT',
-                'conditions' => array(
-                    new db\BinaryExpression('t_users_0.id', '=', 'user_contact_info_0.user_fk')
-                )
-            )
-        ));
+        $jork_query = cy\JORK::select('author')->from('Model_Post');
+        $db_query = cy\DB::select(array('t_users_0.id', 't_users_0_id')
+            , array('t_users_0.name', 't_users_0_name')
+            , array('t_users_0.password', 't_users_0_password')
+            , array('t_users_0.created_at', 't_users_0_created_at')
+            , array('user_contact_info_0.email', 'user_contact_info_0_email')
+            , array('user_contact_info_0.phone_num', 'user_contact_info_0_phone_num')
+            , array('t_posts_0.id', 't_posts_0_id'))->from(array('t_posts', 't_posts_0'))
+            ->left_join(array('t_users', 't_users_0'))
+                ->on('t_posts_0.user_fk', '=', 't_users_0.id')
+            ->left_join(array('user_contact_info', 'user_contact_info_0'))
+                ->on('t_users_0.id', '=', 'user_contact_info_0.user_fk');
 
+        $this->assertCompiledTo($jork_query, $db_query);
     }
 
     public function testOneToOne() {
