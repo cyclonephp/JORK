@@ -23,7 +23,9 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      *
      * @usedby JORK_Model_Abstract::_inst()
      */
-    protected abstract function setup();
+    public static function setup() {
+
+    }
 
     /**
      * Stores the singleton instances per-class.
@@ -33,7 +35,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      */
     private static $_instances = array();
 
-    private static $_cfg;
+    protected static $_cfg;
 
     /**
      * It should be called only by the subclasses. All subclasses should contain
@@ -77,9 +79,9 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
         }
         $schema_pool = jork\schema\SchemaPool::inst();
         if ( ! $schema_pool->schema_exists(get_class($this))) {
-            $this->_schema = new jork\schema\ModelSchema();
-            $this->setup();
-            $schema_pool->add_schema(get_class($this), $this->_schema);
+            /*$this->_schema = new jork\schema\ModelSchema();
+            $this->setup();*/
+            $schema_pool->add_schema(get_class($this), static::setup());
         }
     }
 
@@ -89,10 +91,6 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      */
     public static function schema_by_class($class) {
         return jork\schema\SchemaPool::inst()->get_schema($class);
-        if ( ! isset(self::$_instances[$class])) {
-            self::_inst($class);
-        }
-        return self::$_instances[$class]->_schema;
     }
 
     /**
@@ -101,10 +99,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * @return \cyclone\jork\schema\ModelSchema
      */
     public function schema() {
-        if ( ! isset(self::$_instances[get_class($this)])) {
-            self::_inst(get_class($this));
-        }
-        return self::$_instances[get_class($this)]->_schema;
+        return jork\schema\SchemaPool::inst()->get_schema(get_class($this));
     }
 
     /**

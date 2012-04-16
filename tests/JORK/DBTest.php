@@ -3,6 +3,7 @@
 use cyclone as cy;
 use cyclone\db;
 
+require_once realpath(__DIR__) . '/MapperTest.php';
 
 abstract class JORK_DbTest extends JORK_MapperTest {
 

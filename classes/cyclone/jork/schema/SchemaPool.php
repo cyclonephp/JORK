@@ -87,6 +87,24 @@ class SchemaPool {
 
     public function add_schema($classname, jork\schema\ModelSchema $schema) {
         $this->_pool[$classname] = $schema;
+        if (NULL === $schema->class) {
+            $schema->class = $classname;
+        } elseif ($schema->class !== $classname)
+            throw new jork\SchemaException("\$schema->class should be NULL or equal to \$classname");
+        $this->load_embedded_schemas($schema);
+    }
+
+    private function load_embedded_schemas(jork\schema\ModelSchema $schema) {
+        foreach ($schema->embedded_components as $k => &$v) {
+            //$emb_inst = call_user_func(array($v, 'inst'));
+            $emb_schema = new EmbeddableSchema($schema, $v);
+            call_user_func(array($v, 'setup_embeddable'), $emb_schema);
+            //$emb_inst->set_schema($emb_schema);
+            //$emb_inst->setup_embeddable($emb_schema);
+            $emb_schema->table = $schema->table;
+            /*$this->_pool[$v] = $emb_schema;*/
+            $v = $emb_schema;
+        }
     }
 
     public function get_schemas() {
@@ -100,14 +118,7 @@ class SchemaPool {
             } elseif ($schema->class !== $classname)
                 throw new jork\SchemaException("array key for schema '{$schema->class}' is '{$classname}'");
 
-            foreach ($schema->embedded_components as $k => &$v) {
-                $emb_inst = call_user_func(array($v, 'inst'));
-                $emb_schema = new EmbeddableSchema($schema, $v);
-                $emb_inst->set_schema($emb_schema);
-                $emb_inst->setup();
-                $emb_schema->table = $schema->table;
-                $v = $emb_schema;
-            }
+            $this->load_embedded_schemas($schema);
         }
         $this->_pool = $schemas;
     }
