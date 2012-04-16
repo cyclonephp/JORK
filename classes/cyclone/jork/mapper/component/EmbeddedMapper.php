@@ -37,7 +37,8 @@ class EmbeddedMapper extends jork\mapper\EntityMapper {
             return array($this->_previous_result_entity, false);
 
         $class = $this->_entity_schema->class;
-        $entity = new $class;
+
+        $entity = $this->_parent_mapper->get_last_entity()->{$this->_comp_name};
 
         $atomics = array();
         foreach ($this->_result_atomics as $col_name => $prop_name) {

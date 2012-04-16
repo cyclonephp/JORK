@@ -85,13 +85,15 @@ class SchemaPool {
         return isset($this->_pool[$classname]);
     }
 
-    public function add_schema($classname, jork\schema\ModelSchema $schema) {
+    public function add_schema($classname, $schema) {
         $this->_pool[$classname] = $schema;
         if (NULL === $schema->class) {
             $schema->class = $classname;
         } elseif ($schema->class !== $classname)
-            throw new jork\SchemaException("\$schema->class should be NULL or equal to \$classname");
-        $this->load_embedded_schemas($schema);
+            throw new jork\SchemaException("\$schema->class ({$schema->class}) should be NULL or equal to \$classname ($classname)");
+        if ($schema instanceof jork\schema\ModelSchema) {
+            $this->load_embedded_schemas($schema);
+        }
     }
 
     private function load_embedded_schemas(jork\schema\ModelSchema $schema) {

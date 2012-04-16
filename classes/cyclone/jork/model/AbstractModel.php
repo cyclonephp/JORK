@@ -266,8 +266,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                     $this->__set($name, $elem);
                 }
             } elseif (isset($schema->embedded_components[$name])) {
-                $comp_elem_class = $schema->embedded_components[$name]->class;
-                $elem = new $comp_elem_class;
+                $elem = $this->__get($name);
                 $elem->populate($value, $strict);
                 $this->__set($name, $elem);
             } elseif ($strict)
@@ -433,9 +432,10 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
         }
         if (isset($schema->embedded_components[$key])) {
             if ( ! isset($this->_components[$key])) {
+                $comp_class = 'Model_ModInfo';
                 $this->_components[$key] = array(
                     'persistent' => TRUE,
-                    'value' => NULL
+                    'value' => new $comp_class($this, $key)
                 );
             }
             return $this->_components[$key]['value'];

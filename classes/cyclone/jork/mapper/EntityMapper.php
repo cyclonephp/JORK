@@ -131,14 +131,14 @@ class EntityMapper implements RowMapper {
             }
 
             $entity->init_component_collections($this->_next_to_many_mappers);
-            
+
+            $this->_previous_result_entity = $entity;
             $to_one_comps = array();
             foreach ($this->_next_to_one_mappers as $prop_name => $one_mapper) {
                 list($comp, $is_new_comp) = $one_mapper->map_row($db_row);
                 $to_one_comps[$prop_name] = $comp;
             }
             $entity->set_components($to_one_comps);
-            $this->_previous_result_entity = $entity;
         }
         
         $to_many_comps = array();

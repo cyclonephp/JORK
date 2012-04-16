@@ -3,6 +3,7 @@
 namespace cyclone\jork\model;
 
 use cyclone\jork;
+use cyclone as cy;
 
 /**
  * @author Bence Eros <crystal@cyclonephp.com>
@@ -18,6 +19,18 @@ abstract class EmbeddableModel extends AbstractModel {
 
     public static function setup_embeddable(jork\schema\EmbeddableSchema $schema) {
 
+    }
+
+    public function __construct(AbstractModel $owner_model, $comp_name) {
+        if (NULL === self::$_cfg) {
+            self::$_cfg = cy\Config::inst()->get('jork');
+        }
+        $schema_pool = jork\schema\SchemaPool::inst();
+        if ( ! $schema_pool->schema_exists(get_class($this))) {
+            $schema = new jork\schema\EmbeddableSchema($owner_model->schema(), get_class($this));
+            static::setup_embeddable($schema);
+            $schema_pool->add_schema(get_class($this), $schema);
+        }
     }
 
     protected static function _inst($class) {
