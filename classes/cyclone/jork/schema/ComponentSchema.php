@@ -71,8 +71,8 @@ class ComponentSchema {
      * Determines what to do with this component if the owner model is deleted.
      * Possible values:
      * <ul>
-     *  <li><code>cyclone\\JORK::SET_NULL</code>: the value of the join column will be set to <code>NULL</code></li>
-     *  <li><code>cyclone\\JORK::CASCADE</code>: the component object will be deleted too with the model instance.
+     *  <li><code>cyclone\JORK::SET_NULL</code>: the value of the join column will be set to <code>NULL</code></li>
+     *  <li><code>cyclone\JORK::CASCADE</code>: the component object will be deleted too with the model instance.
      * </ul>
      *
      * @var string
