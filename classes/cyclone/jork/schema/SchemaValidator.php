@@ -120,11 +120,13 @@ class SchemaValidator {
             , ModelSchema $schema
             , ComponentSchema $comp_schema
             , ValidationResult $result) {
-        $join_column = empty($comp_schema->join_column) ? $schemas[$comp_schema->class]->primary_key() : $comp_schema->join_column;
-        if ( ! isset($schema->primitives[$join_column])) {
-            $result->add_error('local join column ' . $schema->class
+        $join_columns = empty($comp_schema->join_columns) ? $schemas[$comp_schema->class]->primary_key() : $comp_schema->join_columns;
+        foreach ($join_columns as $join_column) {
+            if ( ! isset($schema->primitives[$join_column])) {
+                $result->add_error('local join column ' . $schema->class
                     . '::$' . $comp_schema->join_column
                     . ' doesn\'t exist');
+            }
         }
         $inverse_schema = $schemas[$comp_schema->class];
         $inverse_join_col = empty($comp_schema->inverse_join_column) ? $inverse_schema->primary_key() : $comp_schema->inverse_join_column;
