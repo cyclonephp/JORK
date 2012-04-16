@@ -18,7 +18,4 @@ class Model_Topic extends model\AbstractModel {
             ->embedded_component('modinfo', 'Model_ModInfo');
     }
 
-    public static function inst() {
-        return parent::_inst(__CLASS__);
-    }
 }

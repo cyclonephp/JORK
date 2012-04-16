@@ -61,7 +61,7 @@ class JORK_Model_Collection_OneToManyTest extends JORK_DbTest {
     }
 
     public function testNotifyOwnerDeletion() {
-        Model_User::inst()->delete_by_pk(1);
+        Model_User::get(1)->delete();
 
         $this->assertEquals(2, count(cy\DB::select()->from('t_posts')
                 ->where('user_fk', 'IS', NULL)

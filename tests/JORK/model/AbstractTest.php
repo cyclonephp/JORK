@@ -6,10 +6,6 @@ use cyclone\db;
 
 class JORK_Model_AbstractTest extends JORK_DbTest {
 
-    public function testInst() {
-        Model_User::inst();
-    }
-
     public function testManyToOneFK() {
         $post = new Model_Post;
         $topic = new Model_Topic;
@@ -262,7 +258,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $this->assertInstanceOf('Model_Topic', $post->topic());
         $this->assertEquals(1, $post->topic->id);
 
-        $topic = Model_Topic::inst()->get(2);
+        $topic = Model_Topic::get(2);
         $this->assertEquals(0, count($topic->posts));
         $this->assertEquals(1, count($topic->posts()));
         $this->assertEquals(3, $topic->posts[3]->id);

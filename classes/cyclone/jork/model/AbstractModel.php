@@ -27,45 +27,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
 
     }
 
-    /**
-     * Stores the singleton instances per-class.
-     *
-     * @var array<JORK_Model_Abstract>
-     * @usedby JORK_Model_Abstract::_inst()
-     */
-    private static $_instances = array();
-
     protected static $_cfg;
-
-    /**
-     * It should be called only by the subclasses. All subclasses should contain
-     * a static method with this code:
-     * <code>pubic static function inst() {
-     *      return parent::_inst(__CLASS__);
-     * }</code>
-     *
-     * @param string $classname
-     * @return JORK_Model_Abstract
-     */
-    protected static function _inst($classname) {
-        if ( ! isset(self::$_instances[$classname])) {
-            $inst = new $classname;
-//            $inst->_schema = new jork\schema\ModelSchema;
-//            $inst->_schema->class = $classname;
-//            $inst->setup();
-//            foreach ($inst->_schema->embedded_components as $k => &$v) {
-//                $emb_inst = call_user_func(array($v, 'inst'));
-//                $emb_schema = new jork\schema\EmbeddableSchema($inst->_schema, $v);
-//                $emb_inst->_schema = $emb_schema;
-//                $emb_inst->setup();
-//                $emb_schema->table = $inst->_schema->table;
-//                $v = $emb_schema;
-//            }
-            $inst->_schema = jork\schema\SchemaPool::inst()->get_schema($classname);
-            self::$_instances[$classname] = $inst;
-        }
-        return self::$_instances[$classname];
-    }
 
     /**
      * Loads the JORK configuration for later usage.
@@ -98,8 +60,8 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * 
      * @return \cyclone\jork\schema\ModelSchema
      */
-    public function schema() {
-        return jork\schema\SchemaPool::inst()->get_schema(get_class($this));
+    public static function schema() {
+        return jork\schema\SchemaPool::inst()->get_schema(get_called_class());
     }
 
     /**
@@ -171,8 +133,8 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * @param mixed $pk
      * @return JORK_Model_Abstract
      */
-    public function get($pk) {
-        $schema = $this->schema();
+    public static function get($pk) {
+        $schema = static::schema();
         $result = cy\JORK::from($schema->class)
                 ->where($schema->primary_key(), '=', cy\DB::esc($pk))
                 ->exec($schema->db_conn);
@@ -432,7 +394,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
         }
         if (isset($schema->embedded_components[$key])) {
             if ( ! isset($this->_components[$key])) {
-                $comp_class = 'Model_ModInfo';
+                $comp_class = $schema->embedded_components[$key]->class;
                 $this->_components[$key] = array(
                     'persistent' => TRUE,
                     'value' => new $comp_class($this, $key)
@@ -858,26 +820,16 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     }
 
     public function delete() {
-        $this->delete_by_pk($this->pk());
-    }
+        $pk = $this->pk();
+        $this->delete_by_pk($pk);
 
-    public function delete_by_pk($pk) {
-        if ($pk === NULL)
-            return;
-
-        $schema = $this->schema();
-        $delete_sqls = query\Cache::inst(get_class($this))->delete_sql();
         $pk = new db\ParamExpression($pk);
-        foreach ($delete_sqls as $del_stmt) {
-            $del_stmt->conditions[0]->right_operand = $pk;
-            $del_stmt->exec($schema->db_conn);
-        }
-
+        $schema = static::schema();
         foreach ($schema->components as $comp_name => $comp_def) {
             if (isset($comp_def->on_delete)) {
                 $on_delete = $comp_def->on_delete;
                 if (cy\JORK::CASCADE === $on_delete) {
-                    
+
                     //$component['value']->delete();
                 } elseif (cy\JORK::SET_NULL == $on_delete) {
                     if ($schema->is_to_many_component($comp_name)) {
@@ -892,13 +844,26 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                         // we handle reverse one-to-one components here
                         $remote_class_schema = self::schema_by_class($comp_def->class);
                         if (cy\JORK::ONE_TO_ONE == $remote_class_schema
-                                ->components[$comp_def->mapped_by]->type) {
+                            ->components[$comp_def->mapped_by]->type) {
                             $this->set_null_fk_for_reverse_one_to_one($remote_class_schema
-                                    , $comp_def, $pk);
+                                , $comp_def, $pk);
                         }
                     }
                 }
-            } 
+            }
+        }
+    }
+
+    public static function delete_by_pk($pk) {
+        if ($pk === NULL)
+            return;
+
+        $schema = static::schema();
+        $delete_sqls = query\Cache::inst(get_called_class())->delete_sql();
+        $pk = new db\ParamExpression($pk);
+        foreach ($delete_sqls as $del_stmt) {
+            $del_stmt->conditions[0]->right_operand = $pk;
+            $del_stmt->exec($schema->db_conn);
         }
     }
 

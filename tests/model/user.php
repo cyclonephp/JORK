@@ -31,8 +31,4 @@ class Model_User extends model\AbstractModel {
                 );
     }
 
-    public static function inst() {
-        return parent::_inst(__CLASS__);
-    }
-    
 }
