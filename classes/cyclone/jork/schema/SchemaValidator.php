@@ -124,16 +124,18 @@ class SchemaValidator {
         foreach ($join_columns as $join_column) {
             if ( ! isset($schema->primitives[$join_column])) {
                 $result->add_error('local join column ' . $schema->class
-                    . '::$' . $comp_schema->join_column
+                    . '::$' . $join_column
                     . ' doesn\'t exist');
             }
         }
         $inverse_schema = $schemas[$comp_schema->class];
-        $inverse_join_col = empty($comp_schema->inverse_join_column) ? $inverse_schema->primary_key() : $comp_schema->inverse_join_column;
-        if ( ! isset($inverse_schema->primitives[$inverse_join_col])) {
-            $result->add_error('inverse join column ' . $comp_schema->class
-                    . '::$' . $comp_schema->inverse_join_column
+        $inverse_join_cols = empty($comp_schema->inverse_join_columns) ? $inverse_schema->primary_key() : $comp_schema->inverse_join_columns;
+        foreach ($inverse_join_cols as $inverse_join_col) {
+            if ( ! isset($inverse_schema->primitives[$inverse_join_col])) {
+                $result->add_error('inverse join column ' . $comp_schema->class
+                    . '::$' . $inverse_join_col
                     . ' doesn\'t exist');
+            }
         }
     }
 
@@ -141,25 +143,27 @@ class SchemaValidator {
             , ModelSchema $schema
             , ComponentSchema $comp_schema
             , ValidationResult $result) {
-        if ( ! isset($comp_schema->join_column)) {
+        if (empty($comp_schema->join_columns)) {
             $result->add_error('one-to-many component '
                     . $schema->class . '::$' . $comp_schema->name
                     . ' doesn\'t have join column');
             return;
         }
         $comp_class_schema = $schemas[$comp_schema->class];
-        if ( ! $comp_class_schema->column_exists($comp_schema->join_column)) {
-            $result->add_error('column ' . $comp_schema->class
-                    . '::$' . $comp_schema->join_column
+        foreach ($comp_schema->join_columns as $join_col) {
+            if ( ! $comp_class_schema->column_exists($join_col)) {
+                $result->add_error('column ' . $comp_schema->class
+                    . '::$' . $join_col
                     . ' doesn\'t exist but referenced by '
                     . $schema->class . '::$' . $comp_schema->name);
+            }
         }
-        if ( ! empty($comp_schema->inverse_join_column)) {
-            if ( ! $schema->column_exists($comp_schema->inverse_join_column)) {
+        foreach ($comp_schema->inverse_join_columns as $inv_join_col) {
+            if ( ! $schema->column_exists($inv_join_col)) {
                 $result->add_error('column ' . $schema->class . '::$'
-                        . $comp_schema->inverse_join_column
-                        . ' doesn\'t exist but referenced by '
-                        . $schema->class . '::$' . $comp_schema->name);
+                    . $inv_join_col
+                    . ' doesn\'t exist but referenced by '
+                    . $schema->class . '::$' . $comp_schema->name);
             }
         }
     }
@@ -168,25 +172,29 @@ class SchemaValidator {
             , ModelSchema $schema
             , ComponentSchema $comp_schema
             , ValidationResult $result) {
-        if ( ! isset($comp_schema->join_column)) {
+        if (empty($comp_schema->join_columns)) {
             $result->add_error('many-to-one component '
                     . $schema->class . '::$' . $comp_schema->name
                     . ' doesn\'t have join column');
             return;
         }
-        if ( ! $schema->column_exists($comp_schema->join_column)) {
-            $result->add_error('column ' . $schema->class
-                    . '::$' . $comp_schema->join_column
+        foreach ($comp_schema->join_columns as $join_col) {
+            if ( ! $schema->column_exists($join_col)) {
+                $result->add_error('column ' . $schema->class
+                    . '::$' . $join_col
                     . ' doesn\'t exist but referenced by '
                     . $schema->class . '::$' . $comp_schema->name);
+            }
         }
         $comp_class_schema = $schemas[$comp_schema->class];
-        if ( ! empty($comp_schema->inverse_join_column)) {
-            if (!$comp_class_schema->column_exists($comp_schema->inverse_join_column)) {
-                $result->add_error('column ' . $comp_class_schema->class . '::$'
-                        . $comp_schema->inverse_join_column
+        if ( ! empty($comp_schema->inverse_join_columns)) {
+            foreach ($comp_schema->inverse_join_columns as $inv_join_col) {
+                if ( ! $comp_class_schema->column_exists($inv_join_col)) {
+                    $result->add_error('column ' . $comp_class_schema->class . '::$'
+                        . $inv_join_col
                         . ' doesn\'t exist but referenced by '
                         . $schema->class . '::$' . $comp_schema->name);
+                }
             }
         }
     }
@@ -200,16 +208,20 @@ class SchemaValidator {
             $result->add_error('no join table defined for many-to-many component '
                     . $schema->class . '::$' . $comp_schema->name);
         }
-        if ( ! $schema->column_exists($comp_schema->join_column)) {
-            $result->add_error('column ' . $schema->class . '::$'
-                    . $comp_schema->join_column . ' doesn\'t exist but referenced by '
+        foreach ($comp_schema->join_columns as $join_column) {
+            if ( ! $schema->column_exists($join_column)) {
+                $result->add_error('column ' . $schema->class . '::$'
+                    . $join_column . ' doesn\'t exist but referenced by '
                     . $schema->class . '::$' . $comp_schema->name);
+            }
         }
         $comp_class_schema = $schemas[$comp_schema->class];
-        if ( ! $comp_class_schema->column_exists($comp_schema->inverse_join_column)) {
-            $result->add_error('column ' . $comp_schema->class . '::$'
-                    . $comp_schema->inverse_join_column . ' doesn\'t exist but referenced by '
+        foreach ($comp_schema->inverse_join_columns as $inv_join_col) {
+            if ( ! $comp_class_schema->column_exists($inv_join_col)) {
+                $result->add_error('column ' . $comp_schema->class . '::$'
+                    . $inv_join_col . ' doesn\'t exist but referenced by '
                     . $schema->class . '::$' . $comp_schema->name);
+            }
         }
     }
 
