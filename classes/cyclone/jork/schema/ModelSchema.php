@@ -301,6 +301,40 @@ use cyclone\jork\schema;
         }
     }
 
+     /**
+      * @param $col_names array the names of the column names
+      * @return array
+      */
+    public function table_names_for_columns(&$col_names) {
+        $rval = array();
+        if (count($col_names) == 0) {
+            $pk_prop_names = array($this->primary_key());
+            foreach ($pk_prop_names as $pk_prop_name) {
+                $pk_schema = $this->primitives[$pk_prop_name];
+                $col_names []= NULL === $pk_schema->column
+                    ? $pk_schema->name
+                    : $pk_schema->column;
+                $rval []= NULL === $pk_schema->table
+                    ? $this->table
+                    : $pk_schema->table;
+            }
+            return $rval;
+        }
+        foreach ($this->primitives as $prim_schema) {
+            $tmp_col_name = NULL === $prim_schema->column
+                ? $prim_schema->name
+                : $prim_schema->column;
+            foreach($col_names as $idx => $col_name) {
+                if ($col_name == $tmp_col_name) {
+                    $rval[$idx] = NULL === $prim_schema->table
+                        ? $this->table
+                        : $prim_schema->table;
+                }
+            }
+        }
+        return $rval;
+    }
+
     public function is_to_many_component($comp_name) {
         if (isset($this->embedded_components[$comp_name]))
             return FALSE;

@@ -6,6 +6,8 @@ use cyclone\jork;
 use cyclone\jork\query;
 use cyclone\jork\schema;
 
+require_once realpath(__DIR__) . '../../MapperTest.php';
+
 class JORK_Mapping_SchemaTest extends JORK_MapperTest {
 
     /**
@@ -88,6 +90,48 @@ class JORK_Mapping_SchemaTest extends JORK_MapperTest {
             FALSE
         );
         return $rval;
+    }
+
+    public function provider_table_names_for_columns() {
+        $rval = array();
+        $rval []= array(
+            schema\ModelSchema::factory()->table('tbl_1')->primitive(cy\JORK::primitive('id', 'int')
+                ->primary_key())
+            , array()
+            , array('tbl_1')
+        );
+        $rval []= array(
+            schema\ModelSchema::factory()->table('tbl_1')->primitive(cy\JORK::primitive('id', 'int')
+                ->primary_key())
+            , array('id')
+            , array('tbl_1')
+        );
+        $rval []= array(
+            schema\ModelSchema::factory()->table('tbl_1')
+                ->secondary_table(cy\JORK::secondary_table('tbl_2', 'tbl1_fk', 'tbl2_fk'))
+                ->primitive(cy\JORK::primitive('id', 'int')->primary_key())
+                ->primitive(cy\JORK::primitive('col2', 'string')->table('tbl_2'))
+            , array('id', 'col2')
+            , array('tbl_1', 'tbl_2')
+        );
+        $rval []= array(
+            schema\ModelSchema::factory()->table('tbl_1')
+                ->secondary_table(cy\JORK::secondary_table('tbl_2', 'tbl1_fk', 'tbl2_fk'))
+                ->primitive(cy\JORK::primitive('id', 'int')->primary_key())
+                ->primitive(cy\JORK::primitive('col2', 'string')->table('tbl_2'))
+            , array('id', 'id')
+            , array('tbl_1', 'tbl_1')
+        );
+        return $rval;
+    }
+
+    /**
+     * @dataProvider provider_table_names_for_columns
+     */
+    public function test_table_names_for_columns(schema\ModelSchema $model_schema
+            , $col_names
+            , $expected_table_names) {
+        $this->assertEquals($expected_table_names, $model_schema->table_names_for_columns($col_names));
     }
 
     
