@@ -19,7 +19,7 @@ class OneToManyMapper extends AbstractMapper {
         $local_join_tables = $this->_entity_schema->table_names_for_columns($local_join_cols);
 
         $remote_join_cols = $comp_schema->inverse_join_columns;
-        $remote_tables = $this->_entity_schema->table_names_for_columns($remote_join_cols);
+        $remote_tables = $this->_parent_mapper->_entity_schema->table_names_for_columns($remote_join_cols);
 
         $joins = array();
 
@@ -82,6 +82,7 @@ class OneToManyMapper extends AbstractMapper {
                 , '=', $local_join_table_alias.'.'
                     .$local_join_col);
         }
+
     }
 
 }
