@@ -10,9 +10,9 @@ class JoinTableSchema {
 
     public $name;
 
-    public $join_column;
+    public $join_columns = array();
 
-    public $inverse_join_column;
+    public $inverse_join_columns = array();
 
     /**
      *
@@ -22,8 +22,8 @@ class JoinTableSchema {
      */
     public function __construct($name, $join_column, $inverse_join_column) {
         $this->name = $name;
-        $this->join_column = $join_column;
-        $this->inverse_join_column = $inverse_join_column;
+        $this->join_columns []= $join_column;
+        $this->inverse_join_columns []= $inverse_join_column;
     }
 
     public function name($name) {
@@ -38,7 +38,7 @@ class JoinTableSchema {
      * @return JoinTableSchema
      */
     public function join_column($column) {
-        $this->join_column = $column;
+        $this->join_columns []= $column;
         return $this;
     }
 
@@ -49,7 +49,7 @@ class JoinTableSchema {
      * @return JoinTableSchema
      */
     public function inverse_join_column($column) {
-        $this->inverse_join_column = $column;
+        $this->inverse_join_columns []= $column;
         return $this;
     }
 

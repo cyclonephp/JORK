@@ -5,6 +5,7 @@ use cyclone\db;
 use cyclone\jork;
 use cyclone\jork\query;
 
+require_once realpath(__DIR__) .'../../MapperTest.php';
 
 class JORK_Mapper_SelectTest extends JORK_MapperTest {
 
