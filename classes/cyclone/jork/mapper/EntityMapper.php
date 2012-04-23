@@ -61,11 +61,11 @@ class EntityMapper implements RowMapper {
     protected $_result_atomics = array();
 
     /**
-     * The alias of the primary key in the database query result.
+     * The aliases of the primary keys in the database query result.
      *
-     * @var string
+     * @var array
      */
-    protected $_result_primary_key_column;
+    protected $_result_primary_key_columns;
 
     /**
      * The next mappers to be executed on the same row. All items should also in
@@ -253,8 +253,8 @@ class EntityMapper implements RowMapper {
         $this->_db_query->columns []= array($full_column, $full_alias);
         $this->_result_atomics[$full_alias] = $prop_name;
 
-        if ($prop_name == $this->_entity_schema->primary_key()) {
-            $this->_result_primary_key_column = $full_alias;
+        if (in_array($prop_name, $this->_entity_schema->primary_keys())) {
+            $this->_result_primary_key_columns []= $full_alias;
         }
     }
 
@@ -269,9 +269,9 @@ class EntityMapper implements RowMapper {
         $table_schema = $this->_entity_schema->secondary_tables[$tbl_name];
 
 
-        $inverse_join_col = isset($table_schema->inverse_join_column)
-                ? $table_schema->inverse_join_column
-                : $this->_entity_schema->primary_key();
+        $inverse_join_cols = isset($table_schema->inverse_join_columns)
+                ? $table_schema->inverse_join_columns
+                : $this->_entity_schema->primary_keys();
 
         $tbl_alias = $this->table_alias($tbl_name);
         

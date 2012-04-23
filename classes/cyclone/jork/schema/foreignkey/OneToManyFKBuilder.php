@@ -41,7 +41,7 @@ class OneToManyFKBuilder extends ForeignKeyBuilder {
             $fk = $fks[$foreign_table->name];
             $fk->local_columns []= $foreign_col;
 
-            $pk_prop_names = array($this->_model_schema->primary_key());
+            $pk_prop_names = $this->_model_schema->primary_keys();
             $pk_schemas = array();
             foreach ($pk_prop_names as $pk_prop_name) {
                 $pk_schemas []= $this->_model_schema->primitives[$pk_prop_name];

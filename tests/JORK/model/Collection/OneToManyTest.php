@@ -3,6 +3,7 @@
 use cyclone as cy;
 use cyclone\db;
 
+require_once realpath(__DIR__) . '/../../DBTest.php';
 
 class JORK_Model_Collection_OneToManyTest extends JORK_DbTest {
 

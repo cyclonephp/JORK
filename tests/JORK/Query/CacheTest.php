@@ -23,7 +23,7 @@ class JORK_Query_CacheTest extends Kohana_Unittest_TestCase {
         $inserts = $cache->insert_sql();
         $this->assertEquals(
             array(
-                't_users' => cy\DB::insert('t_users'),
+                't_users' => cy\DB::insert('t_users')->returning('id'),
                 'user_contact_info' => cy\DB::insert('user_contact_info')
             ),
             $inserts

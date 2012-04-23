@@ -85,7 +85,7 @@ class SchemaValidator {
         $rval = new ValidationResult;
         foreach ($schemas as $schema) {
             try {
-                $schema->primary_key();
+                $schema->primary_keys();
             } catch (jork\Exception $ex) {
                 $rval->add_error("class {$schema->class} doesn't have primary key property");
             }
@@ -303,10 +303,12 @@ class SchemaValidator {
         foreach ($schemas as $schema) {
             if ($schema->secondary_tables !== NULL) {
                 foreach ($schema->secondary_tables as $sec_tbl) {
-                    if ( ! $schema->column_exists($sec_tbl->join_column)) {
-                        $rval->add_error('column ' . $schema->class . '::$'
-                            . $sec_tbl->join_column . ' doesn\'t exist but referenced by secondary table \''
-                            . $sec_tbl->name . '\'');
+                    foreach ($sec_tbl->join_columns as $join_column) {
+                        if ( ! $schema->column_exists($join_column)) {
+                            $rval->add_error('column ' . $schema->class . '::$'
+                                . $join_column . ' doesn\'t exist but referenced by secondary table \''
+                                . $sec_tbl->name . '\'');
+                        }
                     }
                 }
             }

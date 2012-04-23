@@ -77,18 +77,18 @@ class SchemaBuilder {
                 if ( ! isset($this->_table_pool[$tbl->name])) {
                     $this->_table_pool[$tbl->name] = $tbl;
                 }
-                $inv_join_col = $tbl->get_column($sec_tbl->inverse_join_column);
-                foreach ($model_schema->primitives as $prim_schema) {
-                    $col_name = is_null($prim_schema->column)
-                            ? $prim_schema->name
-                            : $prim_schema->column;
-                    if ($col_name == $sec_tbl->join_column) {
-                        $inv_join_col->type = $this->_default_types[$prim_schema->type];
-                        break;
+                foreach ($sec_tbl->inverse_join_columns as $idx => $inv_join_col) {
+                    $inv_join_col = $tbl->get_column($inv_join_col);
+                    foreach ($model_schema->primitives as $prim_schema){
+                        $col_name = $prim_schema->column ?: $prim_schema->name;
+                        if ($col_name == $sec_tbl->join_columns[$idx]) {
+                            $inv_join_col->type = $this->_default_types[$prim_schema->type];
+                            break;
+                        }
                     }
+                    if (NULL === $inv_join_col->type)
+                        throw new SchemaBuilderException("failed to determine type of join column '{$sec_tbl->inverse_join_column}'");
                 }
-                if (NULL === $inv_join_col->type)
-                    throw new SchemaBuilderException("failed to determine type of join column '{$sec_tbl->inverse_join_column}'");
             }
         }
     }

@@ -40,7 +40,7 @@ class Cache {
     /**
      * Mapping schema for <code>$this->_class</code>
      *
-     * @var JORK_Mapping_Schema
+     * @var \cyclone\jork\schema\ModelSchema
      */
     private $_schema;
 
@@ -51,7 +51,7 @@ class Cache {
      * entity has got secondary tables.
      *
      * @var array<cyclone\db\query\Insert>
-     * @see JORK_Model_Abstract::insert()
+     * @see \cyclone\jork\model\AbstractModel::insert()
      */
     private $_insert_sql;
 
@@ -60,7 +60,7 @@ class Cache {
      * of $this->_class.
      *
      * @var array<cyclone\db\query\Update>
-     * @see JORK_Model_Abstract::update()
+     * @see \cyclone\jork\model\AbstractModel::update()
      */
     private $_update_sql;
 
@@ -101,6 +101,13 @@ class Cache {
                     $ins_sql = new db\query\Insert;
                     $ins_sql->table = $sec_table;
                     $this->_insert_sql [$sec_table] = $ins_sql;
+                }
+            }
+            foreach ($this->_schema->primitives as $prop_name => $prim_schema) {
+                if ($prim_schema->primary_key_strategy === cy\JORK::AUTO) {
+                    $table_name = $prim_schema->table ?: $this->_schema->table;
+                    $col_name = $prim_schema->column ?: $prop_name;
+                    $this->_insert_sql[$table_name]->returning []= $col_name;
                 }
             }
         }

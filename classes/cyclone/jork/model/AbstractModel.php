@@ -564,8 +564,9 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      *
      * The method doesn't do anything if the entity is persistent.
      *
-     * @usedby AbstractCollection::save()
-     * 
+     * @param bool $cascade
+     * @return mixed
+     * @throws \cyclone\jork\Exception
      */
     public function insert($cascade = TRUE) {
         if ($this->_save_in_progress)

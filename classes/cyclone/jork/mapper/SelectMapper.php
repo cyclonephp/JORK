@@ -181,10 +181,18 @@ abstract class SelectMapper {
 //                            . $right_ent_schema->components[$right_last_prop]['class'] . "'");
             $left_class = $left_ent_schema->components[$left_last_prop]->class;
 
-            $left_prop_chain = array($left_last_prop
-                , jork\model\AbstractModel::schema_by_class($left_ent_schema->components[$left_last_prop]->class)->primary_key());
-            $left_mapper->merge_prop_chain($left_prop_chain, EntityMapper::SELECT_NONE);
-            $expr->left_operand = $left_mapper->resolve_prop_chain($left_prop_chain);
+            $prim_keys = jork\model\AbstractModel::schema_by_class($left_ent_schema->components[$left_last_prop]->class)->primary_keys();
+            if (count($prim_keys) == 1) {
+                $prim_key = $prim_keys[0];
+                $left_prop_chain = array($left_last_prop
+                    , $prim_key);
+                $left_mapper->merge_prop_chain($left_prop_chain, EntityMapper::SELECT_NONE);
+                $expr->left_operand = $left_mapper->resolve_prop_chain($left_prop_chain);
+            } else {
+                foreach ($prim_keys as $prim_key) {
+
+                }
+            }
         } elseif ($left_is_model) {
             $left_class = $expr->left_operand->schema()->class;
             $expr->left_operand = $expr->left_operand->pk();

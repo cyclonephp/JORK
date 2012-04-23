@@ -21,7 +21,7 @@ class SecondaryTableSchema {
     public $name;
 
     /**
-     * The name of the join column in the table of the model class which' schema
+     * The name of the join columns in the table of the model class which' schema
      * this secondary table belongs to.
      *
      * @var string
@@ -29,7 +29,7 @@ class SecondaryTableSchema {
     public $join_columns = array();
 
     /**
-     * The name of the join column in the secondary table.
+     * The name of the join columns in the secondary table.
      *
      * @var string
      */

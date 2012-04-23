@@ -95,9 +95,9 @@ use cyclone\jork\schema;
      */
     public $natural_ordering = array();
 
-    private $_pk_primitive;
+    private $_pk_primitives;
 
-    private $_pk_strategy;
+    private $_pk_strategies;
 
     /**
      * Setter for the <code>$db_conn</code> property.
@@ -188,21 +188,28 @@ use cyclone\jork\schema;
         $this->natural_ordering []= new Ordering($property, $direction);
         return $this;
     }
-    
 
     public function primary_key() {
-        if ( ! is_null($this->_pk_primitive))
-            return $this->_pk_primitive;
+        throw new \Exception("deprecated");
+    }
+
+    public function primary_keys() {
+        if (count($this->_pk_primitives) > 0)
+            return $this->_pk_primitives;
         
         foreach ($this->primitives as $name => $def) {
-            if ( ! is_null($def->primary_key_strategy))
-                return $this->_pk_primitive = $name;
+            if ( ! is_null($def->primary_key_strategy)) {
+                $this->_pk_primitives []= $name;
+            }
         }
-        throw new jork\Exception("no primary key found for schema " . $this->class);
+        if (empty($this->_pk_primitives))
+            throw new jork\Exception("no primary key found for schema " . $this->class);
+
+        return $this->_pk_primitives;
     }
 
     public function primary_key_strategy() {
-        if ( ! is_null($this->_pk_strategy))
+        if (count($this->_pk_strategies) > 0)
             return $this->_pk_strategy;
         
         foreach ($this->primitives as $name => $def) {
@@ -214,15 +221,19 @@ use cyclone\jork\schema;
     }
 
     public function primary_key_info() {
-        if ( ! (is_null($this->_pk_primitive) || is_null($this->_pk_strategy)))
-            return array($this->_pk_primitive, $this->_pk_strategy);
+        if ( ! (empty($this->_pk_primitives) || empty($this->_pk_strategies)))
+            return array($this->_pk_primitives, $this->_pk_strategies);
         
         foreach ($this->primitives as $name => $def) {
-            if ( ! is_null($def->primary_key_strategy))
-                return array($this->_pk_primitive = $name
-                    , $this->_pk_strategy = $def->primary_key_strategy);
+            if ( ! is_null($def->primary_key_strategy)) {
+                $this->_pk_primitives []= $name;
+                $this->_pk_strategies []= $def->primary_key_strategy;
+            }
         }
-        throw new jork\Exception("no primary key found for schema " . $this->class);
+        if (empty($this->_pk_primitives) || empty($this->_pk_strategies))
+            throw new jork\Exception("no primary key found for schema " . $this->class);
+
+        return array($this->_pk_primitives, $this->_pk_strategies);
     }
 
     public function get_property_schema($name) {
@@ -308,7 +319,7 @@ use cyclone\jork\schema;
     public function table_names_for_columns(&$col_names) {
         $rval = array();
         if (count($col_names) == 0) {
-            $pk_prop_names = array($this->primary_key());
+            $pk_prop_names = $this->primary_keys();
             foreach ($pk_prop_names as $pk_prop_name) {
                 $pk_schema = $this->primitives[$pk_prop_name];
                 $col_names []= NULL === $pk_schema->column

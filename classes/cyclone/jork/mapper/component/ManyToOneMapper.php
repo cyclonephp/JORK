@@ -17,6 +17,7 @@ class ManyToOneMapper extends AbstractMapper {
         $remote_schema = jork\model\AbstractModel::schema_by_class($comp_schema->class);
 
         $join_cols = $comp_schema->join_columns;
+        $join_tables = $this->_parent_mapper->_entity_schema->table_names_for_columns($join_cols);
         $joins = array();
         foreach ($join_cols as $idx => $join_col) {
             $join_col_schema = $this->_parent_mapper->_entity_schema->get_property_schema($join_col);
