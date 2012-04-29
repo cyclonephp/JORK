@@ -56,14 +56,6 @@ class InstancePool {
                 : NULL;*/
     }
 
-    public function for_pk($primary_key) {
-        if (isset($this->_pool[$primary_key])) {
-            return $this->_pool[$primary_key];
-        }
-        return $this->_pool[$primary_key] = new $this->_class;
-    }
-
-
     public function add(model\AbstractModel $instance) {
         $prev_pool = NULL;
         $curr_pool = $this->_pool;
