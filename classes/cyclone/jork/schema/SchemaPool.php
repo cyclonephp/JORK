@@ -12,7 +12,7 @@ use cyclone\jork;
  * mapping schemas of the model classes.
  *
  * @package jork
- * @author Bence Eros <crystal@cyclonephp.com>
+ * @author Bence Eros <crystal@cyclonephp.org>
  */
 class SchemaPool {
 

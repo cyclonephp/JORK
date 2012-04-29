@@ -9,7 +9,7 @@ use cyclone as cy;
 /**
  * Maps a jork select to a db select.
  * 
- * @author Bence Eros <crystal@cyclonephp.com>
+ * @author Bence Eros <crystal@cyclonephp.org>
  * @package JORK
  */
 abstract class SelectMapper {

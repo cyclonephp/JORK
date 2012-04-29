@@ -7,7 +7,7 @@ use cyclone as cy;
 
 /**
  * @package jork
- * @author Bence Eros <crystal@cyclonephp.com>
+ * @author Bence Eros <crystal@cyclonephp.org>
  */
 class SchemaBuilder {
 

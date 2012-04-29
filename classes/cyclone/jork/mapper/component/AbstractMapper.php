@@ -10,7 +10,7 @@ use cyclone as cy;
  * This class is responsible for mapping any property chains represented by
  * JORK joins to DB joins and creating the result mappers.
  * 
- * @author Bence Eros <crystal@cyclonephp.com>
+ * @author Bence Eros <crystal@cyclonephp.org>
  * @package JORK
  */
 abstract class AbstractMapper extends jork\mapper\EntityMapper {

@@ -7,7 +7,7 @@ use cyclone\jork;
 use cyclone\db;
 
 /**
- * @author Bence Eros <crystal@cyclonephp.com>
+ * @author Bence Eros <crystal@cyclonephp.org>
  * @package JORK
  */
 class ManyToOneCollection extends jork\model\collection\AbstractCollection {
@@ -33,7 +33,9 @@ class ManyToOneCollection extends jork\model\collection\AbstractCollection {
 
     public function delete_by_pk($pk) {
         $this->_deleted[$pk] = $this->_storage[$pk];
-        $this->_deleted[$pk]['value']->{$this->_inverse_join_column} = NULL;
+        foreach ($this->_inverse_join_columns as $inv_join_col) {
+            $this->_deleted[$pk]['value']->$inv_join_col = NULL;
+        }
         unset($this->_storage[$pk]);
         $this->_persistent = FALSE;
     }

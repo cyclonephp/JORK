@@ -5,7 +5,7 @@ namespace cyclone\jork\schema;
 use cyclone\jork;
 
 /**
- * @author Bence Erős <crystal@cyclonephp.com>
+ * @author Bence Erős <crystal@cyclonephp.org>
  * @package JORK
  */
 class Ordering {

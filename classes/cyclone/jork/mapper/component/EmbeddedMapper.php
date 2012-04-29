@@ -6,7 +6,7 @@ use cyclone\db;
 use cyclone as cy;
 
 /**
- * @author Bence Eros <crystal@cyclonephp.com>
+ * @author Bence Eros <crystal@cyclonephp.org>
  * @package JORK
  */
 class EmbeddedMapper extends jork\mapper\EntityMapper {

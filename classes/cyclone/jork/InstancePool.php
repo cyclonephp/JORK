@@ -6,12 +6,21 @@ use cyclone as cy;
 use cyclone\db;
 
 /**
- * This class is responsible for storing only one entity instance with a
- * given primary key. Entity instantiations during the database query result
- * mapping process should be done using this class
- * 
- * @author Bence Erős <crystal@cyclonephp.com>
+ * The instances of this class can be used as a <primary key -> entity> hashmap.
+ * Every entity class has (at most) one dedicated instance managed internally
+ * by the InstancePool, this can be accessed using the @c inst() method. It is
+ * used mainly by @c\cyclone\jork\EntityMapper to try to ensure that one entity
+ * has at most one in-memory representation. During SQL query result processing
+ * (mapping it to object graph) if the <code>EntityMapper</code> finds a new entity
+ * in a given row of an SQL query, it doesn't instantiate the entity class but obtains
+ * reference to it using the @c get_by_pk() method, which will return the already existing
+ * instance with the given primary key or <code>NULL<code> if such instance is not present
+ * yet (in the latter case the @c \cyclone\jork\mapper\EntityMapper will create the entity
+ * and add it to the pool using @c add() )
+ *
+ * @author Bence Erős <crystal@cyclonephp.org>
  * @package JORK
+ * @usedby \cyclone\jork\mapper\EntityMapper
  */
 class InstancePool {
 
@@ -37,7 +46,7 @@ class InstancePool {
 
     private $_pool;
 
-    private function  __construct($class) {
+    public function  __construct($class) {
         $this->_class = $class;
         $this->_pool = new \ArrayObject();
     }

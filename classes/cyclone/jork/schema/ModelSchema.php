@@ -7,7 +7,7 @@ use cyclone as cy;
 use cyclone\jork\schema;
 
 /**
- * @author Bence Erős <crystal@cyclonephp.com>
+ * @author Bence Erős <crystal@cyclonephp.org>
  * @package JORK
  */
  class ModelSchema {

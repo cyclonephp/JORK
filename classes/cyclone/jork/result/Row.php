@@ -3,7 +3,7 @@
 namespace cyclone\jork\result;
 
 /**
- * @author Bence Eros <crystal@cyclonephp.com>
+ * @author Bence Eros <crystal@cyclonephp.org>
  * @package JORK
  */
 class Row extends \ArrayObject {

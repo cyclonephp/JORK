@@ -7,7 +7,7 @@ namespace cyclone\jork\schema;
  * (object) proprety of the instances of a given JORK model class.
  *
  * @package JORK
- * @author Bence Eros <bence.eros@cyclonephp.com>
+ * @author Bence Eros <bence.eros@cyclonephp.org>
  */
 class ComponentSchema {
 

@@ -5,7 +5,7 @@ namespace cyclone;
 use cyclone\jork\schema;
 
 /**
- * @author Bence Erős <crystal@cyclonephp.com>
+ * @author Bence Erős <crystal@cyclonephp.org>
  * @package JORK
  */
 class JORK {

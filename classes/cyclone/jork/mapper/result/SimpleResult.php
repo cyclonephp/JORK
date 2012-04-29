@@ -6,7 +6,7 @@ use cyclone\jork;
 use cyclone\db;
 
 /**
- * @author Bence Eros <crystal@cyclonephp.com>
+ * @author Bence Eros <crystal@cyclonephp.org>
  * @package JORK
  */
 class SimpleResult extends AbstractResult {

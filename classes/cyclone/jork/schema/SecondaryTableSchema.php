@@ -9,7 +9,7 @@ namespace cyclone\jork\schema;
  *
  * @see cyclone\\jork\\schema\\ModelSchema::$secondary_tables
  * @package JORK
- * @author Bence Eros <bence.eros@cyclonephp.com>
+ * @author Bence Eros <bence.eros@cyclonephp.org>
  */
 class SecondaryTableSchema {
 

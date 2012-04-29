@@ -11,7 +11,7 @@ use cyclone\db;
  * in other words it is used for storing to-many relationships between objects
  * at runtime.
  * 
- * @author Bence Eros <crystal@cyclonephp.com>
+ * @author Bence Eros <crystal@cyclonephp.org>
  * @package JORK
  */
 abstract class AbstractCollection extends \ArrayObject implements \IteratorAggregate {
