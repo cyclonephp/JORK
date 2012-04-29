@@ -33,6 +33,11 @@ class InstancePool {
         return self::$_instances[$class];
     }
 
+    /**
+     * Removes all InstancePool instances obtainable using the @c inst() method.
+     * Only used for unit testing.
+     *
+     */
     public static function clear() {
         self::$_instances = array();
     }
@@ -60,9 +65,6 @@ class InstancePool {
                 return NULL;
         }
         return $curr_pool;
-        /*return array_key_exists($primary_key, $this->_pool)
-                ? $this->_pool[$primary_key]
-                : NULL;*/
     }
 
     public function add(model\AbstractModel $instance) {
@@ -82,6 +84,29 @@ class InstancePool {
         }
         $prev_pool[$last_key] = $instance;
         //$this->_pool[$instance->pk()] = $instance;
+    }
+
+    /**
+     * Removes the entity specified by its primary key <code>$pk</code>
+     * from the instance pool. If the entity is not found then it
+     * throws an exception.
+     *
+     * @param array $pk
+     * @throws Exception if the entity is not present in the instance pool.
+     */
+    public function delete_by_pk($pk) {
+        $prev_pool = NULL;
+        $prev_key = NULL;
+        $curr_pool = $this->_pool;
+        foreach ($pk as $pk_component) {
+            if ( ! isset($curr_pool[$pk_component]))
+                throw new Exception("key '$pk_component' not found");
+
+            $prev_pool = $curr_pool;
+            $prev_key = $pk_component;
+            $curr_pool = $curr_pool[$pk_component];
+        }
+        unset($prev_pool[$prev_key]);
     }
 
 }
