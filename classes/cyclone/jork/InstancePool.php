@@ -35,16 +35,25 @@ class InstancePool {
      */
     private $_class;
 
-    private $_pool = array();
+    private $_pool;
 
     private function  __construct($class) {
         $this->_class = $class;
+        $this->_pool = new \ArrayObject();
     }
 
     public function get_by_pk($primary_key) {
-        return array_key_exists($primary_key, $this->_pool)
+        $curr_pool = $this->_pool;
+        foreach ($primary_key as $prim_key_val) {
+            if (array_key_exists($prim_key_val, $curr_pool)) {
+                $curr_pool = $curr_pool[$prim_key_val];
+            } else
+                return NULL;
+        }
+        return $curr_pool;
+        /*return array_key_exists($primary_key, $this->_pool)
                 ? $this->_pool[$primary_key]
-                : NULL;
+                : NULL;*/
     }
 
     public function for_pk($primary_key) {
@@ -56,7 +65,22 @@ class InstancePool {
 
 
     public function add(model\AbstractModel $instance) {
-        $this->_pool[$instance->pk()] = $instance;
+        $prev_pool = NULL;
+        $curr_pool = $this->_pool;
+        $last_key = NULL;
+        foreach ($instance->pk() as $pk_component) {
+            if ($pk_component === NULL) {
+                $pk_component = '';
+            }
+            if ( ! array_key_exists($pk_component, $curr_pool)) {
+                $curr_pool[$pk_component] = new \ArrayObject();
+            }
+            $prev_pool = $curr_pool;
+            $curr_pool = $curr_pool[$pk_component];
+            $last_key = $pk_component;
+        }
+        $prev_pool[$last_key] = $instance;
+        //$this->_pool[$instance->pk()] = $instance;
     }
 
     /**

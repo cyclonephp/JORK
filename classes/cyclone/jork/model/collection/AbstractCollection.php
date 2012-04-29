@@ -63,16 +63,16 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
     /**
      * Used by subclasses.
      *
-     * @var string
+     * @var array
      */
-    protected $_join_column;
+    protected $_join_columns;
 
     /**
      * Used by subclasses.
      *
-     * @var string
+     * @var array
      */
-    protected $_inverse_join_column;
+    protected $_inverse_join_columns;
 
     /**
      * Used by subclasses.

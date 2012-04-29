@@ -2,11 +2,11 @@
 <pre> 
 statement := select_statement | update_statement | insert_statement | delete_statement
 
-select_statement := select_clause? from_clause with_clause*
+select_statement := select_clause? from_clause with_clause?
 	join_clause* where_clause? order_by_clause? group_by_clause? having_clause?
 	offset_clause? limit_clause?
 	
-select_clause := 'SELECT' select_list?
+select_clause := 'SELECT' select_list
 
 select_list := select_list_item (', ' select_list_item)*
 

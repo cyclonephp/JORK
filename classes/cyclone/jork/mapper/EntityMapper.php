@@ -65,7 +65,7 @@ class EntityMapper implements RowMapper {
      *
      * @var array
      */
-    protected $_result_primary_key_columns;
+    protected $_result_primary_key_columns = array();
 
     /**
      * The next mappers to be executed on the same row. All items should also in
@@ -101,12 +101,26 @@ class EntityMapper implements RowMapper {
     protected $_previous_result_entity;
 
     public function map_row(&$db_row) {
-        if (NULL === $this->_result_primary_key_column)
+        if (empty($this->_result_primary_key_columns))
             return array(NULL, FALSE);
-        
-        $pk = $db_row[$this->_result_primary_key_column];
-        if (NULL === $pk)
-            return array($this->_previous_result_entity = NULL, FALSE);
+
+        $pk = array();
+        $pk_is_null = TRUE;
+        foreach ($this->_result_primary_key_columns as $pk_col) {
+            $pk_col_val = $db_row[$pk_col];
+            if ( ! is_null($pk_col_val)) {
+                $pk_is_null = FALSE;
+            }
+            $pk []= $pk_col_val;
+        }
+
+//        if ($pk_is_null)
+//            return array($this->_previous_result_entity = NULL, FALSE);
+//
+//
+//        $pk = $db_row[$this->_result_primary_key_column];
+//        if (NULL === $pk)
+//            return array($this->_previous_result_entity = NULL, FALSE);
         if ($this->_previous_result_entity != NULL
                 && $pk == $this->_previous_result_entity->pk()) { //same instance
             $is_new_entity = false;
@@ -197,7 +211,8 @@ class EntityMapper implements RowMapper {
     protected function add_table($tbl_name) {
         if ( ! isset($this->_table_aliases[$tbl_name])) {
             if ( ! isset($this->_table_aliases[ $this->_entity_schema->table ])) {
-                $tbl_alias = $this->_table_aliases[$tbl_name] = $this->_naming_srv->table_alias($this->_entity_alias, $tbl_name);
+                $tbl_alias = $this->_naming_srv->table_alias($this->_entity_alias, $tbl_name);
+                $this->_table_aliases[$tbl_name] = $tbl_alias;
                 $this->_db_query->tables []= array($tbl_name, $tbl_alias);
             }
             if ($tbl_name != $this->_entity_schema->table) {
@@ -273,19 +288,23 @@ class EntityMapper implements RowMapper {
                 ? $table_schema->inverse_join_columns
                 : $this->_entity_schema->primary_keys();
 
+        $local_table_alias = $this->table_alias($this->_entity_schema->table);
+
         $tbl_alias = $this->table_alias($tbl_name);
-        
-        $this->_db_query->joins []= array(
+        $join = array(
             'table' => array($tbl_name, $tbl_alias),
             'type' => 'LEFT',
-            'conditions' => array(
-                new db\BinaryExpression(
-                    $this->table_alias($this->_entity_schema->table).'.'.$table_schema->join_column
-                    , '='
-                    , $tbl_alias.'.'.$inverse_join_col
-                )
-            )
+            'conditions' => array()
         );
+
+        foreach ($inverse_join_cols as $idx => $inverse_join_col) {
+            $join['conditions'] []= new db\BinaryExpression(
+                $local_table_alias.'.'.$table_schema->join_columns[$idx]
+                , '='
+                , $tbl_alias.'.'.$inverse_join_col
+            );
+        }
+        $this->_db_query->joins []= $join;
     }
 
     /**
@@ -309,8 +328,8 @@ class EntityMapper implements RowMapper {
         $select_item = $this->_entity_alias == '' ? $prop_name
                 : $this->_entity_alias.'.'.$prop_name;
 
-        $next_mapper = $this->_next_mappers[$prop_name] =
-            component\AbstractMapper::factory($this, $prop_name, $select_item);
+        $next_mapper = component\AbstractMapper::factory($this, $prop_name, $select_item);
+        $this->_next_mappers[$prop_name] = $next_mapper;
 
         $next_mapper_class = get_class($next_mapper);
 
@@ -359,11 +378,12 @@ class EntityMapper implements RowMapper {
             }
         }
         //The primary key column should _always_ be selected
-        if (NULL === $this->_result_primary_key_column
+        if (empty($this->_result_primary_key_columns)
                 // dirty hack, must be cleaned up
                 && ! ($this instanceof component\EmbeddedMapper)) {
-            $pk = $this->_entity_schema->primary_key();
-            $this->add_atomic_property($pk, $this->_entity_schema->primitives[$pk]);
+            foreach($this->_entity_schema->primary_keys() as $pk) {
+                $this->add_atomic_property($pk, $this->_entity_schema->primitives[$pk]);
+            }
         }
     }
 

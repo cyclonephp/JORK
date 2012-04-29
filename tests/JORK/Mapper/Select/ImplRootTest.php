@@ -5,6 +5,7 @@ use cyclone\db;
 use cyclone\jork;
 use cyclone\jork\query;
 
+require_once __DIR__ . '/../../MapperTest.php';
 
 class JORK_Mapper_Select_ImplRootTest extends JORK_MapperTest {
 
@@ -15,7 +16,6 @@ class JORK_Mapper_Select_ImplRootTest extends JORK_MapperTest {
 
 
     public function testFrom() {
-        $jork_query = new query\SelectQuery;
         $jork_query = cy\JORK::from('Model_User');
         $mapper = jork\mapper\SelectMapper::for_query($jork_query);
         list($db_query, ) = $mapper->map();
@@ -32,6 +32,22 @@ class JORK_Mapper_Select_ImplRootTest extends JORK_MapperTest {
         $this->assertEquals($db_query->tables, array(
             array('t_users', 't_users_0'),
         ));
+    }
+
+    public function testWith() {
+        $jork_query = cy\JORK::from('Model_Topic')->with('posts');
+        $db_query = cy\DB::select(
+            array('t_posts_0.id', 't_posts_0_id'),
+            array('t_posts_0.name', 't_posts_0_name'),
+            array('t_posts_0.topic_fk', 't_posts_0_topic_fk'),
+            array('t_posts_0.user_fk', 't_posts_0_user_fk'),
+            array('t_topics_0.id', 't_topics_0_id'),
+            array('t_topics_0.name', 't_topics_0_name')
+        )->from(array('t_topics', 't_topics_0'))
+            ->left_join(array('t_posts', 't_posts_0'))
+            ->on('t_topics_0.id', '=', 't_posts_0.topic_fk')
+        ->order_by('t_topics_0.name', 'asc');
+        $this->assertCompiledTo($jork_query, $db_query);
     }
 
     public function testSelect() {
@@ -95,12 +111,12 @@ class JORK_Mapper_Select_ImplRootTest extends JORK_MapperTest {
     }
 
     public function testOrderByExpr() {
-        $jork_query = cy\JORK::from('Model_User')->order_by(DB::expr('avg({posts.id})'));
+        $jork_query = cy\JORK::from('Model_User')->order_by(cy\DB::expr('avg({posts.id})'));
         $mapper = jork\mapper\SelectMapper::for_query($jork_query);
         list($db_query, ) = $mapper->map();
         $this->assertEquals(array(
                 array(
-                'column' => DB::expr('avg(t_posts_0.id)'),
+                'column' => cy\DB::expr('avg(t_posts_0.id)'),
                 'direction' => 'ASC'
                 )
             ),
@@ -113,15 +129,15 @@ class JORK_Mapper_Select_ImplRootTest extends JORK_MapperTest {
             ->offset(20)->limit(10);
         $mapper = jork\mapper\SelectMapper::for_query($jork_query);
         list($db_query, ) = $mapper->map();
-        //echo $db_query->compile();
-        $this->assertEquals(array(
-            'table' => array(DB::select_distinct('id')->from(array('t_topics', 't_topics_1'))
+        //echo $db_query->compile('jork_test');
+        $expected = array(
+            'table' => array(cy\DB::select_distinct('id')->from(array('t_topics', 't_topics_1'))
                 ->offset(20)->limit(10), 'jork_offset_limit_subquery_0'),
             'type' => 'RIGHT',
             'conditions' => array(
                 new db\BinaryExpression('t_topics_0.id', '=', 'jork_offset_limit_subquery_0.id')
-            )
-        ), $db_query->joins[1]);
+            ));
+        $this->assertEquals($expected, $db_query->joins[1]);
     }
 
 

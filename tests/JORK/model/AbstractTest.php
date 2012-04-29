@@ -3,10 +3,11 @@
 use cyclone as cy;
 use cyclone\db;
 
+require_once __DIR__ . '../../DBTest.php';
 
 class JORK_Model_AbstractTest extends JORK_DbTest {
 
-    public function testManyToOneFK() {
+    public function test_many_to_one_fk() {
         $post = new Model_Post;
         $topic = new Model_Topic;
         $topic->id = 10;
@@ -14,7 +15,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $this->assertEquals(10, $post->topic_fk);
     }
 
-    public function testManyToOneReverseFK() {
+    public function test_many_to_one_reverse_fk() {
         $post = new Model_Post;
         $user = new Model_User;
         $user->id = 6;
@@ -22,7 +23,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $this->assertEquals($post->user_fk, 6);
     }
 
-    public function testOneToOneFK() {
+    public function test_one_to_one_fk() {
         $category = new Model_Category;
         $user = new Model_User;
         $user->id = 5;
@@ -30,7 +31,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $this->assertEquals(5, $category->moderator_fk);
     }
 
-    public function testOneToOneReverseFK() {
+    public function test_one_to_one_reverse_fk() {
         $category = new Model_Category;
         $user = new Model_User;
         $user->id = 3;
@@ -38,7 +39,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $this->assertEquals($category->moderator_fk, 3);
     }
 
-    public function testOneToManyFK() {
+    public function test_one_to_many_fk() {
         $user = new Model_User;
         $user->id = 34;
         $post = new Model_Post;
@@ -47,7 +48,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $this->assertEquals($post->user_fk, 34);
     }
 
-    public function testOneToManyReverseFK() {
+    public function test_one_to_many_reverse_fk() {
         $topic = new Model_Topic;
         $topic->id = 2;
         $post = new Model_Post;
@@ -55,13 +56,13 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $this->assertEquals(2, $post->topic_fk);
     }
 
-    public function testPk() {
+    public function test_pk() {
         $user = new Model_User();
         $user->id = 5;
-        $this->assertEquals(5, $user->pk());
+        $this->assertEquals(array(5), $user->pk());
     }
 
-    public function testSimpleSave() {
+    public function test_simple_save() {
         $user = new Model_User;
         $user->name = 'foo bar';
         $user->save();
@@ -74,7 +75,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         }
     }
 
-    public function testFKOneToManyUpdateOnSave() {
+    public function test_fk_one_to_many_update_on_save() {
         $user = new Model_User;
         $post = new Model_Post;
         $user->posts->append($post);
@@ -84,7 +85,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $this->assertEquals(5, $post->user_fk);
     }
 
-    public function testFKManyToOneReverseUpdateOnSave() {
+    public function test_fk_many_to_one_reverse_update_on_save() {
         $topic = new Model_Topic;
         $topic->name = 'foo bar';
         $post = new Model_Post;
@@ -95,7 +96,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $this->assertEquals(5, $post->topic_fk);
     }
 
-    public function testUpdate() {
+    public function test_update() {
         $user = new Model_User;
         $user->id = 4;
         $user->name = 'foo';
@@ -115,7 +116,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $this->assertEquals(1, count($result));
     }
 
-    public function testDelete() {
+    public function test_delete() {
        $result = cy\JORK::from('Model_Post')->where('id', '=', cy\DB::esc(4))
                ->exec('jork_test');
        $post = $result[0];
@@ -130,7 +131,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
     /**
      * Tests component behavior on entity deletion
      */
-    public function testDeleteComponents() {
+    public function test_delete_components() {
         $result = cy\JORK::from('Model_Topic')
                 ->with('posts')
                 ->where('id', '=', cy\DB::esc(1))
@@ -142,7 +143,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
 
     }
 
-    public function testSetNullFkForReverseOneToOne() {
+    public function test_set_null_fk_for_reverse_one_to_one() {
         $result = cy\JORK::from('Model_User')->where('id', '=', cy\DB::esc(1))
                 ->exec('jork_test');
         $user = $result[0];
@@ -155,7 +156,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         ));
     }
 
-    public function testAtomicTypeCasts() {
+    public function test_atomic_type_casts() {
         $user = new Model_User;
         $user->id = 1;
         $this->assertInternalType('int', $user->id);
@@ -175,12 +176,12 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
     /**
      * @expectedException cyclone\jork\Exception
      */
-    public function testAtomicTypeCheck() {
+    public function test_atomic_type_check() {
         $user = new Model_User;
         $user->moderated_category = new Model_Post;
     }
 
-    public function testNoCascade() {
+    public function test_no_cascade() {
         $topic = new Model_Topic;
         $topic->name = 'topic05';
         for ($i = 5; $i < 10; ++$i) {
@@ -197,7 +198,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $this->assertEquals(4, count($posts));
     }
 
-    public function testCascadeAll() {
+    public function test_cascade_all() {
         $topic = new Model_Topic;
         $topic->name = 'topic05';
         for ($i = 5; $i < 10; ++$i) {
@@ -214,7 +215,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $this->assertEquals(9, count($posts));
     }
 
-    public function testCascadeSome() {
+    public function test_cascade_some() {
         $topic = new Model_Topic;
         $topic->name = 'topic05';
         for ($i = 5; $i < 10; ++$i) {
@@ -238,7 +239,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $this->assertEquals(3, count($categories));
     }
 
-    public function testLazyLoadingPrimitive() {
+    public function test_lazy_loading_primitive() {
         $result = cy\JORK::select('u{id}')->from('Model_User u')
                 ->where('u.id', '=', cy\DB::esc(1))->exec('jork_test')->as_array();
         $user = $result[0]['u'];
@@ -247,7 +248,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $this->assertEquals('user1', $user->name());
     }
 
-    public function testLazyLoadingComponent() {
+    public function test_lazy_loading_component() {
         $result = cy\JORK::from('Model_Post')
             ->where('id', '=', cy\DB::esc(1))->exec('jork_test');
 
@@ -264,7 +265,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $this->assertEquals(3, $topic->posts[3]->id);
     }
 
-    public function testPopulate() {
+    public function test_populate() {
         $user = new Model_User;
         $user->populate(array(
             'id' => 1,

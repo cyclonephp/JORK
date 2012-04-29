@@ -168,13 +168,14 @@ class ImplRoot extends jork\mapper\SelectMapper {
 
         $existing_alias = $this->_naming_srv->table_alias(NULL, $ent_schema->table);
 
-        $primary_key = $ent_schema->primary_key();
-
-        $subquery->columns = array($primary_key);
-        $subquery->tables = array(
-            array($ent_schema->table
+        foreach ($ent_schema->primary_keys() as $primary_key) {
+            $subquery->columns = array($primary_key);
+            $subquery->tables = array(
+                array($ent_schema->table
                 , $this->_naming_srv->table_alias(NULL, $ent_schema->table, TRUE))
-        );
+            );
+        }
+
         $this->filter_unneeded_subquery_joins($subquery);
         $subquery_alias = $this->_naming_srv->offset_limit_subquery_alias();
         return array(

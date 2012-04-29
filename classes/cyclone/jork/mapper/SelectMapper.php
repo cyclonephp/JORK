@@ -188,27 +188,41 @@ abstract class SelectMapper {
                     , $prim_key);
                 $left_mapper->merge_prop_chain($left_prop_chain, EntityMapper::SELECT_NONE);
                 $expr->left_operand = $left_mapper->resolve_prop_chain($left_prop_chain);
-            } else {
-                foreach ($prim_keys as $prim_key) {
+            } else
+                throw new jork\Exception("objects with composite primary keys are not yet supported in WHERE clause ("
+                    . $left_ent_schema->components[$left_last_prop]->class . " has "
+                    . count($prim_keys) . " primary key columns)");
 
-                }
-            }
         } elseif ($left_is_model) {
             $left_class = $expr->left_operand->schema()->class;
-            $expr->left_operand = $expr->left_operand->pk();
+            $pk = $expr->left_operand->pk();
+            if (count($pk) == 1) {
+                $expr->left_operand = $pk[0];
+            } else
+                throw new jork\Exception("objects with composite primary keys are not yet supported in WHERE clause");
         }
 
         if ($right_is_array) {
             list($right_mapper, $right_ent_schema, $right_last_prop)
                     = $expr->right_operand;
             $right_class = $right_ent_schema->components[$right_last_prop]->class;
-            $right_prop_chain = array($right_last_prop
-                , jork\model\AbstractModel::schema_by_class($right_ent_schema->components[$right_last_prop]->class)->primary_key());
-            $right_mapper->merge_prop_chain($right_prop_chain, EntityMapper::SELECT_NONE);
-            $expr->right_operand = $right_mapper->resolve_prop_chain($right_prop_chain);
+            $prim_keys = jork\model\AbstractModel::schema_by_class($right_ent_schema->components[$right_last_prop]->class)->primary_keys();
+            if (count($prim_keys) == 1) {
+                $prim_key = $prim_keys[0];
+                $right_prop_chain = array($right_last_prop
+                    , $prim_key);
+                $right_mapper->merge_prop_chain($right_prop_chain, EntityMapper::SELECT_NONE);
+                $expr->right_operand = $right_mapper->resolve_prop_chain($right_prop_chain);
+            } else
+                throw new jork\Exception("objects with composite primary keys are not yet supported in WHERE clause");
         } elseif ($right_is_model) {
             $right_class = $expr->right_operand->schema()->class;
-            $expr->right_operand = $expr->right_operand->pk();
+            $pk = $expr->right_operand->pk();
+            if (count($pk) == 1){
+                $expr->right_operand = $pk[0];
+            } else
+                throw new jork\Exception("objects with composite primary keys are not yet supported in WHERE clause");
+
         }
         if ($left_class != $right_class)
             throw new jork\Exception("unable to check equality of class '$left_class' with class '$right_class'");

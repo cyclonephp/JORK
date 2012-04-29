@@ -17,15 +17,18 @@ class ManyToOneCollection extends jork\model\collection\AbstractCollection {
         $remote_comp_schema = jork\model\AbstractModel::schema_by_class($comp_schema->class)
             ->components[$comp_schema->mapped_by];
 
-        $this->_inverse_join_column = $remote_comp_schema->join_column;
-        $this->_join_column = isset($remote_comp_schema->inverse_join_column)
-                ? $remote_comp_schema->inverse_join_column
-                : jork\model\AbstractModel::schema_by_class($comp_schema->class)->primary_key();
+        $this->_inverse_join_columns = $remote_comp_schema->join_columns;
+        $this->_join_columns = empty($remote_comp_schema->inverse_join_columns)
+                ? jork\model\AbstractModel::schema_by_class($comp_schema->class)->primary_key()
+                : $remote_comp_schema->inverse_join_columns;
     }
 
     public function append($value) {
         parent::append($value);
-        $value->{$this->_inverse_join_column} = $this->_owner->{$this->_join_column};
+        $inv_join_cols = $this->_inverse_join_columns;
+        foreach ($this->_join_columns as $idx => $join_col) {
+            $value->{$inv_join_cols[$idx]} = $this->_owner->$join_col;
+        }
     }
 
     public function delete_by_pk($pk) {

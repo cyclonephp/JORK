@@ -118,13 +118,17 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     private $_as_string_in_progress = FALSE;
 
     /**
-     * @return mixed the primary key of the entity
+     * @return array the primary key of the entity
      */
     public function pk() {
-        $pk = $this->schema()->primary_key();
-        return array_key_exists($pk, $this->_primitives)
-                ? $this->_primitives[$pk]['value']
+        $pk = $this->schema()->primary_keys();
+        $rval = array();
+        foreach ($pk as $pk_prop) {
+            $rval []= isset($this->_primitives[$pk_prop])
+                ? $this->_primitives[$pk_prop]['value']
                 : NULL;
+        }
+        return $rval;
     }
 
     /**
@@ -270,36 +274,35 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     /**
      *
      * @param string $key
-     * @param JORK_Model_Abstract $val
+     * @param AbstractModel $val
      * @param array $comp_schema
      */
-    protected function update_component_fks_reverse($key, $val, $comp_schema) {
+    protected function update_component_fks_reverse($key, $val = NULL, $comp_schema) {
         $remote_schema = $val->schema()->components[$comp_schema->mapped_by];
         if (NULL === $val) {
-            switch ($remote_schema->type) {
-                case cy\JORK::ONE_TO_MANY:
-                    $this->_primitives[$remote_schema->join_column]['value'] = NULL;
-                    $this->_primitives[$remote_schema->join_column]['persistent'] = FALSE;
-                    break;
-                case cy\JORK::ONE_TO_ONE:
-                    $val->_atomics[$remote_schema->join_column]['value'] = NULL;
-                    $val->_atomics[$remote_schema->join_column]['persistent'] = FALSE;
-                    break;
+            foreach ($remote_schema->join_columns as $join_column) {
+                $this->_primitives[$join_column] = array(
+                    'value' => NULL,
+                    'persistent' => FALSE
+                );
             }
         } else {
-            switch ($remote_schema->type) {
-                case cy\JORK::ONE_TO_MANY:
-                    $this->_primitives[$remote_schema->join_column]['value'] = isset($remote_schema->inverse_join_column)
-                        ? $val->_primitives[$remote_schema->inverse_join_column]['value']
-                        : $val->pk();
-                    $this->_primitives[$remote_schema->join_column]['persistent'] = FALSE;
-                    break;
-                case cy\JORK::ONE_TO_ONE:
-                    $val->_primitives[$remote_schema->join_column]['value'] = isset($remote_schema->inverse_join_column)
-                        ? $this->_primitives[$remote_schema->inverse_join_column]['value']
-                        : $this->pk();
-                    $val->_primitives[$remote_schema->join_column]['persistent'] = FALSE;
-                    break;
+            if (empty($remote_schema->inverse_join_columns)) {
+                echo "itt: " . get_class($val) . "\n";
+                $values = $this->pk();
+                var_dump($val->_primitives);
+                var_dump($values);
+            } else {
+                $values = array();
+                foreach ($remote_schema->inverse_join_columns as $inv_join_col) {
+                    $values []= $val->_primitives[$inv_join_col]['value'];
+                }
+            }
+            foreach ($remote_schema->join_columns as $idx => $join_col) {
+                $val->_primitives[$join_col] = array(
+                    'value' => $values[$idx],
+                    'persistent' => FALSE
+                );
             }
         }
     }
@@ -319,30 +322,22 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             return;
         }
         if (NULL === $val) {
-            switch ($comp_schema->type) {
-                case cy\JORK::MANY_TO_ONE:
-                    $this->_primitives[$comp_schema->join_column]['value'] = NULL;
-                    $this->_primitives[$comp_schema->join_column]['persistent'] = FALSE;
-                    break;
-                case cy\JORK::ONE_TO_ONE:
-                    $this->_primitives[$comp_schema->join_column]['value'] = NULL;
-                    $this->_primitives[$comp_schema->join_column]['persistent'] = FALSE;
-                    break;
+            foreach ($comp_schema->join_columns as $join_column) {
+                $this->_primitives[$join_column]['value'] = NULL;
+                $this->_primitives[$join_column]['persistent'] = FALSE;
             }
         } else {
-            switch ($comp_schema->type) {
-                case cy\JORK::MANY_TO_ONE:
-                    $this->_primitives[$comp_schema->join_column]['value'] = isset($comp_schema->inverse_join_column)
-                        ? $val->_primitives[$comp_schema->inverse_join_column]['value']
-                        : $val->pk();
-                    $this->_primitives[$comp_schema->join_column]['persistent'] = FALSE;
-                    break;
-                case cy\JORK::ONE_TO_ONE:
-                    $this->_primitives[$comp_schema->join_column]['value'] = isset($comp_schema->inverse_join_column)
-                        ? $val->_primitives[$comp_schema->inverse_join_column]['value']
-                        : $val->pk();
-                    $this->_primitives[$comp_schema->join_column]['persistent'] = FALSE;
-                    break;
+            if (empty($comp_schema->inverse_join_columns)) {
+                $inv_join_vals = $val->pk();
+            } else {
+                $inv_join_vals = array();
+                foreach ($comp_schema->inverse_join_columns as $inv_join_col) {
+                    $inv_join_vals []= $val->_primitives[$inv_join_col]['value'];
+                }
+            }
+            foreach ($comp_schema->join_columns as $idx => $comp_join_col) {
+                $this->_primitives[$comp_join_col]['value'] = $inv_join_vals[$idx];
+                $this->_primitives[$comp_join_col]['persistent'] = FALSE;
             }
         }
     }
@@ -441,6 +436,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     public function __set($key, $val) {
         $schema = $this->schema();
         if (isset($schema->primitives[$key])) {
+            echo "__set($key, $val)\n";
             if ( ! isset($this->_primitives[$key])) {
                 $this->_primitives[$key] = array();
             }
@@ -514,7 +510,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                 break;
             case 1:
                 $this->__set($name, $args[0]);
-                break;
+                return $this;
             default:
                 throw new jork\Exception("unknown method '$name'");
         }

@@ -223,7 +223,9 @@ use cyclone\jork\schema;
     public function primary_key_info() {
         if ( ! (empty($this->_pk_primitives) || empty($this->_pk_strategies)))
             return array($this->_pk_primitives, $this->_pk_strategies);
-        
+
+        $this->_pk_primitives = array();
+        $this->_pk_strategies = array();
         foreach ($this->primitives as $name => $def) {
             if ( ! is_null($def->primary_key_strategy)) {
                 $this->_pk_primitives []= $name;
