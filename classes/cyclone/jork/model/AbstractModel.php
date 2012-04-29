@@ -288,10 +288,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             }
         } else {
             if (empty($remote_schema->inverse_join_columns)) {
-                echo "itt: " . get_class($val) . "\n";
                 $values = $this->pk();
-                var_dump($val->_primitives);
-                var_dump($values);
             } else {
                 $values = array();
                 foreach ($remote_schema->inverse_join_columns as $inv_join_col) {
@@ -436,7 +433,6 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     public function __set($key, $val) {
         $schema = $this->schema();
         if (isset($schema->primitives[$key])) {
-            echo "__set($key, $val)\n";
             if ( ! isset($this->_primitives[$key])) {
                 $this->_primitives[$key] = array();
             }
