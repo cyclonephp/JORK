@@ -14,7 +14,7 @@ use cyclone\db;
  * (mapping it to object graph) if the <code>EntityMapper</code> finds a new entity
  * in a given row of an SQL query, it doesn't instantiate the entity class but obtains
  * reference to it using the @c offsetGet() method, which will return the already existing
- * instance with the given primary key or <code>NULL<code> if such instance is not present
+ * instance with the given primary key or <code>NULL</code> if such instance is not present
  * yet (in the latter case the @c \cyclone\jork\mapper\EntityMapper will create the entity
  * and add it to the pool using @c add() )
  *
@@ -69,6 +69,8 @@ class InstancePool implements \ArrayAccess, \Iterator, \Countable {
 
     protected $_pool;
 
+    private $_iterator = NULL;
+
     protected function  __construct($class) {
         $this->_class = $class;
         $this->_pool = new \ArrayObject();
@@ -84,28 +86,29 @@ class InstancePool implements \ArrayAccess, \Iterator, \Countable {
         $this->_pool[$pk[0]] = $instance;
     }
 
-    public function valid() {
-
+    public function count() {
+        return count($this->_pool);
     }
 
-    public function count() {
-
+    public function valid() {
+        return $this->_iterator->valid();
     }
 
     public function rewind() {
-
+        $this->_iterator = $this->_pool->getIterator();
+        $this->_iterator->rewind();
     }
 
     public function next() {
-
+        $this->_iterator->next();
     }
 
     public function key() {
-
+        return $this->_iterator->key();
     }
 
     public function current() {
-
+        return $this->_iterator->current();
     }
 
     public function offsetGet($primary_key) {
@@ -114,6 +117,15 @@ class InstancePool implements \ArrayAccess, \Iterator, \Countable {
             : NULL;
     }
 
+    /**
+     * Calls @c append() or throws an exception if <code>$key</code> is not the same as
+     * the primary key of <code>$value</code>.
+     *
+     * @param $key array
+     * @param $value model\AbstractModel
+     * @throws \cyclone\jork\Exception
+     * @uses model\AbstractModel::pk()
+     */
     public function offsetSet($key, $value) {
         if ($key != $value->pk())
             throw new Exception('$key must be equal to the primary key of $value');
