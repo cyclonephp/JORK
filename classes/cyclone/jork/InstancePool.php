@@ -13,7 +13,7 @@ use cyclone\db;
  * has at most one in-memory representation. During SQL query result processing
  * (mapping it to object graph) if the <code>EntityMapper</code> finds a new entity
  * in a given row of an SQL query, it doesn't instantiate the entity class but obtains
- * reference to it using the @c get_by_pk() method, which will return the already existing
+ * reference to it using the @c offsetGet() method, which will return the already existing
  * instance with the given primary key or <code>NULL<code> if such instance is not present
  * yet (in the latter case the @c \cyclone\jork\mapper\EntityMapper will create the entity
  * and add it to the pool using @c add() )
@@ -22,15 +22,33 @@ use cyclone\db;
  * @package JORK
  * @usedby \cyclone\jork\mapper\EntityMapper
  */
-class InstancePool {
+class InstancePool implements \ArrayAccess, \Iterator, \Countable {
 
     private static $_instances = array();
 
+    /**
+     * Returns the dedicated @c InstancePool instance for the class.
+     * <em>Note: further <code>InstancePool</code> instances can also be
+     * created for a class using the public constructor.</em>
+     *
+     * @param $class string
+     * @return mixed
+     * @usedby \cyclone\jork\mapper\EntityMapper
+     */
     public static function inst($class) {
         if ( ! isset(self::$_instances[$class])) {
-            self::$_instances[$class] = new InstancePool($class);
+            self::$_instances[$class] = InstancePool::for_class($class);
         }
         return self::$_instances[$class];
+    }
+
+    public static function for_class($entity_class) {
+        //$schema = schema\SchemaPool::inst()->get_schema($entity_class);
+        $schema = model\AbstractModel::schema_by_class($entity_class);
+        if (count($schema->primary_keys()) == 1) {
+            return new InstancePool($entity_class);
+        }
+        return new CompositePKInstancePool($entity_class);
     }
 
     /**
@@ -47,43 +65,59 @@ class InstancePool {
      *
      * @var string
      */
-    private $_class;
+    protected $_class;
 
-    private $_pool;
+    protected $_pool;
 
-    public function  __construct($class) {
+    protected function  __construct($class) {
         $this->_class = $class;
         $this->_pool = new \ArrayObject();
     }
 
-    public function get_by_pk($primary_key) {
-        $curr_pool = $this->_pool;
-        foreach ($primary_key as $prim_key_val) {
-            if (array_key_exists($prim_key_val, $curr_pool)) {
-                $curr_pool = $curr_pool[$prim_key_val];
-            } else
-                return NULL;
-        }
-        return $curr_pool;
+    public function append(model\AbstractModel $instance) {
+        if ( ! ($instance instanceof $this->_class))
+            throw new Exception("unable to add an instance of class '"
+                . get_class($instance)
+                . " to InstancePool of class '{$this->_class}'");
+
+        $pk = $instance->pk();
+        $this->_pool[$pk[0]] = $instance;
     }
 
-    public function add(model\AbstractModel $instance) {
-        $prev_pool = NULL;
-        $curr_pool = $this->_pool;
-        $last_key = NULL;
-        foreach ($instance->pk() as $pk_component) {
-            if ($pk_component === NULL) {
-                $pk_component = '';
-            }
-            if ( ! array_key_exists($pk_component, $curr_pool)) {
-                $curr_pool[$pk_component] = new \ArrayObject();
-            }
-            $prev_pool = $curr_pool;
-            $curr_pool = $curr_pool[$pk_component];
-            $last_key = $pk_component;
-        }
-        $prev_pool[$last_key] = $instance;
-        //$this->_pool[$instance->pk()] = $instance;
+    public function valid() {
+
+    }
+
+    public function count() {
+
+    }
+
+    public function rewind() {
+
+    }
+
+    public function next() {
+
+    }
+
+    public function key() {
+
+    }
+
+    public function current() {
+
+    }
+
+    public function offsetGet($primary_key) {
+        return isset($this->_pool[$primary_key[0]] )
+            ? $this->_pool[$primary_key[0]]
+            : NULL;
+    }
+
+    public function offsetSet($key, $value) {
+        if ($key != $value->pk())
+            throw new Exception('$key must be equal to the primary key of $value');
+        $this->append($value);
     }
 
     /**
@@ -91,22 +125,18 @@ class InstancePool {
      * from the instance pool. If the entity is not found then it
      * throws an exception.
      *
-     * @param array $pk
+     * @param $primary_key array
      * @throws Exception if the entity is not present in the instance pool.
      */
-    public function delete_by_pk($pk) {
-        $prev_pool = NULL;
-        $prev_key = NULL;
-        $curr_pool = $this->_pool;
-        foreach ($pk as $pk_component) {
-            if ( ! isset($curr_pool[$pk_component]))
-                throw new Exception("key '$pk_component' not found");
+    public function offsetUnset($primary_key) {
+        if (isset($this->_pool[$primary_key[0]])) {
+            unset($this->_pool[$primary_key[0]]);
+        } else
+            throw new Exception("key '{$primary_key[0]}' not found");
+    }
 
-            $prev_pool = $curr_pool;
-            $prev_key = $pk_component;
-            $curr_pool = $curr_pool[$pk_component];
-        }
-        unset($prev_pool[$prev_key]);
+    public function offsetExists($primary_key) {
+        return isset($this->_pool[$primary_key[0]]);
     }
 
 }

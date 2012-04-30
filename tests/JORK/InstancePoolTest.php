@@ -14,37 +14,37 @@ class JORK_InstancePoolTest extends Kohana_Unittest_TestCase {
     }
 
     public function test_inst() {
-        $inst1 = jork\InstancePool::inst('class1');
-        $inst2 = jork\InstancePool::inst('class2');
-        $inst3 = jork\InstancePool::inst('class1');
+        $inst1 = jork\InstancePool::inst('Model_User');
+        $inst2 = jork\InstancePool::inst('Model_Post');
+        $inst3 = jork\InstancePool::inst('Model_User');
         $this->assertSame($inst1, $inst3);
         $this->assertFalse($inst1 === $inst2);
     }
 
-    public function test_add_get() {
-        $pool = new jork\InstancePool('Model_User');
-        $this->assertNull($pool->get_by_pk(array(1)));
+    public function test_append_get() {
+        $pool = jork\InstancePool::for_class('Model_User');
+        $this->assertNull($pool[array(1)]);
         $user = new Model_User;
         $user->id = 1;
-        $pool->add($user);
-        $this->assertSame($user, $pool->get_by_pk(array(1)));
+        $pool->append($user);
+        $this->assertSame($user, $pool[array(1)]);
         $user2 = new Model_User;
         $user2->id = 2;
-        $pool->add($user2);
-        $this->assertSame($user2, $pool->get_by_pk(array(2)));
+        $pool->append($user2);
+        $this->assertSame($user2, $pool[array(2)]);
     }
 
     /**
      * @expectedException cyclone\jork\Exception
      */
     public function test_delete_by_pk() {
-        $pool = new jork\InstancePool('Model_User');
+        $pool = jork\InstancePool::for_class('Model_User');
         $user = new Model_User;
         $user->id = 2;
-        $pool->add($user);
-        $pool->delete_by_pk(array(2));
-        $this->assertNull($pool->get_by_pk(array(2)));
-        $pool->delete_by_pk(array(2));
+        $pool->append($user);
+        unset($pool[array(2)]);
+        $this->assertNull($pool[array(2)]);
+        unset($pool[array(2)]);
     }
 
 }
