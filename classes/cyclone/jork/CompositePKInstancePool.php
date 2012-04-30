@@ -66,7 +66,14 @@ class CompositePKInstancePool extends InstancePool {
     }
 
     public function offsetExists($primary_key) {
-
+        $curr_pool = $this->_pool;
+        foreach ($primary_key as $prim_key_val) {
+            if (isset($curr_pool[$prim_key_val])) {
+                $curr_pool = $curr_pool[$prim_key_val];
+            } else
+                return FALSE;
+        }
+        return TRUE;
     }
 
     public function count() {

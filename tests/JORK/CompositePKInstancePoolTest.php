@@ -87,4 +87,13 @@ class JORK_CompositePKInstancePoolTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(3, count($pool));
     }
 
+    public function test_exists() {
+        $pool = jork\InstancePool::for_class('Model_CompPK');
+        $this->assertFalse(isset($pool[array(1, 2, 3, 4, 5)]), 'empty pool doesnt contain PK (1, 2, 3, 4, 5)');
+        $obj = new Model_CompPK;
+        $obj->pk_1(1)->pk_2(2)->pk_3(3)->pk_4(4)->pk_5(5);
+        $pool->append($obj);
+        $this->assertTrue(isset($pool[array(1, 2, 3, 4, 5)]), 'isset((1, 2, 3, 4, 5)) is true after adding the entity');
+    }
+
 }
