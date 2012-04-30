@@ -8,6 +8,8 @@ namespace cyclone\jork;
  */
 class CompositePKInstancePool extends InstancePool {
 
+    private $_count = 0;
+
     public function append(model\AbstractModel $instance) {
         if ( ! ($instance instanceof $this->_class))
             throw new Exception("unable to add an instance of class '"
@@ -17,16 +19,21 @@ class CompositePKInstancePool extends InstancePool {
         $prev_pool = NULL;
         $curr_pool = $this->_pool;
         $last_key = NULL;
+        $last_is_new_entry = FALSE;
         foreach ($instance->pk() as $pk_component) {
             if ($pk_component === NULL) {
                 $pk_component = '';
             }
             if ( ! array_key_exists($pk_component, $curr_pool)) {
                 $curr_pool[$pk_component] = new \ArrayObject();
+                $last_is_new_entry = TRUE;
             }
             $prev_pool = $curr_pool;
             $curr_pool = $curr_pool[$pk_component];
             $last_key = $pk_component;
+        }
+        if ($last_is_new_entry) {
+            $this->_count++;
         }
         $prev_pool[$last_key] = $instance;
     }
@@ -55,10 +62,15 @@ class CompositePKInstancePool extends InstancePool {
             $curr_pool = $curr_pool[$pk_component];
         }
         unset($prev_pool[$prev_key]);
+        $this->_count--;
     }
 
     public function offsetExists($primary_key) {
 
+    }
+
+    public function count() {
+        return $this->_count;
     }
 
 }

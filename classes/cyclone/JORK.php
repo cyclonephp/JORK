@@ -74,9 +74,10 @@ class JORK {
 
     /**
      *
-     * @param <type> $name
-     * @param <type> $type
-     * @return schema\PrimitivePropertySchema 
+     * @param $name string the property name
+     * @param $type string the name of a PHP scalar type (int, integer, string, bool, boolean
+     *  , float are accepted values).
+     * @return \cyclone\jork\schema\PrimitivePropertySchema
      */
     public static function primitive($name, $type) {
         return new schema\PrimitivePropertySchema($name, $type);

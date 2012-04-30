@@ -41,7 +41,7 @@ class JORK_InstancePoolTest extends PHPUnit_Framework_TestCase {
     /**
      * @expectedException cyclone\jork\Exception
      */
-    public function test_delete_by_pk() {
+    public function test_unset() {
         $pool = jork\InstancePool::for_class('Model_User');
         $user = new Model_User;
         $user->id = 2;
