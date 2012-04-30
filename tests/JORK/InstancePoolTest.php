@@ -76,12 +76,13 @@ class JORK_InstancePoolTest extends PHPUnit_Framework_TestCase {
         }
 
         $idx = 0;
-        foreach ($pool as $id => $user) {
-            $this->assertEquals($users[$idx]->id, $id);
+        foreach ($pool as $user) {
+            $this->assertEquals($users[$idx]->pk(), $pool->key());
             $this->assertEquals($users[$idx], $user);
             ++$idx;
         }
         $this->assertEquals(4, $idx);
     }
+
 
 }

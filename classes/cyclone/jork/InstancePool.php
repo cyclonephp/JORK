@@ -104,7 +104,7 @@ class InstancePool implements \ArrayAccess, \Iterator, \Countable {
     }
 
     public function key() {
-        return $this->_iterator->key();
+        return array($this->_iterator->key());
     }
 
     public function current() {
