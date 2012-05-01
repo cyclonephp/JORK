@@ -169,10 +169,10 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
             throw new jork\Exception ("the items of this collection should be {$this->_comp_class} instances");
         $value->add_pk_change_listener($this);
         $pk = $value->pk();
-        $new_itm = array(
+        $new_itm = new \ArrayObject(array(
             'persistent' => FALSE,
             'value' => $value
-        );
+        ));
         if (NULL === $pk) {
             $this->_storage []= $new_itm;
         } else {
@@ -190,10 +190,10 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
     }
 
     public function append_persistent($value) {
-        $this->_storage[$value->pk()] = array(
+        $this->_storage[$value->pk()] = new \ArrayObject(array(
             'persistent' => TRUE,
             'value' => $value
-        );
+        ));
     }
 
     protected function update_stor_pk($entity) {
@@ -237,10 +237,10 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
      * @package
      */
     public function  offsetSet($key, $val) {
-        $this->_storage[$key] = array(
+        $this->_storage[$key] = new \ArrayObject(array(
             'persistent' => TRUE,
             'value' => $val
-        );
+        ));
         $this->_persistent = FALSE;
     }
 
