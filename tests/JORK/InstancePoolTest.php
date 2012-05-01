@@ -21,21 +21,17 @@ class JORK_InstancePoolTest extends PHPUnit_Framework_TestCase {
         $this->assertFalse($inst1 === $inst2);
     }
 
-    /**
-     * @expectedException \cyclone\jork\Exception
-     */
     public function test_append_get() {
         $pool = jork\InstancePool::for_class('Model_User');
         $this->assertNull($pool[array(1)]);
         $user = new Model_User;
         $user->id = 1;
-        $pool->append($user);
+        $pool[$user->pk()] = $user;
         $this->assertSame($user, $pool[array(1)]);
         $user2 = new Model_User;
         $user2->id = 2;
-        $pool->append($user2);
+        $pool[$user2->pk()] = $user2;
         $this->assertSame($user2, $pool[array(2)]);
-        $pool->append(new Model_Post);
     }
 
     /**
@@ -72,7 +68,7 @@ class JORK_InstancePoolTest extends PHPUnit_Framework_TestCase {
             $user = new Model_User;
             $user->id = $i;
             $users []= $user;
-            $pool->append($user);
+            $pool[$user->pk()] = $user;
         }
 
         $idx = 0;

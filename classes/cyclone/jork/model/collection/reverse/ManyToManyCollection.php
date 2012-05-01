@@ -13,6 +13,9 @@ use cyclone\db;
 class ManyToManyCollection extends jork\model\collection\AbstractCollection {
 
     public function delete_by_pk($pk) {
+        if ( ! is_array($pk)) {
+            $pk = array($pk);
+        }
         $this->_deleted[$pk] = $this->_storage[$pk];
         unset($this->_storage[$pk]);
         $this->_persistent = FALSE;
@@ -38,15 +41,23 @@ class ManyToManyCollection extends jork\model\collection\AbstractCollection {
         if ( ! empty ($this->_deleted)) {
             $del_stmt = new db\query\Delete;
             $del_stmt->table = $comp_schema->join_table->name;
-            $del_stmt->conditions = array(
-                new db\BinaryExpression($comp_schema->join_table->inverse_join_column
-                        , '=', cy\DB::esc($pk)),
-                new db\BinaryExpression($comp_schema->join_table->join_column
-                        , 'IN', new db\SetExpression(array_keys($this->_deleted)))
-            );
+            if (count($pk) == 1) {
+                $del_keys = array();
+                foreach ($this->_deleted as $dummy) {
+                    $key = $this->_deleted->key();
+                    $del_keys []= $key[0];
+                }
+                $del_stmt->conditions = array(
+                    new db\BinaryExpression($comp_schema->join_table->inverse_join_columns[0]
+                        , '=', cy\DB::esc($pk[0])),
+                    new db\BinaryExpression($comp_schema->join_table->join_columns[0]
+                        , 'IN', new db\SetExpression($del_keys))
+                );
+            } else
+                throw new \cyclone\jork\Exception("many-to-many collection doesn't support deletion of composite key-mapped relations");
             $del_stmt->exec($db_conn);
         }
-        if ( ! empty($this->_storage)) {
+        if ( ! count($this->_storage) > 0) {
             $ins_stmt = new db\query\Insert;
             $ins_stmt->table = $comp_schema->join_table->name;
             $ins_stmt->values = array();

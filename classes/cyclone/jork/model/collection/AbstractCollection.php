@@ -87,17 +87,17 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
      * already been saved into the database
      * - value: a model object
      *
-     * @var array
+     * @var \cyclone\jork\InstancePool
      */
-    protected $_storage = array();
+    protected $_storage;
 
     /**
      * Stores the entities deleted from the collection, and performs the
      * required database operations when persisting.
      *
-     * @var array
+     * @var \cyclone\jork\InstancePool
      */
-    protected $_deleted = array();
+    protected $_deleted;
 
     /**
      * Flag to avoid infinite recursions when as_string() is called on
@@ -129,6 +129,8 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
         $this->_comp_schema = $comp_schema;
         $this->_comp_class = $comp_schema->class;
         $this->_owner->add_pk_change_listener($this);
+        $this->_storage = jork\InstancePool::for_class($comp_schema->class);
+        $this->_deleted = jork\InstancePool::for_class($comp_schema->class);
     }
 
     /**
@@ -218,6 +220,9 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
     }
 
     public function  offsetGet($key) {
+        if ( ! is_array($key)) {
+            $key = array($key);
+        }
         if ( ! isset($this->_storage[$key]))
             throw new jork\Exception("undefined index $key in component collection '{$this->_comp_name}'");
         return $this->_storage[$key]['value'];
@@ -240,7 +245,7 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
     }
 
     public function  offsetExists($key) {
-        return array_key_exists($key, $this->_storage);
+        return isset($this->_storage[array($key)]);
     }
 
     public function  offsetUnset($key) {

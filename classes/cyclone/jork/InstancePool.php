@@ -147,8 +147,11 @@ class InstancePool implements \ArrayAccess, \Iterator, \Countable {
             throw new Exception("key '{$primary_key[0]}' not found");
     }
 
-    public function offsetExists($primary_key) {
-        return isset($this->_pool[$primary_key[0]]);
+    public function offsetExists($key) {
+        if ($key[0] === NULL) {
+            $key[0] = '';
+        }
+        return isset($this->_pool[$key[0]]);
     }
 
 }

@@ -19,7 +19,7 @@ class ManyToOneCollection extends jork\model\collection\AbstractCollection {
 
         $this->_inverse_join_columns = $remote_comp_schema->join_columns;
         $this->_join_columns = empty($remote_comp_schema->inverse_join_columns)
-                ? jork\model\AbstractModel::schema_by_class($comp_schema->class)->primary_key()
+                ? jork\model\AbstractModel::schema_by_class($comp_schema->class)->primary_keys()
                 : $remote_comp_schema->inverse_join_columns;
     }
 
@@ -32,6 +32,9 @@ class ManyToOneCollection extends jork\model\collection\AbstractCollection {
     }
 
     public function delete_by_pk($pk) {
+        if ( ! is_array($pk)) {
+            $pk = array($pk);
+        }
         $this->_deleted[$pk] = $this->_storage[$pk];
         foreach ($this->_inverse_join_columns as $inv_join_col) {
             $this->_deleted[$pk]['value']->$inv_join_col = NULL;

@@ -210,7 +210,7 @@ use cyclone\jork\schema;
 
     public function primary_key_strategy() {
         if (count($this->_pk_strategies) > 0)
-            return $this->_pk_strategy;
+            return $this->_pk_strategies;
         
         foreach ($this->primitives as $name => $def) {
             $candidate = $def->primary_key_strategy;

@@ -14,20 +14,29 @@ class OneToManyCollection extends AbstractCollection {
 
     public function  __construct($owner, $comp_name, $comp_schema) {
         parent::__construct($owner, $comp_name, $comp_schema);
-        $this->_join_column = $comp_schema->join_column;
-        $this->_inverse_join_column = isset($comp_schema->inverse_join_column)
-                ? $comp_schema->inverse_join_column
-                : $owner->schema()->primary_key();
+        $this->_join_columns = $comp_schema->join_columns;
+        $this->_inverse_join_columns = empty($comp_schema->inverse_join_columns)
+                ? $owner->schema()->primary_keys()
+                : $comp_schema->inverse_join_columns;
     }
 
     public function  append($value) {
         parent::append($value);
-        $value->{$this->_join_column} = $this->_owner->{$this->_inverse_join_column};
+        var_dump($this->_inverse_join_columns);
+        foreach ($this->_join_columns as $idx => $join_col) {
+            $value->{$join_col}
+                = $this->_owner->{$this->_inverse_join_columns[$idx]};
+        }
     }
 
     public function  delete_by_pk($pk) {
+        if ( ! is_array($pk)) {
+            $pk = array($pk);
+        }
         $this->_deleted[$pk] = $this->_storage[$pk]['value'];
-        $this->_deleted[$pk]->{$this->_join_column} = NULL;
+        foreach ($this->_join_columns as $join_col) {
+            $this->_deleted[$pk]->{$join_col} = NULL;
+        }
         unset($this->_storage[$pk]);
         $this->_persistent = FALSE;
     }
