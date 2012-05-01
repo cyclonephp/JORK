@@ -78,14 +78,8 @@ class InstancePool implements \ArrayAccess, \Iterator, \Countable {
         $this->_pool = new \ArrayObject();
     }
 
-    public function append(model\AbstractModel $instance) {
-        if ( ! ($instance instanceof $this->_class))
-            throw new Exception("unable to add an instance of class '"
-                . get_class($instance)
-                . " to InstancePool of class '{$this->_class}'");
-
-        $pk = $instance->pk();
-        $this->_pool[$pk[0]] = $instance;
+    public function append($value) {
+        $this->offsetSet(array(NULL), $value);
     }
 
     public function count() {
@@ -114,6 +108,9 @@ class InstancePool implements \ArrayAccess, \Iterator, \Countable {
     }
 
     public function offsetGet($primary_key) {
+        if ($primary_key[0] === NULL) {
+            $primary_key[0] = '';
+        }
         return isset($this->_pool[$primary_key[0]] )
             ? $this->_pool[$primary_key[0]]
             : NULL;
@@ -126,12 +123,13 @@ class InstancePool implements \ArrayAccess, \Iterator, \Countable {
      * @param $key array
      * @param $value model\AbstractModel
      * @throws \cyclone\jork\Exception
-     * @uses model\AbstractModel::pk()
      */
     public function offsetSet($key, $value) {
-        if ($key != $value->pk())
-            throw new Exception('$key must be equal to the primary key of $value');
-        $this->append($value);
+        if ($key[0] === NULL) {
+            $this->_pool []= $value;
+        } else {
+            $this->_pool[$key[0]] = $value;
+        }
     }
 
     /**

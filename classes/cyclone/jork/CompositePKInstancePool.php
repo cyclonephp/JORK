@@ -39,7 +39,7 @@ class CompositePKInstancePool extends InstancePool {
     }
 
 
-    public function append(model\AbstractModel $instance) {
+    public function append($instance) {
         if ( ! ($instance instanceof $this->_class))
             throw new Exception("unable to add an instance of class '"
                 . get_class($instance)
