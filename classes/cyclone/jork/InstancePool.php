@@ -6,7 +6,7 @@ use cyclone as cy;
 use cyclone\db;
 
 /**
- * The instances of this class can be used as a <primary key -> entity> hashmap.
+ * <p>The instances of this class can be used as a <primary key -> entity> hashmap.
  * Every entity class has (at most) one dedicated instance managed internally
  * by the InstancePool, this can be accessed using the @c inst() method. It is
  * used mainly by @c\cyclone\jork\EntityMapper to try to ensure that one entity
@@ -16,7 +16,10 @@ use cyclone\db;
  * reference to it using the @c offsetGet() method, which will return the already existing
  * instance with the given primary key or <code>NULL</code> if such instance is not present
  * yet (in the latter case the @c \cyclone\jork\mapper\EntityMapper will create the entity
- * and add it to the pool using @c add() )
+ * and add it to the pool using @c add() )</p>
+ *
+ * The secondary aim of instancePool is that it is used as the internal data storage
+ * of entity collections ( @ \cyclone\jork\model\collection\AbstractCollection subclasses).
  *
  * @author Bence Erős <crystal@cyclonephp.org>
  * @package JORK

@@ -3,6 +3,19 @@
 namespace cyclone\jork;
 
 /**
+ * The instances of this class are used as <code>&lt;primary key -> entity&gt;</code> hashtables
+ * where the <code>primary key</code> is an array of scalar values (representing a composite
+ * primary key). Internally the data structure is represented as an <code>N</code>-depth tree build of
+ * <code>ArrayObject</code> instances where <code>N</code> is the same as te number of (scalar) values
+ * in the primary keys. The @c key() method (see <code>Iterator</code> interface in the PHP documentation)
+ * will always return an array of scalar values (the composite primary key of an entity) which will result
+ * in PHP warnings. As a workaround it is recommended to iterate on <code>CompositePKInstancePool</code>
+ * instances this way: @code
+ * foreach ($pool as $entity) {
+ *      $primary_key = $pool->key();
+ *      // the body of the loop
+ * } @endcode
+ *
  * @package JORK
  * @author Bence Erős <crystal@cyclonephp.org>
  */
@@ -134,7 +147,7 @@ class CompositePKInstancePool extends InstancePool {
         }
     }
 
-    public function create_current() {
+    private function create_current() {
         $curr_key = array();
 
         $last_iter = $this->_current_iterables[$this->_pk_property_cnt - 1];
