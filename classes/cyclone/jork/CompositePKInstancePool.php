@@ -140,29 +140,22 @@ class CompositePKInstancePool extends InstancePool {
         $last_iter = $this->_current_iterables[$this->_pk_property_cnt - 1];
         $last_iter->next();
         if ( ! $last_iter->valid()) {
-            echo "last_iter is NOT valid \n";
             for ($idx = $this->_pk_property_cnt - 2
                 ; $this->_current_iterables[$idx]->next(), ( ! $this->_current_iterables[$idx]->valid())
-                ; --$idx) echo "iter[$idx] is not valid\n";
-            echo "iter[$idx] is valid\n";
+                ; --$idx);
             $valid_iter = $this->_current_iterables[$idx];
-            echo "before valid_iter->next() : " . $valid_iter->key() . "\n";
-            //$valid_iter->next();
-            echo "after valid_iter->next() : " . $valid_iter->key() . "\n";
 
             $this->_current_iterables[$idx] = $valid_iter;
 
             $curr_iter = $valid_iter->current()->getIterator();
             for ($i = $idx + 1; $i < $this->_pk_property_cnt; ++$i) {
                 $curr_iter->rewind();
-                echo "re-assigning curr_iter[$i] (key: " . $curr_iter->key() . ")\n";
                 $this->_current_iterables[$i] = $curr_iter;
                 $curr_iter = $curr_iter->current()->getIterator();
             }
         }
 
         for ($i = 0; $i < $this->_pk_property_cnt; ++$i) {
-            echo "creating current key: iterator[$i] -> " . $this->_current_iterables[$i]->key() . "\n";
             $curr_key []= $this->_current_iterables[$i]->key();
         }
         $this->_curr_key = $curr_key;

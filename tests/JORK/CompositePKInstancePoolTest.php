@@ -121,7 +121,14 @@ class JORK_CompositePKInstancePoolTest extends PHPUnit_Framework_TestCase {
             $this->assertEquals($object_list[$idx]->pk(), $pool->key());
             $this->assertEquals($object_list[$idx], $obj);
             ++$idx;
-            echo "passed\n";
+        }
+        $this->assertEquals($idx, count($pk_vals));
+
+        $idx = 0;
+        foreach ($pool as $obj) {
+            $this->assertEquals($object_list[$idx]->pk(), $pool->key());
+            $this->assertEquals($object_list[$idx], $obj);
+            ++$idx;
         }
         $this->assertEquals($idx, count($pk_vals));
 
