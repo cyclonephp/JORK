@@ -96,4 +96,34 @@ class JORK_CompositePKInstancePoolTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue(isset($pool[array(1, 2, 3, 4, 5)]), 'isset((1, 2, 3, 4, 5)) is true after adding the entity');
     }
 
+    public function test_iteration() {
+        $pool = jork\InstancePool::for_class('Model_CompPK');
+        $pk_vals = array(
+            array(1, 2, 3, 4, 5),
+            array(1, 2, 3, 4, 6),
+            array(1, 2, 3, 5, 5),
+            array(1, 2, 3, 5, 2),
+            array(5, 4, 3, 2, 1),
+            array(5, 3, 3, 2, 1)
+        );
+        $object_list = array();
+        foreach ($pk_vals as $pk_val) {
+            $obj = new Model_CompPK;
+            foreach ($pk_val as $idx => $pk_comp_val) {
+                $obj->{'pk_' . ($idx + 1)} = $pk_comp_val;
+            }
+            $object_list []= $obj;
+            $pool->append($obj);
+        }
+
+        $idx = 0;
+        foreach ($pool as $obj) {
+            $this->assertEquals($object_list[$idx]->pk(), $pool->key());
+            $this->assertEquals($object_list[$idx], $obj);
+            ++$idx;
+            echo "passed\n";
+        }
+        $this->assertEquals($idx, count($pk_vals));
+    }
+
 }

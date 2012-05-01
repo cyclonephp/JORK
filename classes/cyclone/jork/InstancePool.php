@@ -43,8 +43,7 @@ class InstancePool implements \ArrayAccess, \Iterator, \Countable {
     }
 
     public static function for_class($entity_class) {
-        //$schema = schema\SchemaPool::inst()->get_schema($entity_class);
-        $schema = model\AbstractModel::schema_by_class($entity_class);
+        $schema = schema\SchemaPool::inst()->get_schema($entity_class);
         if (count($schema->primary_keys()) == 1) {
             return new InstancePool($entity_class);
         }
