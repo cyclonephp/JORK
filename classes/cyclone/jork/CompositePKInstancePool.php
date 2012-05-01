@@ -18,6 +18,8 @@ class CompositePKInstancePool extends InstancePool {
 
     private $_curr_val;
 
+    private $_curr_count;
+
     protected function  __construct($class) {
         parent::__construct($class);
         $this->_pk_property_cnt = count(schema\SchemaPool::inst()->get_schema($class)->primary_keys());
@@ -94,10 +96,6 @@ class CompositePKInstancePool extends InstancePool {
         return $this->_count;
     }
 
-    public function valid() {
-        return $this->_current_iterables[$this->_pk_property_cnt - 1]->valid();
-    }
-
     public function rewind() {
         $curr_iterables = array();
         $curr_pool = $this->_pool;
@@ -106,7 +104,8 @@ class CompositePKInstancePool extends InstancePool {
             $curr_iterables []= $iter;
             $iter->rewind();
             if ( ! $iter->valid())
-                throw new Exception('invalid state');
+                //throw new Exception('invalid state');
+                return;
 
             $curr_pool = $iter->current();
         }
@@ -119,22 +118,36 @@ class CompositePKInstancePool extends InstancePool {
         }
         $this->_curr_key = $curr_key;
         $this->_curr_val = $curr_iterables[$this->_pk_property_cnt - 1]->current();
+        $this->_curr_count = -1;
     }
 
-    public function next() {
+    public function valid() {
+        if ($this->_curr_count == -1) {
+            $this->_curr_count = 0;
+            return $this->_count > 0;
+        } else {
+            if ($this->_count > 0 && $this->_curr_count < $this->_count - 1) {
+                $this->create_current();
+                return TRUE;
+            }
+            return FALSE;
+        }
+    }
+
+    public function create_current() {
         $curr_key = array();
 
         $last_iter = $this->_current_iterables[$this->_pk_property_cnt - 1];
         $last_iter->next();
         if ( ! $last_iter->valid()) {
             echo "last_iter is NOT valid \n";
-            for ($idx = $this->_pk_property_cnt - 1
-                ; ( ! $this->_current_iterables[$idx]->valid())
-                ; --$idx) ;
+            for ($idx = $this->_pk_property_cnt - 2
+                ; $this->_current_iterables[$idx]->next(), ( ! $this->_current_iterables[$idx]->valid())
+                ; --$idx) echo "iter[$idx] is not valid\n";
             echo "iter[$idx] is valid\n";
             $valid_iter = $this->_current_iterables[$idx];
             echo "before valid_iter->next() : " . $valid_iter->key() . "\n";
-            $valid_iter->next();
+            //$valid_iter->next();
             echo "after valid_iter->next() : " . $valid_iter->key() . "\n";
 
             $this->_current_iterables[$idx] = $valid_iter;
@@ -154,7 +167,10 @@ class CompositePKInstancePool extends InstancePool {
         }
         $this->_curr_key = $curr_key;
         $this->_curr_val = $this->_current_iterables[$this->_pk_property_cnt - 1]->current();
+        ++$this->_curr_count;
     }
+
+    public function next() {}
 
     public function key() {
         return $this->_curr_key;

@@ -124,6 +124,13 @@ class JORK_CompositePKInstancePoolTest extends PHPUnit_Framework_TestCase {
             echo "passed\n";
         }
         $this->assertEquals($idx, count($pk_vals));
+
+        $pool = jork\InstancePool::for_class('Model_CompPK');
+        $idx = 0;
+        foreach ($pool as $obj) {
+            ++$idx;
+        }
+        $this->assertEquals(0, $idx, 'empty pool iterated 0 times');
     }
 
 }
