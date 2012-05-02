@@ -141,7 +141,7 @@ class EntityMapper implements RowMapper {
                     $atomics[$prop_name] = $db_row[$col_name];
                 }
                 $entity->populate_atomics($atomics);
-                $instance_pool->append($entity);
+                $instance_pool[$entity->pk()] = ($entity);
             }
 
             $entity->init_component_collections($this->_next_to_many_mappers);
