@@ -55,7 +55,7 @@ class ManyToOneCollection extends jork\model\collection\AbstractCollection {
             $itm_join_col = $this->_inverse_join_columns[0];
             foreach ($this->_storage as $item) {
                 $item['persistent'] = FALSE;
-                $item['value']->$itm_join_col = $owner_pk;
+                $item['value']->$itm_join_col = $owner_pk[0];
             }
             return;
         }
