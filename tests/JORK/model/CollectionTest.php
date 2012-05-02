@@ -9,7 +9,7 @@ class JORK_Model_CollectionTest extends Kohana_Unittest_TestCase {
     /**
      * @expectedException cyclone\jork\Exception
      */
-    public function testForComponent() {
+    public function test_for_component() {
         $user = new Model_User;
         $coll = cy\jork\model\collection\AbstractCollection::for_component($user, 'posts');
         $this->assertInstanceOf('cyclone\\jork\\model\\collection\\OneToManyCollection', $coll);
@@ -28,7 +28,7 @@ class JORK_Model_CollectionTest extends Kohana_Unittest_TestCase {
         $coll = cy\jork\model\collection\AbstractCollection::for_component($cat, 'moderator');
     }
 
-    public function testIteration() {
+    public function test_iteration() {
         $result = cy\JORK::from('Model_Topic')->with('posts')
                 ->where('id', '=', cy\DB::esc(1))->exec('jork_test');
         $topic = $result[0];
