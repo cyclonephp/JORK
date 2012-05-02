@@ -14,7 +14,7 @@ use cyclone\db;
  * @author Bence Eros <crystal@cyclonephp.org>
  * @package JORK
  */
-abstract class AbstractCollection extends \ArrayObject implements \IteratorAggregate {
+abstract class AbstractCollection implements \ArrayAccess, \Iterator, \Countable {
 
     public static function for_component($owner, $comp_name) {
         $comp_schema = $owner->schema()->components[$comp_name];
@@ -240,7 +240,7 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
     }
 
     /**
-     * Only for internal usage. Used when object graph is loöaded from the database.
+     * Only for internal usage. Used when object graph is loaded from the database.
      *
      * @param string $key
      * @param JORK_Model_Abstract $val
@@ -273,8 +273,29 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
         return count($this->_storage);
     }
 
-    public function  getIterator() {
-        return new jork\model\Iterator($this->_storage);
+    public function rewind() {
+        $this->_storage->rewind();
+    }
+
+    public function valid() {
+        return $this->_storage->valid();
+    }
+
+    public function next() {
+        $this->_storage->next();
+    }
+
+    public function current() {
+        $current = $this->_storage->current();
+        return $current['value'];
+    }
+
+    public function key() {
+        $key = $this->_storage->key();
+        if (count($key) == 1) {
+            return $key[0];
+        }
+        return $key;
     }
 
     public function as_string($tab_cnt = 0) {
