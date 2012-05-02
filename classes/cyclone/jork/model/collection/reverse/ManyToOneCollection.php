@@ -46,20 +46,20 @@ class ManyToOneCollection extends jork\model\collection\AbstractCollection {
     public function notify_pk_creation($entity) {
         if ($entity == $this->_owner) {
             $owner_pk = $entity->pk();
-            if (isset($this->_comp_schema->inverse_join_column)
+            if (isset($this->_comp_schema->inverse_join_columns[0])
                     && ($this->_owner->schema()->primary_key()
-                    != $this->_comp_schema->inverse_join_column)) {
+                    != $this->_comp_schema->inverse_join_columns)) {
                 //we are not joining on the primary key of the owner
                 return;
             }
-            $itm_join_col = $this->_inverse_join_column;
+            $itm_join_col = $this->_inverse_join_columns[0];
             foreach ($this->_storage as $item) {
                 $item['persistent'] = FALSE;
                 $item['value']->$itm_join_col = $owner_pk;
             }
             return;
         }
-        $this->update_stor_pk($entity);
+        $this->_invalid_key_items []= $entity;
     }
 
     public function  notify_owner_deletion(db\ParamExpression $owner_pk) {
@@ -73,7 +73,7 @@ class ManyToOneCollection extends jork\model\collection\AbstractCollection {
             $remote_comp_schema = $children_schema
                 ->get_property_schema($this->_comp_schema->mapped_by);
 
-            $primitive_name = $remote_comp_schema->join_column;
+            $primitive_name = $remote_comp_schema->join_columns[0];
 
             $col_schema = $children_schema->get_property_schema($primitive_name);
             

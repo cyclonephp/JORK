@@ -74,6 +74,8 @@ class ManyToManyCollection extends AbstractCollection {
                             $inverse_join_col => $item_pk[0]
                         );
                     }
+                    var_dump($pk); var_dump($item_pk);
+                    var_dump($ins_stmt->values);
                 }
             } else
                 throw new \cyclone\jork\Exception("many-to-many collection doesn't support deletion of composite key-mapped relations");

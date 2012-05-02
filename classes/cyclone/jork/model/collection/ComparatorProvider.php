@@ -74,10 +74,15 @@ class ComparatorProvider {
                         );
                     }
                 } else {
+                    $pks = $this->_model_schema->primary_keys();
+                    if (count($pks) > 1)
+                        throw new jork\Exception("composite key sorting is not yet supported");
+
+                    $pk = $pks[0];
                     $ordering_values [] = array(
                         'on_lower' => $on_lower_asc
                         , 'on_higher' => $on_higher_asc
-                        , 'prop_name' => $this->_model_schema->primary_key()
+                        , 'prop_name' => $pk
                     );
                 }
 

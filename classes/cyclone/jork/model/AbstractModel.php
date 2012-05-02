@@ -137,8 +137,10 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      */
     public static function get($pk) {
         $schema = static::schema();
+        $schema_primary_keys = $schema->primary_keys();
+
         $result = cy\JORK::from($schema->class)
-                ->where($schema->primary_key(), '=', cy\DB::esc($pk))
+                ->where($schema_primary_keys[0], '=', cy\DB::esc($pk))
                 ->exec($schema->db_conn);
         switch (count($result)) {
             case 0:
@@ -516,7 +518,10 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
         $pk_val = $this->pk();
         if (NULL === $pk_val)
             return NULL;
-        
+        if (count($pk_val) > 1)
+            throw new jork\Exception("lazy-loading on composite primary key entities is not yet supported");
+
+        $pk_val = $pk_val[0];
         $model_schema = $this->schema();
         $prop_schema = $model_schema->primitives[$prop_name];
         $db_column = isset($prop_schema->column) ? $prop_schema->column : $prop_name;
@@ -533,9 +538,14 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
 
     private function fetch_component($prop_name) {
         $schema = $this->schema();
+        $pk = $this->pk();
 
+        if (count($pk) > 1)
+            throw new jork\Exception("lazy-loading components on composite primary key entities is not yet supported");
+
+        $schema_primary_keys = $schema->primary_keys();
         cy\JORK::from($schema->class)->with($prop_name)
-                ->where($schema->primary_key(), '=', cy\DB::esc($this->pk()))
+                ->where($schema_primary_keys[0], '=', cy\DB::esc($pk[0]))
                 ->exec($schema->db_conn);
         if ( ! isset($this->_components[$prop_name]) && $schema->is_to_many_component($prop_name)) {
             $this->_components[$prop_name] = array(
@@ -574,6 +584,10 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             $values = array();
             $prim_table = NULL;
             list($pk_primitive, $pk_strategy) = $schema->primary_key_info();
+            if (count($pk_primitive) > 1)
+                throw new jork\Exception("composite primary key entity saving is not yet supported");
+
+            $pk_primitive = $pk_primitive[0];
             if ($pk_strategy == cy\JORK::ASSIGN && ! isset($this->_primitives[$pk_primitive]))
                 throw new jork\Exception("can not save '"
                         . $schema->class
@@ -619,7 +633,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             } else {
                 foreach ($values as $tbl_name => $ins_values) {
                     $insert_sqls[$tbl_name]->values = array($ins_values);
-                    $tmp_id = $insert_sqls[$tbl_name]->exec($schema->db_conn);
+                    $tmp_id = $insert_sqls[$tbl_name]->exec($schema->db_conn)->rows[0][$pk_primitive];
                     if ($prim_table == $tbl_name) {
                         $this->_primitives[$pk_primitive] = array(
                             'value' => self::$_cfg['force_type']
@@ -704,9 +718,9 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                         
                     }
                 }
-
-                $update_sqls[$tbl_name]->where($schema->primary_key(), '='
-                        , DB::esc($pk));
+                $schema_primary_keys = $schema->primary_keys();
+                $update_sqls[$tbl_name]->where($schema_primary_keys[0], '='
+                        , DB::esc($pk[0]));
                 $update_sqls[$tbl_name]->exec($schema->db_conn);
             }
 
@@ -741,21 +755,30 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     public function save($cascade = TRUE) {
         $schema = $this->schema();
         $pk_strategy = $schema->primary_key_strategy();
+        if (count($pk_strategy) > 1)
+            throw new jork\Exception("saving composite primary key entities is not yet supported");
+
+        $pk_strategy = $pk_strategy[0];
         if ($pk_strategy == cy\JORK::AUTO) {
-            if ($this->pk() === NULL) {
+            $pk = $this->pk();
+            if ($pk[0] === NULL) {
                 $this->insert($cascade);
             } else {
                 $this->update($cascade);
             }
         } else {
             // generation strategy is assigned
-            $pk_name = $schema->primary_key();
+            $pk_name = $schema->primary_keys();
+            if (count($pk_name) > 1)
+                throw new jork\Exception("composite primary key entity saving is not yet suported");
+
+            $pk_name = $pk_name[0];
             
             // fail here if the primary key doesn't have a manually assigned value
             if ( ! isset($this->_primitives[$pk_name]))
                 throw new jork\Exception("can not save '"
                         . $schema->class
-                        . "' instance: primary key is not assigned");
+                        . "' instance: primary key is not assigned ($pk_name)");
             $pk_primitive = $this->_primitives[$pk_name];
             if ($pk_primitive['persistent'] == TRUE) {
                 // if the primary key is persistent then it will be an update
@@ -814,7 +837,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
         $pk = $this->pk();
         $this->delete_by_pk($pk);
 
-        $pk = new db\ParamExpression($pk);
+        $pk = new db\ParamExpression($pk[0]);
         $schema = static::schema();
         foreach ($schema->components as $comp_name => $comp_def) {
             if (isset($comp_def->on_delete)) {
@@ -848,7 +871,10 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     public static function delete_by_pk($pk) {
         if ($pk === NULL)
             return;
+        if (count($pk) > 1)
+            throw new jork\Exception("deleting composite primary key entities is not yet supported");
 
+        $pk = $pk[0];
         $schema = static::schema();
         $delete_sqls = query\Cache::inst(get_called_class())->delete_sql();
         $pk = new db\ParamExpression($pk);
@@ -866,17 +892,21 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
 
         $upd_stmt = new db\query\Update;
 
-        $remote_primitive_schema = $remote_class_schema->primitives[$remote_comp_schema->join_column];
+        $remote_primitive_schema = $remote_class_schema->primitives[$remote_comp_schema->join_columns[0]];
 
-        $remote_join_col = isset($remote_primitive_schema->column) ? $remote_primitive_schema->column : $remote_comp_schema->join_column;
+        $remote_join_col = isset($remote_primitive_schema->column)
+            ? $remote_primitive_schema->column
+            : $remote_comp_schema->join_columns[0];
 
         $upd_stmt->values = array(
             $remote_join_col => NULL
         );
 
+        $schema_primary_key = $schema->primary_keys();
+
         $local_join_atomic = isset($remote_comp_schema->inverse_join_column)
-                ? $remote_comp_schema->join_column
-                : $schema->primary_key();
+                ? $remote_comp_schema->join_columns[0]
+                : $schema_primary_key[0];
 
         $local_join_col = isset($schema->primitives[$local_join_atomic]->column)
                 ? $schema->atomics[$local_join_atomic]->column
@@ -886,7 +916,8 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                 ? $remote_primitive_schema->table
                 : $remote_class_schema->table;
 
-        if ($local_join_atomic == $schema->primary_key()) {
+        $schema_primary_keys = $schema->primary_keys();
+        if ($local_join_atomic == $schema_primary_keys[0]) {
             // we are simply happy, the primary key is the
             // join column and we have it
             $local_join_cond = $pk;
@@ -902,7 +933,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                 $local_join_cond = new db\query\SelectQuery;
                 $local_join_cond->columns = array($local_join_col);
                 $local_join_cond->tables = array(
-                    isset($schema->atomics[$local_join_atomic]->table)
+                    isset($schema->primitives[$local_join_atomic]->table)
                             ? $schema->atomics[$local_join_atomic]->table
                             : $schema->table
                 );

@@ -4,6 +4,8 @@
 use cyclone as cy;
 use cyclone\db;
 
+require_once __DIR__ . '/../DBTest.php';
+
 /**
  * This test class is a general test class used for general functional testing
  */

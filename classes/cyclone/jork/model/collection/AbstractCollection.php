@@ -123,6 +123,8 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
      */
     private $_cmp_provider;
 
+    protected $_invalid_key_items = array();
+
     public function  __construct($owner, $comp_name, $comp_schema) {
         $this->_owner = $owner;
         $this->_comp_name = $comp_name;
@@ -169,6 +171,10 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
             throw new jork\Exception ("the items of this collection should be {$this->_comp_class} instances");
         $value->add_pk_change_listener($this);
         $pk = $value->pk();
+        if (count($pk) > 1)
+            throw new jork\Exception("composite primary key entity handling is not supported");
+
+        $pk = $pk[0];
         $new_itm = new \ArrayObject(array(
             'persistent' => FALSE,
             'value' => $value
@@ -176,14 +182,15 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
         if (NULL === $pk) {
             $this->_storage []= $new_itm;
         } else {
-            if (isset($this->_storage[$pk])) {
-                $temp = $this->_storage[$pk];
-                if ($temp['value']->pk() == $pk)
+            if (isset($this->_storage[array($pk)])) {
+                $temp = $this->_storage[array($pk)];
+                $temp_pk = $temp['value']->pk();
+                if ($temp_pk[0] == $pk)
                     throw new jork\Exception($this->_comp_class . '#' . $pk . ' has already been added to the collection');
-                $this->_storage[$pk] = $new_itm;
+                $this->_storage[array($pk)] = $new_itm;
                 $this->_storage []= $temp;
             } else {
-                $this->_storage[$pk] = $new_itm;
+                $this->_storage[array($pk)] = $new_itm;
             }
         }
         $this->_persistent = FALSE;
@@ -196,27 +203,31 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
         ));
     }
 
-    protected function update_stor_pk($entity) {
-        $new_pk = $entity->pk();
-        $old_pk = NULL;
-        foreach ($this->_storage as $pk => $itm) {
-            if ($itm['value']->pk() == $new_pk) {
-                $old_pk = $pk;
-                break;
+    protected function update_invalid_storage_keys() {
+        foreach ($this->_invalid_key_items as $entity) {
+            $new_pk = $entity->pk();
+            $old_pk = NULL;
+            foreach ($this->_storage as $itm) {
+                $pk = $this->_storage->key();
+                if ($itm['value']->pk() == $new_pk) {
+                    $old_pk = $pk;
+                    break;
+                }
             }
-        }
-        if ($old_pk === NULL) 
-            throw new jork\Exception("failed to update data structure: {$this->_comp_class} #$new_pk not found. Entities in collection: #" . implode(', #', $existing_pks));
+            if ($old_pk === NULL)
+                throw new jork\Exception("failed to update data structure: {$this->_comp_class} #$new_pk not found.");
 
-        if (isset($this->_storage[$new_pk])) {
-            $temp = $this->_storage[$new_pk];
-            $this->_storage[$new_pk] = $this->_storage[$old_pk];
-            $this->_storage []= $temp;
-        } else {
-            $this->_storage[$new_pk] = $this->_storage[$old_pk];
+            if (isset($this->_storage[$new_pk])) {
+                $temp = $this->_storage[$new_pk];
+                $this->_storage[$new_pk] = $this->_storage[$old_pk];
+                $this->_storage []= $temp;
+            } else {
+                $this->_storage[$new_pk] = $this->_storage[$old_pk];
+            }
+
+            unset($this->_storage[$old_pk]);
         }
-        
-        unset($this->_storage[$old_pk]);
+        $this->_invalid_key_items = array();
     }
 
     public function  offsetGet($key) {
@@ -304,12 +315,26 @@ abstract class AbstractCollection extends \ArrayObject implements \IteratorAggre
     }
 
     public function sort($order = cy\JORK::SORT_REGULAR, $comparator = NULL) {
+        if (count($this->_join_columns) > 1)
+            throw new jork\Exception("composite key sorting is not yet supported");
+
         if (NULL === $this->_cmp_provider) {
             $model_schema = jork\model\AbstractModel::schema_by_class($this->_comp_class);
             $this->_cmp_provider = ComparatorProvider::for_schema($model_schema);
         }
         $cmp_fn = $this->_cmp_provider->get_comparator($order, $comparator);
-        uasort($this->_storage, $cmp_fn);
+
+        $storage = array();
+        foreach ($this->_storage as $value) {
+            $key = $this->_storage->key();
+            $storage[$key[0]] =$value;
+        }
+
+        uasort($storage, $cmp_fn);
+        $this->_storage = jork\InstancePool::for_class($this->_comp_class);
+        foreach ($storage as $k => $v) {
+            $this->_storage[array($k)] = $v;
+        }
         return $this;
     }
 

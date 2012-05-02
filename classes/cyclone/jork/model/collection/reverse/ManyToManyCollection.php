@@ -38,7 +38,7 @@ class ManyToManyCollection extends jork\model\collection\AbstractCollection {
             ->get_property_schema($this->_comp_schema->mapped_by);
         $pk = $this->_owner->pk();
         $db_conn = $this->_owner->schema()->db_conn;
-        if ( ! empty ($this->_deleted)) {
+        if ( count($this->_deleted) > 0) {
             $del_stmt = new db\query\Delete;
             $del_stmt->table = $comp_schema->join_table->name;
             if (count($pk) == 1) {
@@ -57,18 +57,19 @@ class ManyToManyCollection extends jork\model\collection\AbstractCollection {
                 throw new \cyclone\jork\Exception("many-to-many collection doesn't support deletion of composite key-mapped relations");
             $del_stmt->exec($db_conn);
         }
-        if ( ! count($this->_storage) > 0) {
+        if (count($this->_storage) > 0) {
             $ins_stmt = new db\query\Insert;
             $ins_stmt->table = $comp_schema->join_table->name;
             $ins_stmt->values = array();
-            $local_join_col = $comp_schema->join_table->inverse_join_column;
-            $inverse_join_col = $comp_schema->join_table->join_column;
-            foreach ($this->_storage as $itm_pk => $itm) {
+            $local_join_col = $comp_schema->join_table->inverse_join_columns[0];
+            $inverse_join_col = $comp_schema->join_table->join_columns[0];
+            foreach ($this->_storage as $itm) {
+                $itm_pk = $this->_storage->key();
                 if (FALSE == $itm['persistent']) {
                     $itm['value']->save();
                     $ins_stmt->values []= array(
-                        $local_join_col => $pk,
-                        $inverse_join_col => $itm_pk
+                        $local_join_col => $pk[0],
+                        $inverse_join_col => $itm_pk[0]
                     );
                 }
             }

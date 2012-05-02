@@ -141,8 +141,13 @@ class Cache {
         if (NULL === $this->_delete_sql) {
             $prim_tbl_del = new db\query\Delete;
             $prim_tbl_del->table = $this->_schema->table;
+            $primary_key = $this->_schema->primary_keys();
+            if (count($primary_key) > 1)
+                throw new jork\Exception("deleting composite primary key entities is not yet supported");
+
+            $primary_key = $primary_key[0];
             $prim_tbl_del->conditions = array(
-                new db\BinaryExpression($this->_schema->primary_key(), '=', NULL)
+                new db\BinaryExpression($primary_key, '=', NULL)
             );
             $this->_delete_sql = array($prim_tbl_del);
             if ($this->_schema->secondary_tables != NULL) {
@@ -174,7 +179,11 @@ class Cache {
             $sql->tables = array(
                 NULL === $prop_schema->table ? $model_schema->table : $prop_schema->table
             );
-            $primary_key = $model_schema->primary_key();
+            $primary_key = $model_schema->primary_keys();
+            if (count($primary_key) > 1)
+                throw new jork\Exception("lazy-loading composite primary key entity primitives is not yet supported");
+
+            $primary_key = $primary_key[0];
             $prim_key_schema = $model_schema->primitives[$primary_key];
             if (NULL === $prim_key_schema->table
                     || $prim_key_schema->table == $model_schema->table) {
