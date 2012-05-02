@@ -289,19 +289,36 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                 );
             }
         } else {
-            if (empty($remote_schema->inverse_join_columns)) {
-                $values = $this->pk();
-            } else {
-                $values = array();
-                foreach ($remote_schema->inverse_join_columns as $inv_join_col) {
-                    $values []= $val->_primitives[$inv_join_col]['value'];
+            if ($remote_schema->type == cy\JORK::ONE_TO_MANY) {
+                if (empty($remote_schema->inverse_join_columns)) {
+                    $values = $val->pk();
+                } else {
+                    $values = array();
+                    foreach ($remote_schema->inverse_join_columns as $inv_join_col) {
+                        $values [] = $val->_primitives[$inv_join_col]['value'];
+                    }
                 }
-            }
-            foreach ($remote_schema->join_columns as $idx => $join_col) {
-                $val->_primitives[$join_col] = array(
-                    'value' => $values[$idx],
-                    'persistent' => FALSE
-                );
+                foreach ($remote_schema->join_columns as $idx => $join_col) {
+                    $this->_primitives[$join_col] = array(
+                        'value' => $values[$idx],
+                        'persistent' => FALSE
+                    );
+                }
+            } else {
+                if (empty($remote_schema->inverse_join_columns)) {
+                    $values = $this->pk();
+                } else {
+                    $values = array();
+                    foreach ($remote_schema->inverse_join_columns as $inv_join_col) {
+                        $values [] = $this->_primitives[$inv_join_col]['value'];
+                    }
+                }
+                foreach ($remote_schema->join_columns as $idx => $join_col) {
+                    $val->_primitives[$join_col] = array(
+                        'value' => $values[$idx],
+                        'persistent' => FALSE
+                    );
+                }
             }
         }
     }
