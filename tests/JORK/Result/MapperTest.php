@@ -102,8 +102,6 @@ class JORK_Result_MapperTest extends JORK_DbTest {
 
         $row2 = $result[1];
         $this->assertInstanceOf('cyclone\jork\model\collection\AbstractCollection', $row2['topics']);
-        echo get_class($row2['topics']) . "\n";
-        echo $row2['topics']->as_string();
         $this->assertEquals(2, $row2['topics']->count());
         $this->assertTrue(isset($row2['topics'][1]));
         $this->assertEquals(1, $row2['topics'][1]->id);

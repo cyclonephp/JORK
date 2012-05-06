@@ -130,7 +130,6 @@ abstract class AbstractCollection implements \ArrayAccess, \Iterator, \Countable
         $this->_comp_name = $comp_name;
         $this->_comp_schema = $comp_schema;
         $this->_comp_class = $comp_schema->class;
-        echo "created collection for $comp_name : {$comp_schema->class}\n";
         $this->_owner->add_pk_change_listener($this);
         $this->_storage = jork\InstancePool::for_class($comp_schema->class);
         $this->_deleted = jork\InstancePool::for_class($comp_schema->class);
