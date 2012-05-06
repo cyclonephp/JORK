@@ -139,6 +139,7 @@ class DefaultResult extends AbstractResult {
             }
 
             foreach ($this->_coll_mappers as $alias => $mapper) {
+                $last_entity = $mapper->get_last_entity();
                 if ($obj_result_row[$alias] != NULL && $last_entity != NULL) {
                     $obj_result_row[$alias]->append_persistent($last_entity);
                 }

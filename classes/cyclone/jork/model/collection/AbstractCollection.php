@@ -130,6 +130,7 @@ abstract class AbstractCollection implements \ArrayAccess, \Iterator, \Countable
         $this->_comp_name = $comp_name;
         $this->_comp_schema = $comp_schema;
         $this->_comp_class = $comp_schema->class;
+        echo "created collection for $comp_name : {$comp_schema->class}\n";
         $this->_owner->add_pk_change_listener($this);
         $this->_storage = jork\InstancePool::for_class($comp_schema->class);
         $this->_deleted = jork\InstancePool::for_class($comp_schema->class);
@@ -197,6 +198,9 @@ abstract class AbstractCollection implements \ArrayAccess, \Iterator, \Countable
     }
 
     public function append_persistent($value) {
+        if ( ! $value instanceof $this->_comp_class)
+            throw new jork\Exception ("the items of this collection should be {$this->_comp_class} instances. Found " . (is_object($value) ? get_class($value) : gettype($value)));
+
         $this->_storage[$value->pk()] = new \ArrayObject(array(
             'persistent' => TRUE,
             'value' => $value
@@ -248,6 +252,9 @@ abstract class AbstractCollection implements \ArrayAccess, \Iterator, \Countable
      * @package
      */
     public function  offsetSet($key, $val) {
+        if ( ! $val instanceof $this->_comp_class)
+            throw new jork\Exception ("the items of this collection should be {$this->_comp_class} instances");
+
         $this->_storage[$key] = new \ArrayObject(array(
             'persistent' => TRUE,
             'value' => $val
