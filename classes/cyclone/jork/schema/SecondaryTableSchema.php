@@ -9,7 +9,7 @@ namespace cyclone\jork\schema;
  *
  * @see cyclone\\jork\\schema\\ModelSchema::$secondary_tables
  * @package JORK
- * @author Bence Eros <bence.eros@cyclonephp.com>
+ * @author Bence Eros <bence.eros@cyclonephp.org>
  */
 class SecondaryTableSchema {
 
@@ -21,24 +21,28 @@ class SecondaryTableSchema {
     public $name;
 
     /**
-     * The name of the join column in the table of the model class which' schema
+     * The name of the join columns in the table of the model class which' schema
      * this secondary table belongs to.
      *
      * @var string
      */
-    public $join_column;
+    public $join_columns = array();
 
     /**
-     * The name of the join column in the secondary table.
+     * The name of the join columns in the secondary table.
      *
      * @var string
      */
-    public $inverse_join_column;
+    public $inverse_join_columns = array();
 
     function __construct($name, $join_column, $inverse_join_column) {
         $this->name = $name;
-        $this->join_column = $join_column;
-        $this->inverse_join_column = $inverse_join_column;
+        if ($join_column !== NULL) {
+            $this->join_columns []= $join_column;
+        }
+        if ($inverse_join_column !== NULL) {
+            $this->inverse_join_columns []= $inverse_join_column;
+        }
     }
 
             /**
@@ -59,7 +63,7 @@ class SecondaryTableSchema {
      * @return SecondaryTableSchema
      */
     public function join_column($column) {
-        $this->join_column = $column;
+        $this->join_columns []= $column;
         return $this;
     }
 
@@ -70,7 +74,7 @@ class SecondaryTableSchema {
      * @return SecondaryTableSchema
      */
     public function inverse_join_column($column) {
-        $this->inverse_join_column = $column;
+        $this->inverse_join_columns []= $column;
         return $this;
     }
     

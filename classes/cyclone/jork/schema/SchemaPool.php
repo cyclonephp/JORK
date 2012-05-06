@@ -12,7 +12,7 @@ use cyclone\jork;
  * mapping schemas of the model classes.
  *
  * @package jork
- * @author Bence Eros <crystal@cyclonephp.com>
+ * @author Bence Eros <crystal@cyclonephp.org>
  */
 class SchemaPool {
 
@@ -94,8 +94,12 @@ class SchemaPool {
      * @throws \cyclone\jork\SchemaException
      */
     public function get_schema($class_name) {
-        if ( ! isset($this->_pool[$class_name]))
-            throw new jork\SchemaException("unknown model class: '$class_name'");
+        if ( ! isset($this->_pool[$class_name])) {
+            if ( ! class_exists($class_name))
+                throw new jork\SchemaException("unknown model class: '$class_name'");
+
+            $this->_pool[$class_name] = call_user_func(array($class_name, 'setup'));
+        }
 
         return $this->_pool[$class_name];
     }

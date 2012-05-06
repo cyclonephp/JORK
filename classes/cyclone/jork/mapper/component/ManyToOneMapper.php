@@ -7,7 +7,7 @@ use cyclone\db;
 use cyclone as cy;
 
 /**
- * @author Bence Eros <crystal@cyclonephp.com>
+ * @author Bence Eros <crystal@cyclonephp.org>
  * @package JORK
  */
 class ManyToOneMapper extends AbstractMapper {
@@ -16,41 +16,37 @@ class ManyToOneMapper extends AbstractMapper {
         $comp_schema = $this->_parent_mapper->_entity_schema->components[$this->_comp_name];
         $remote_schema = jork\model\AbstractModel::schema_by_class($comp_schema->class);
 
-        $join_col = $comp_schema->join_column;
+        $join_cols = $comp_schema->join_columns;
+        $join_tables = $this->_parent_mapper->_entity_schema->table_names_for_columns($join_cols);
 
-        $join_col_schema = $this->_parent_mapper->_entity_schema->get_property_schema($join_col);
+        $remote_join_cols = $comp_schema->inverse_join_columns;
+        $remote_join_tables = $remote_schema->table_names_for_columns($remote_join_cols);
+        $joins = array();
+        foreach ($join_cols as $idx => $join_col) {
+            $join_col_schema = $this->_parent_mapper->_entity_schema->get_property_schema($join_col);
+            $join_table = $join_tables[$idx];
 
-        $join_table = isset($join_col_schema->table)
-                ? $join_col_schema->table
-                : $this->_parent_mapper->_entity_schema->table;
+            $this->_parent_mapper->add_table($join_table);
+            $join_table_alias = $this->_parent_mapper->table_alias($join_table);
 
-        $this->_parent_mapper->add_table($join_table);
+            $remote_join_col = $remote_join_cols[$idx];
+            $remote_join_table = $remote_join_tables[$idx];
 
-        //$join_table_alias = $this->_naming_srv->table_alias($this->_parent_mapper->_entity_alias, $join_table);
-        $join_table_alias = $this->_parent_mapper->table_alias($join_table);
+            $remote_join_table_alias = $this->table_alias($remote_join_table);
 
-        $remote_join_col = isset($comp_schema->inverse_join_column)
-                ? $comp_schema->inverse_join_column
-                : $remote_schema->primary_key();
-
-        $remote_join_col_schema = $remote_schema->get_property_schema($remote_join_col);
-
-        $remote_join_table = isset($remote_join_col_schema->table)
-                ? $remote_join_col_schema->table
-                : $remote_schema->table;
-
-        $remote_join_table_alias = $this->table_alias($remote_join_table);
-
-        $this->_db_query->joins []= array(
-            'table' => array($remote_join_table, $remote_join_table_alias),
-            'type' => 'LEFT',
-            'conditions' => array(
-                new db\BinaryExpression($join_table_alias.'.'.$join_col, '='
-                    , $remote_join_table_alias.'.'.$remote_join_col)
-            )
-        );
-
-        
+            if ( ! isset($joins[$join_table])) {
+                $joins[$join_table] = array(
+                    'table' => array($remote_join_table, $remote_join_table_alias),
+                    'type' => 'LEFT',
+                    'conditions' => array()
+                );
+                $this->_db_query->joins []= &$joins[$join_table];
+            }
+            $joins[$join_table]['conditions'] []= new db\BinaryExpression(
+                $join_table_alias.'.'.$join_col
+                , '='
+                , $remote_join_table_alias.'.'.$remote_join_col);
+        }
     }
 
     protected function  comp2join_reverse() {
@@ -61,14 +57,35 @@ class ManyToOneMapper extends AbstractMapper {
         $remote_schema = jork\model\AbstractModel::schema_by_class($remote_class);
 
         $remote_comp_def = $remote_schema->components[$local_schema->mapped_by];
+        $remote_columns = $remote_comp_def->join_columns;
+        $remote_tables = $remote_schema->table_names_for_columns($remote_columns);
 
-        $remote_join_col_def = $remote_schema->primitives[$remote_comp_def->join_column];
+        $local_columns = $remote_comp_def->inverse_join_columns;
+        $local_tables = $this->_parent_mapper->_entity_schema->table_names_for_columns($local_columns);
 
-        $remote_join_table = isset($remote_join_col_def->table)
-                ? $remote_join_col_def->table
-                : $remote_schema->table;
+        $joins = array();
 
-        $remote_table_alias = $this->table_alias($remote_join_table);
+        foreach ($remote_columns as $idx => $remote_join_col) {
+            $remote_join_col_def = $remote_schema->primitives[$remote_join_col];
+            $remote_join_table = $remote_tables[$idx];
+            $remote_table_alias = $this->table_alias($remote_join_table);
+            $remote_column = $remote_columns[$idx];
+            if ( ! isset($joins[$remote_join_table])) {
+                $joins[$remote_join_table] = array(
+                    'table' => array($remote_join_table, $remote_table_alias),
+                    'type' => 'LEFT',
+                    'conditions' => array()
+                );
+                $this->_db_query->joins []= &$joins[$remote_join_table];
+            }
+            $joins[$remote_join_table]['conditions'] []= new db\BinaryExpression(
+                    $this->_parent_mapper->add_table($local_tables[$idx])
+                    .'.'
+                    .$local_columns[$idx]
+                , '='
+                ,$remote_table_alias.'.'.$remote_column);
+        }
+return;
 
         $this->_db_query->joins []= array(
             'table' => array($remote_join_table, $remote_table_alias),

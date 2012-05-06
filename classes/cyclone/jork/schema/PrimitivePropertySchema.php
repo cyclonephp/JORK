@@ -9,7 +9,7 @@ use cyclone as cy;
  * (scalar) proprety of the instances of a given JORK model class.
  *
  * @package JORK
- * @author Bence Eros <crystal@cyclonephp.com>
+ * @author Bence Eros <crystal@cyclonephp.org>
  */
 class PrimitivePropertySchema {
 

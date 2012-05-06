@@ -3,6 +3,7 @@
 use cyclone as cy;
 use cyclone\jork;
 
+require_once __DIR__ . '/../DBTest.php';
 
 class JORK_Result_MapperTest extends JORK_DbTest {
 
@@ -11,12 +12,12 @@ class JORK_Result_MapperTest extends JORK_DbTest {
         $this->load_schemas('basic');
     }
 
-    public function testConfig() {
+    public function test_config() {
         cy\Config::inst()->get('jork.show_sql');
         cy\DB::executor('jork_test')->exec_custom('select 1');
     }
 
-    public function testImplRoot() {
+    public function test_impl_root() {
         $jork_query = new jork\query\SelectQuery;
         $jork_query->from('Model_Topic');
         $mapper = jork\mapper\SelectMapper::for_query($jork_query);
@@ -38,7 +39,7 @@ class JORK_Result_MapperTest extends JORK_DbTest {
         }
     }
 
-    public function testFirstFromDB() {
+    public function test_first_from_db() {
         $result = cy\JORK::from('Model_User')->exec('jork_test');
         $this->assertEquals(4, count($result));
         $idx = 1;
@@ -49,7 +50,7 @@ class JORK_Result_MapperTest extends JORK_DbTest {
         }
     }
 
-    public function testManyCompJoin() {
+    public function test_many_comp_join() {
         $query = cy\JORK::from('Model_User')->with('posts.topic');
         $result = $query->exec('jork_test');
         $idx = 1;
@@ -71,7 +72,7 @@ class JORK_Result_MapperTest extends JORK_DbTest {
         }
     }
 
-    public function testSelectTypeImplRoot() {
+    public function test_select_type_impl_root() {
         $query = cy\JORK::select('id uid', 'name', 'author.moderated_category ctg'
                 , 'modinfo', cy\DB::expr('{id} - 5 cnt'))->from('Model_Post');
         $result = $query->exec('jork_test');
@@ -87,11 +88,10 @@ class JORK_Result_MapperTest extends JORK_DbTest {
         }
     }
 
-    public function testSelectItmColl() {
+    public function test_select_itm_coll() {
         $query = cy\JORK::select('name', 'topics')->from('Model_Category');
         $result = $query->exec('jork_test');
-        //echo $query->compile('jork_test');
-        
+
         $this->assertEquals(3, count($result));
         $row1 = $result[0];
         $this->assertInternalType('string', $row1['name']);
@@ -102,7 +102,7 @@ class JORK_Result_MapperTest extends JORK_DbTest {
 
         $row2 = $result[1];
         $this->assertInstanceOf('cyclone\jork\model\collection\AbstractCollection', $row2['topics']);
-        $this->assertEquals(2, count($row2['topics']));
+        $this->assertEquals(2, $row2['topics']->count());
         $this->assertTrue(isset($row2['topics'][1]));
         $this->assertEquals(1, $row2['topics'][1]->id);
 
@@ -116,7 +116,7 @@ class JORK_Result_MapperTest extends JORK_DbTest {
         $this->assertEquals(1, $row3['topics'][1]->id);
     }
 
-    public function testSelectTypeExplRoot() {
+    public function test_select_type_expl_root() {
         $query = cy\JORK::select('p.id uid', 'p.name', 'p.author.moderated_category ctg'
                 , 'p.modinfo', cy\DB::expr('{p.id} - 5 cnt'))->from('Model_Post p');
 
@@ -134,9 +134,9 @@ class JORK_Result_MapperTest extends JORK_DbTest {
     }
 
     /**
-     * @dataProvider providerForQuery
+     * @dataProvider provider_for_query
      */
-    public function testForQuery($jork_query, $exp_result_mapper_type) {
+    public function test_for_query($jork_query, $exp_result_mapper_type) {
         $mapper = jork\mapper\SelectMapper::for_query($jork_query);
         list($db_query, $mappers) = $mapper->map();
 
@@ -148,7 +148,7 @@ class JORK_Result_MapperTest extends JORK_DbTest {
         $this->assertInstanceOf($exp_result_mapper_type, $result_mapper);
     }
 
-    public function providerForQuery() {
+    public function provider_for_query() {
         return array(
             array(cy\JORK::from('Model_User'), 'cyclone\jork\mapper\result\SimpleResult'),
             array(cy\JORK::from('Model_User u'), 'cyclone\jork\mapper\result\DefaultResult'),
@@ -156,7 +156,7 @@ class JORK_Result_MapperTest extends JORK_DbTest {
         );
     }
 
-    public function testEmbedded() {
+    public function test_embedded() {
         $result = cy\JORK::from('Model_Topic')->with('modinfo')
                 ->where('id', '=', cy\DB::esc(4))
                 ->exec('jork_test');
@@ -168,9 +168,10 @@ class JORK_Result_MapperTest extends JORK_DbTest {
 
 
     /**
-     * @dataProvider providerOuterJoinEmptyRowSkip
+     * @dataProvider provider_outer_join_empty_row_skip
      */
-    public function testOuterJoinEmptyRowSkip($topic_idx, $post_count) {
+    public function test_outer_join_empty_row_skip($topic_idx, $post_count) {
+        //echo cy\JORK::from('Model_Topic')->with('posts')->compile('jork_test');
         $result = cy\JORK::from('Model_Topic')->with('posts')->exec('jork_test');
         $this->assertEquals(4, count($result));
         $idx = 1;
@@ -183,7 +184,7 @@ class JORK_Result_MapperTest extends JORK_DbTest {
         $this->assertEquals($post_count, count($result[$topic_idx]->posts));
     }
 
-    public function providerOuterJoinEmptyRowSkip() {
+    public function provider_outer_join_empty_row_skip() {
         return array(
             array(0, 2),
             array(1, 1),

@@ -7,7 +7,7 @@ use cyclone\db;
 use cyclone as cy;
 
 /**
- * @author Bence Eros <crystal@cyclonephp.com>
+ * @author Bence Eros <crystal@cyclonephp.org>
  * @package JORK
  */
 class Cache {
@@ -40,7 +40,7 @@ class Cache {
     /**
      * Mapping schema for <code>$this->_class</code>
      *
-     * @var JORK_Mapping_Schema
+     * @var \cyclone\jork\schema\ModelSchema
      */
     private $_schema;
 
@@ -51,7 +51,7 @@ class Cache {
      * entity has got secondary tables.
      *
      * @var array<cyclone\db\query\Insert>
-     * @see JORK_Model_Abstract::insert()
+     * @see \cyclone\jork\model\AbstractModel::insert()
      */
     private $_insert_sql;
 
@@ -60,7 +60,7 @@ class Cache {
      * of $this->_class.
      *
      * @var array<cyclone\db\query\Update>
-     * @see JORK_Model_Abstract::update()
+     * @see \cyclone\jork\model\AbstractModel::update()
      */
     private $_update_sql;
 
@@ -103,6 +103,13 @@ class Cache {
                     $this->_insert_sql [$sec_table] = $ins_sql;
                 }
             }
+            foreach ($this->_schema->primitives as $prop_name => $prim_schema) {
+                if ($prim_schema->primary_key_strategy === cy\JORK::AUTO) {
+                    $table_name = $prim_schema->table ?: $this->_schema->table;
+                    $col_name = $prim_schema->column ?: $prop_name;
+                    $this->_insert_sql[$table_name]->returning []= $col_name;
+                }
+            }
         }
         return $this->_insert_sql;
     }
@@ -134,8 +141,13 @@ class Cache {
         if (NULL === $this->_delete_sql) {
             $prim_tbl_del = new db\query\Delete;
             $prim_tbl_del->table = $this->_schema->table;
+            $primary_key = $this->_schema->primary_keys();
+            if (count($primary_key) > 1)
+                throw new jork\Exception("deleting composite primary key entities is not yet supported");
+
+            $primary_key = $primary_key[0];
             $prim_tbl_del->conditions = array(
-                new db\BinaryExpression($this->_schema->primary_key(), '=', NULL)
+                new db\BinaryExpression($primary_key, '=', NULL)
             );
             $this->_delete_sql = array($prim_tbl_del);
             if ($this->_schema->secondary_tables != NULL) {
@@ -167,7 +179,11 @@ class Cache {
             $sql->tables = array(
                 NULL === $prop_schema->table ? $model_schema->table : $prop_schema->table
             );
-            $primary_key = $model_schema->primary_key();
+            $primary_key = $model_schema->primary_keys();
+            if (count($primary_key) > 1)
+                throw new jork\Exception("lazy-loading composite primary key entity primitives is not yet supported");
+
+            $primary_key = $primary_key[0];
             $prim_key_schema = $model_schema->primitives[$primary_key];
             if (NULL === $prim_key_schema->table
                     || $prim_key_schema->table == $model_schema->table) {

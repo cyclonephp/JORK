@@ -7,7 +7,7 @@ use cyclone\db;
 use cyclone as cy;
 
 /**
- * @author Bence Eros <crystal@cyclonephp.com>
+ * @author Bence Eros <crystal@cyclonephp.org>
  * @package JORK
  */
 class EntityMapper implements RowMapper {
@@ -61,11 +61,11 @@ class EntityMapper implements RowMapper {
     protected $_result_atomics = array();
 
     /**
-     * The alias of the primary key in the database query result.
+     * The aliases of the primary keys in the database query result.
      *
-     * @var string
+     * @var array
      */
-    protected $_result_primary_key_column;
+    protected $_result_primary_key_columns = array();
 
     /**
      * The next mappers to be executed on the same row. All items should also in
@@ -101,12 +101,25 @@ class EntityMapper implements RowMapper {
     protected $_previous_result_entity;
 
     public function map_row(&$db_row) {
-        if (NULL === $this->_result_primary_key_column)
+        if (empty($this->_result_primary_key_columns))
             return array(NULL, FALSE);
-        
-        $pk = $db_row[$this->_result_primary_key_column];
-        if (NULL === $pk)
+
+        $pk = array();
+        $pk_is_null = TRUE;
+        foreach ($this->_result_primary_key_columns as $pk_col) {
+            $pk_col_val = $db_row[$pk_col];
+            if ( ! is_null($pk_col_val)) {
+                $pk_is_null = FALSE;
+            }
+            $pk []= $pk_col_val;
+        }
+        if ($pk_is_null)
             return array($this->_previous_result_entity = NULL, FALSE);
+//
+//
+//        $pk = $db_row[$this->_result_primary_key_columns[0]];
+//        if (NULL === $pk)
+//            return array($this->_previous_result_entity = NULL, FALSE);
         if ($this->_previous_result_entity != NULL
                 && $pk == $this->_previous_result_entity->pk()) { //same instance
             $is_new_entity = false;
@@ -117,7 +130,7 @@ class EntityMapper implements RowMapper {
         } else { //new entity found
             $is_new_entity = true;
             $instance_pool = jork\InstancePool::inst($this->_entity_schema->class);
-            $entity = $instance_pool->get_by_pk($pk);
+            $entity = $instance_pool[$pk];
             if (NULL === $entity) {
                 $entity = new $this->_entity_schema->class;
                 //atomics should only be loaded when we found a new entity
@@ -127,7 +140,7 @@ class EntityMapper implements RowMapper {
                     $atomics[$prop_name] = $db_row[$col_name];
                 }
                 $entity->populate_atomics($atomics);
-                $instance_pool->add($entity);
+                $instance_pool[$entity->pk()] = ($entity);
             }
 
             $entity->init_component_collections($this->_next_to_many_mappers);
@@ -144,7 +157,7 @@ class EntityMapper implements RowMapper {
         $to_many_comps = array();
         foreach ($this->_next_to_many_mappers as $prop_name => $mapper) {
             list($comp, $is_new_component) = $mapper->map_row($db_row);
-            if ($is_new_component) {
+            if ($comp !== NULL && ($is_new_component || $is_new_entity)) {
                 $to_many_comps[$prop_name] = $comp;
             }
         }
@@ -197,7 +210,8 @@ class EntityMapper implements RowMapper {
     protected function add_table($tbl_name) {
         if ( ! isset($this->_table_aliases[$tbl_name])) {
             if ( ! isset($this->_table_aliases[ $this->_entity_schema->table ])) {
-                $tbl_alias = $this->_table_aliases[$tbl_name] = $this->_naming_srv->table_alias($this->_entity_alias, $tbl_name);
+                $tbl_alias = $this->_naming_srv->table_alias($this->_entity_alias, $tbl_name);
+                $this->_table_aliases[$tbl_name] = $tbl_alias;
                 $this->_db_query->tables []= array($tbl_name, $tbl_alias);
             }
             if ($tbl_name != $this->_entity_schema->table) {
@@ -253,8 +267,8 @@ class EntityMapper implements RowMapper {
         $this->_db_query->columns []= array($full_column, $full_alias);
         $this->_result_atomics[$full_alias] = $prop_name;
 
-        if ($prop_name == $this->_entity_schema->primary_key()) {
-            $this->_result_primary_key_column = $full_alias;
+        if (in_array($prop_name, $this->_entity_schema->primary_keys())) {
+            $this->_result_primary_key_columns []= $full_alias;
         }
     }
 
@@ -269,23 +283,27 @@ class EntityMapper implements RowMapper {
         $table_schema = $this->_entity_schema->secondary_tables[$tbl_name];
 
 
-        $inverse_join_col = isset($table_schema->inverse_join_column)
-                ? $table_schema->inverse_join_column
-                : $this->_entity_schema->primary_key();
+        $inverse_join_cols = isset($table_schema->inverse_join_columns)
+                ? $table_schema->inverse_join_columns
+                : $this->_entity_schema->primary_keys();
+
+        $local_table_alias = $this->table_alias($this->_entity_schema->table);
 
         $tbl_alias = $this->table_alias($tbl_name);
-        
-        $this->_db_query->joins []= array(
+        $join = array(
             'table' => array($tbl_name, $tbl_alias),
             'type' => 'LEFT',
-            'conditions' => array(
-                new db\BinaryExpression(
-                    $this->table_alias($this->_entity_schema->table).'.'.$table_schema->join_column
-                    , '='
-                    , $tbl_alias.'.'.$inverse_join_col
-                )
-            )
+            'conditions' => array()
         );
+
+        foreach ($inverse_join_cols as $idx => $inverse_join_col) {
+            $join['conditions'] []= new db\BinaryExpression(
+                $local_table_alias.'.'.$table_schema->join_columns[$idx]
+                , '='
+                , $tbl_alias.'.'.$inverse_join_col
+            );
+        }
+        $this->_db_query->joins []= $join;
     }
 
     /**
@@ -309,8 +327,8 @@ class EntityMapper implements RowMapper {
         $select_item = $this->_entity_alias == '' ? $prop_name
                 : $this->_entity_alias.'.'.$prop_name;
 
-        $next_mapper = $this->_next_mappers[$prop_name] =
-            component\AbstractMapper::factory($this, $prop_name, $select_item);
+        $next_mapper = component\AbstractMapper::factory($this, $prop_name, $select_item);
+        $this->_next_mappers[$prop_name] = $next_mapper;
 
         $next_mapper_class = get_class($next_mapper);
 
@@ -359,11 +377,12 @@ class EntityMapper implements RowMapper {
             }
         }
         //The primary key column should _always_ be selected
-        if (NULL === $this->_result_primary_key_column
+        if (empty($this->_result_primary_key_columns)
                 // dirty hack, must be cleaned up
                 && ! ($this instanceof component\EmbeddedMapper)) {
-            $pk = $this->_entity_schema->primary_key();
-            $this->add_atomic_property($pk, $this->_entity_schema->primitives[$pk]);
+            foreach($this->_entity_schema->primary_keys() as $pk) {
+                $this->add_atomic_property($pk, $this->_entity_schema->primitives[$pk]);
+            }
         }
     }
 

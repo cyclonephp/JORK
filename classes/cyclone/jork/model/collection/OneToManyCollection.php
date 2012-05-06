@@ -7,51 +7,60 @@ use cyclone\jork;
 use cyclone\db;
 
 /**
- * @author Bence Eros <crystal@cyclonephp.com>
+ * @author Bence Eros <crystal@cyclonephp.org>
  * @package JORK
  */
 class OneToManyCollection extends AbstractCollection {
 
     public function  __construct($owner, $comp_name, $comp_schema) {
         parent::__construct($owner, $comp_name, $comp_schema);
-        $this->_join_column = $comp_schema->join_column;
-        $this->_inverse_join_column = isset($comp_schema->inverse_join_column)
-                ? $comp_schema->inverse_join_column
-                : $owner->schema()->primary_key();
+        $this->_join_columns = $comp_schema->join_columns;
+        $this->_inverse_join_columns = empty($comp_schema->inverse_join_columns)
+                ? $owner->schema()->primary_keys()
+                : $comp_schema->inverse_join_columns;
     }
 
     public function  append($value) {
         parent::append($value);
-        $value->{$this->_join_column} = $this->_owner->{$this->_inverse_join_column};
+        foreach ($this->_join_columns as $idx => $join_col) {
+            $value->{$join_col}
+                = $this->_owner->{$this->_inverse_join_columns[$idx]};
+        }
     }
 
     public function  delete_by_pk($pk) {
-        $this->_deleted[$pk] = $this->_storage[$pk]['value'];
-        $this->_deleted[$pk]->{$this->_join_column} = NULL;
+        if ( ! is_array($pk)) {
+            $pk = array($pk);
+        }
+        $this->_deleted[$pk]
+            = $this->_storage[$pk]['value'];
+        foreach ($this->_join_columns as $join_col) {
+            $this->_deleted[$pk]->{$join_col} = NULL;
+        }
         unset($this->_storage[$pk]);
         $this->_persistent = FALSE;
     }
 
     public function  notify_pk_creation($entity) {
         if ($entity == $this->_owner) {
-            if (isset($this->_comp_schema->inverse_join_column)
+            if ( ! empty($this->_comp_schema->inverse_join_columns)
                     && ($this->_owner->schema()->primary_key()
-                        != $this->_comp_schema->inverse_join_column)) {
+                        != $this->_comp_schema->inverse_join_columns)) {
                 //we are not joining on the primary key of the owner
                 return;
             }
-            $itm_join_col = $this->_join_column;
+            $itm_join_col = $this->_join_columns[0];
             $owner_pk = $entity->pk();
             foreach ($this->_storage as $item) {
                 $item['persistent'] = FALSE;
-                $item['value']->$itm_join_col = $owner_pk;
+                $item['value']->$itm_join_col = $owner_pk[0];
             }
             return;
         }
 
         // $entity is a collection item in $this->_storage
         // it's key must be updated
-        $this->update_stor_pk($entity);
+        $this->_invalid_key_items []= $entity;
     }
 
     public function  notify_owner_deletion(db\ParamExpression $owner_pk) {
@@ -61,7 +70,7 @@ class OneToManyCollection extends AbstractCollection {
         if (cy\JORK::SET_NULL == $on_delete) {
             $upd_stmt = new db\query\Update;
             $children_schema = jork\model\AbstractModel::schema_by_class($this->_comp_class);
-            $join_primitive = $this->_comp_schema->join_column;
+            $join_primitive = $this->_comp_schema->join_columns[0];
 
             $join_primitive_schema = $children_schema->primitives[$join_primitive];
 
@@ -95,7 +104,7 @@ class OneToManyCollection extends AbstractCollection {
             // in delete_by_pk()
             $del_itm->save();
         }
-        $this->_deleted = array();
+        $this->_deleted = jork\InstancePool::for_class($this->_comp_schema->class);
         foreach ($this->_storage as $itm) {
             if (FALSE == $itm['persistent']) {
                 $itm['value']->save();
@@ -103,5 +112,6 @@ class OneToManyCollection extends AbstractCollection {
             }
         }
         $this->_persistent = TRUE;
+        $this->update_invalid_storage_keys();
     }
 }

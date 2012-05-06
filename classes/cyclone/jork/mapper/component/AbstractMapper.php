@@ -10,7 +10,7 @@ use cyclone as cy;
  * This class is responsible for mapping any property chains represented by
  * JORK joins to DB joins and creating the result mappers.
  * 
- * @author Bence Eros <crystal@cyclonephp.com>
+ * @author Bence Eros <crystal@cyclonephp.org>
  * @package JORK
  */
 abstract class AbstractMapper extends jork\mapper\EntityMapper {
@@ -124,6 +124,7 @@ abstract class AbstractMapper extends jork\mapper\EntityMapper {
         $last_parent_entity = $this->_parent_mapper->get_last_entity();
         if (NULL === $last_parent_entity)
              return NULL;
+
         return jork\model\collection\AbstractCollection::for_component($last_parent_entity, $this->_comp_name);
     }
 

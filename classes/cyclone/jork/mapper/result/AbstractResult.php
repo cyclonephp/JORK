@@ -8,7 +8,7 @@ use cyclone\db;
 /**
  * Abstract class that is able to map a database query result to an object query result.
  * 
- * @author Bence Eros <crystal@cyclonephp.com>
+ * @author Bence Eros <crystal@cyclonephp.org>
  * @package JORK
  */
 abstract class AbstractResult {

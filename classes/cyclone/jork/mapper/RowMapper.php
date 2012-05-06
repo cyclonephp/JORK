@@ -11,7 +11,7 @@ namespace cyclone\jork\mapper;
  * @see JORK_Mapper_Component
  * @see JORK_Mapper_Expression
  * 
- * @author Bence Eros <crystal@cyclonephp.com>
+ * @author Bence Eros <crystal@cyclonephp.org>
  * @package JORK
  */
 

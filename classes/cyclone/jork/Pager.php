@@ -11,7 +11,7 @@ use cyclone\db;
  * @property int $total_count
  * @property int $page_count
  *
- * @author Bence Eros <crystal@cyclonephp.com>
+ * @author Bence Eros <crystal@cyclonephp.org>
  * @package JORK
  */
 class Pager {
