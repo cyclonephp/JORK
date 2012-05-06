@@ -270,7 +270,7 @@ abstract class AbstractCollection implements \ArrayAccess, \Iterator, \Countable
     }
 
     public function  count() {
-        return count($this->_storage);
+        return $this->_storage->count();
     }
 
     public function rewind() {
@@ -307,8 +307,10 @@ abstract class AbstractCollection implements \ArrayAccess, \Iterator, \Countable
         for($i = 0; $i < $tab_cnt; ++$i) {
             $tabs .= "\t";
         }
-        $lines = array($tabs . "\033[33;1mCollection <" . $this->_comp_class . ">\033[0m");
+        $lines = array($tabs . "\033[33;1mCollection <" . $this->_comp_class . "> (" . $this->count() . ")\033[0m");
         foreach ($this->_storage as $itm) {
+            if (get_class($itm['value']) != $this->_comp_class)
+                $lines []= "WARNING HERE!!";
             $lines []= $itm['value']->as_string($tab_cnt + 1);
         }
         $this->_as_string_in_progress = FALSE;

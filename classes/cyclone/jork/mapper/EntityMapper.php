@@ -158,7 +158,7 @@ class EntityMapper implements RowMapper {
         $to_many_comps = array();
         foreach ($this->_next_to_many_mappers as $prop_name => $mapper) {
             list($comp, $is_new_component) = $mapper->map_row($db_row);
-            if ($is_new_component) {
+            if ($is_new_component || $is_new_entity) {
                 $to_many_comps[$prop_name] = $comp;
             }
         }

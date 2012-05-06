@@ -978,11 +978,11 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             $tabs .= "\t";
         }
 
-        $prim_key = $this->schema()->primary_key();
+        $prim_key = $this->schema()->primary_keys();
 
         $lines = array($tabs  . "\033[36;1m" . get_class($this) . "\033[0m");
         foreach ($this->_primitives as $name => $itm) {
-            if ($name == $prim_key) {
+            if (in_array($name, $prim_key)) {
                 $color = "\033[37;1m";
             } else {
                 $color = '';
@@ -991,6 +991,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             $lines []= $tabs . $color . $name . ': ' . $val . "\033[0m";
         }
         foreach ($this->_components as $name => $comp) {
+            $lines []= $tabs . $name;
             $lines []= $comp['value']->as_string($tab_cnt + 1);
         }
         $this->_as_string_in_progress = FALSE;

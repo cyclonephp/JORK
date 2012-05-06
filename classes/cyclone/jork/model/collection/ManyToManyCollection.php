@@ -66,16 +66,14 @@ class ManyToManyCollection extends AbstractCollection {
                 $local_join_col = $this->_comp_schema->join_table->join_columns[0];
                 $inverse_join_col = $this->_comp_schema->join_table->inverse_join_columns[0];
                 foreach ($this->_storage as $itm) {
-                    $item_pk = $itm['value']->pk();
                     if (FALSE == $itm['persistent']) {
                         $itm['value']->save();
+                        $item_pk = $itm['value']->pk();
                         $ins_stmt->values []= array(
                             $local_join_col => $pk[0],
                             $inverse_join_col => $item_pk[0]
                         );
                     }
-                    var_dump($pk); var_dump($item_pk);
-                    var_dump($ins_stmt->values);
                 }
             } else
                 throw new \cyclone\jork\Exception("many-to-many collection doesn't support deletion of composite key-mapped relations");

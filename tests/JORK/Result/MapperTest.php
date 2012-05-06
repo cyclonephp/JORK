@@ -91,8 +91,7 @@ class JORK_Result_MapperTest extends JORK_DbTest {
     public function test_select_itm_coll() {
         $query = cy\JORK::select('name', 'topics')->from('Model_Category');
         $result = $query->exec('jork_test');
-        //echo $query->compile('jork_test');
-        
+
         $this->assertEquals(3, count($result));
         $row1 = $result[0];
         $this->assertInternalType('string', $row1['name']);
@@ -103,7 +102,9 @@ class JORK_Result_MapperTest extends JORK_DbTest {
 
         $row2 = $result[1];
         $this->assertInstanceOf('cyclone\jork\model\collection\AbstractCollection', $row2['topics']);
-        $this->assertEquals(2, count($row2['topics']));
+        echo get_class($row2['topics']) . "\n";
+        echo $row2['topics']->as_string();
+        $this->assertEquals(2, $row2['topics']->count());
         $this->assertTrue(isset($row2['topics'][1]));
         $this->assertEquals(1, $row2['topics'][1]->id);
 
@@ -135,7 +136,7 @@ class JORK_Result_MapperTest extends JORK_DbTest {
     }
 
     /**
-     * @dataProvider providerForQuery
+     * @dataProvider provider_for_query
      */
     public function test_for_query($jork_query, $exp_result_mapper_type) {
         $mapper = jork\mapper\SelectMapper::for_query($jork_query);
@@ -169,7 +170,7 @@ class JORK_Result_MapperTest extends JORK_DbTest {
 
 
     /**
-     * @dataProvider providerOuterJoinEmptyRowSkip
+     * @dataProvider provider_outer_join_empty_row_skip
      */
     public function test_outer_join_empty_row_skip($topic_idx, $post_count) {
         $result = cy\JORK::from('Model_Topic')->with('posts')->exec('jork_test');
