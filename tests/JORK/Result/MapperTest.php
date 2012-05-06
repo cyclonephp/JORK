@@ -171,6 +171,7 @@ class JORK_Result_MapperTest extends JORK_DbTest {
      * @dataProvider provider_outer_join_empty_row_skip
      */
     public function test_outer_join_empty_row_skip($topic_idx, $post_count) {
+        //echo cy\JORK::from('Model_Topic')->with('posts')->compile('jork_test');
         $result = cy\JORK::from('Model_Topic')->with('posts')->exec('jork_test');
         $this->assertEquals(4, count($result));
         $idx = 1;

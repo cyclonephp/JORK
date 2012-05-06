@@ -269,6 +269,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      */
     public function add_to_component_collections($components) {
         foreach ($components as $prop_name => $new_comp) {
+            if ($new_comp === NULL) throw new \Exception("fatal error");
             $this->_components[$prop_name]['value'][$new_comp->pk()] = $new_comp;
         }
     }
