@@ -98,7 +98,9 @@ class SchemaPool {
             if ( ! class_exists($class_name))
                 throw new jork\SchemaException("unknown model class: '$class_name'");
 
-            $this->_pool[$class_name] = call_user_func(array($class_name, 'setup'));
+            $schema = call_user_func(array($class_name, 'setup'));
+            $schema->class = $class_name;
+            $this->_pool[$class_name] = $schema;
         }
 
         return $this->_pool[$class_name];
