@@ -12,6 +12,7 @@ abstract class JORK_DbTest extends JORK_MapperTest {
         $sql = file_get_contents(cy\FileSystem::get_root_path('jork') . 'tests/testdata.sql');
         try {
             cy\DB::connector('jork_test')->connect();
+            cy\DB::connector('jork_test')->start_transaction();
             cy\DB::executor('jork_test')->exec_custom($sql);
             cy\DB::connector('jork_test')->commit();
         } catch (db\Exception $ex) {
