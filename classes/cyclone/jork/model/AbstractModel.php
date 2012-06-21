@@ -969,7 +969,51 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
         $upd_stmt->exec($schema->db_conn);
     }
 
+    public function as_html($tab_cnt = 0) {
+        if ($this->_as_string_in_progress)
+            return '';
+
+        $rval = '<pre>';
+        $tabs = '';
+        if ($tab_cnt === 0) {
+
+        } else {
+            $rval = '';
+            for ($i = 0; $i < $tab_cnt; ++$i) {
+                $tabs .= "\t";
+            }
+        }
+
+        $prim_key = $this->schema()->primary_keys();
+        $lines = array($tabs  . "<font color='blue'>" . get_class($this) . "</font>");
+        foreach ($this->_primitives as $name => $itm) {
+            if (in_array($name, $prim_key)) {
+                $color = "blue";
+            } else {
+                $color = 'black';
+            }
+            $val = $itm['value'] === NULL ? 'NULL' : $itm['value'];
+            $lines []= $tabs . "<font color='$color'>" . $name . ': ' . $val . "</font>";
+        }
+        foreach ($this->_components as $name => $comp) {
+            $lines []= $tabs . $name;
+            if ($comp['value'] !== NULL) {
+                $lines []= $comp['value']->as_html($tab_cnt + 1);
+            } else {
+                $lines []= $tabs . 'NULL';
+            }
+
+        }
+
+        $rval .= implode("<br/>", $lines);
+        $rval .= '</pre>';
+        return $rval;
+    }
+
     public function as_string($tab_cnt = 0) {
+        if ( ! cy\Env::$is_cli)
+            return $this->as_html(0);
+
         if ($this->_as_string_in_progress)
             return '';
 
@@ -992,8 +1036,10 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             $lines []= $tabs . $color . $name . ': ' . $val . "\033[0m";
         }
         foreach ($this->_components as $name => $comp) {
-            $lines []= $tabs . $name;
-            $lines []= $comp['value']->as_string($tab_cnt + 1);
+            if ($comp['value'] !== NULL) {
+                $lines []= $tabs . $name;
+                $lines []= $comp['value']->as_string($tab_cnt + 1);
+            }
         }
         $this->_as_string_in_progress = FALSE;
         return implode(PHP_EOL, $lines);
