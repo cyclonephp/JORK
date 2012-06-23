@@ -60,13 +60,11 @@ class OneToOneMapper extends AbstractMapper {
         $joins = array();
 
         foreach($parent_join_cols as $idx => $parent_join_col) {
-            $parent_join_col_schema = $remote_schema->primitives[$parent_join_col];
             $parent_table = $parent_tables[$idx];
 
             $this->_parent_mapper->add_table($parent_table);
 
             $local_join_col = $local_join_cols[$idx];
-            $local_join_col_schema = $this->_entity_schema->primitives[$local_join_col];
 
             $local_table = $local_tables[$idx];
             $local_table_alias = $this->table_alias($local_table);
