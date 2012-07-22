@@ -1,4 +1,4 @@
-USE jork_test;
+-- USE jork_test;
 /*
 drop table if exists t_posts;
 drop table if exists t_topics;
