@@ -51,7 +51,7 @@ create table if not exists user_contact_info (
 );
 
 create table if not exists categories_topics(
-    topiFk int not null,
+    topicFk int not null,
     categoryFk int not null,
     primary key (topicFk, categoryFk)
 );

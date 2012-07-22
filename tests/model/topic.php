@@ -8,11 +8,11 @@ class Model_Topic extends model\AbstractModel {
         return cy\jork\schema\ModelSchema::factory()
             ->db_conn('jork_test')
             ->table('t_topics')
-            ->primitive(cy\JORK::primitive('id', 'int')
+            ->primitive(cy\JORK::primitive('id', 'int')->column('topicId')
                     ->primary_key()
                 )->primitive(cy\JORK::primitive('name', 'string'))
             ->component(cy\JORK::component('categories', 'Model_Category')->type(cy\JORK::MANY_TO_MANY)
-                ->join_table(cy\JORK::join_table('categories_topics', 'topic_fk', 'category_fk'))
+                ->join_table(cy\JORK::join_table('categories_topics', 'topicFk', 'categoryFk'))
                 )->component(cy\JORK::component('posts', 'Model_Post')->mapped_by('topic')->on_delete(cy\JORK::SET_NULL))
                 ->natural_ordering('name')
             ->embedded_component('modinfo', 'Model_ModInfo');

@@ -11,15 +11,15 @@ class Model_Category extends model\AbstractModel {
         return \cyclone\jork\schema\ModelSchema::factory()
             ->db_conn('jork_test')
             ->table('t_categories')
-            ->primitive(cy\JORK::primitive('id', 'int')
+            ->primitive(cy\JORK::primitive('id', 'int')->column('categoryId')
                     ->primary_key()
-                )->primitive(cy\JORK::primitive('name', 'string')->column('c_name')
-                )->primitive(cy\JORK::primitive('moderator_fk', 'int')
+                )->primitive(cy\JORK::primitive('name', 'string')
+                )->primitive(cy\JORK::primitive('moderator_fk', 'int')->column('moderatorFk')
                 )
             ->component(cy\JORK::component('topics', 'Model_Topic')
                     ->type(cy\JORK::MANY_TO_MANY)->mapped_by('categories')
                 )->component(cy\JORK::component('moderator', 'Model_User')
-                    ->type(cy\JORK::ONE_TO_ONE)->join_column('moderator_fk')
+                    ->type(cy\JORK::ONE_TO_ONE)->join_column('moderatorFk')
                 )->embedded_component('modinfo', 'Model_ModInfo');
     }
 
