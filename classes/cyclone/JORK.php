@@ -53,7 +53,7 @@ class JORK {
     }
 
     /**
-     * @return cyclone\jork\query\Select
+     * @return \cyclone\jork\query\SelectQuery
      */
     public static function select() {
         $query = new jork\query\SelectQuery;
@@ -63,7 +63,7 @@ class JORK {
     }
 
     /**
-     * @return cyclone\jork\querySelect
+     * @return \cyclone\jork\query\SelectQuery
      */
     public static function from() {
         $query = new jork\query\SelectQuery;
