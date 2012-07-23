@@ -426,8 +426,9 @@ class EntityMapper implements RowMapper {
             $table = isset($col_schema->table)
                     ? $col_schema->table
                     : $this->_entity_schema->table;
+            $col_name = $col_schema->column ?: $root_prop;
             $this->add_table($table);
-            return $this->_table_aliases[$table].'.'.$root_prop;
+            return $this->_table_aliases[$table].'.'.$col_name;
         } else { //going on with the next component mapper
             if ( ! isset($this->_entity_schema->components[$root_prop])
                     && ! isset($this->_entity_schema->embedded_components[$root_prop]))

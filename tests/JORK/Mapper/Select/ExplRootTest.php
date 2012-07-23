@@ -77,7 +77,7 @@ class JORK_Mapper_ExplRootTest extends JORK_MapperTest {
         list($db_query, ) = $mapper->map();
         $this->assertEquals($db_query->order_by, array(
             array(
-                'column' => 't_posts_0.created_at',
+                'column' => 't_posts_0.createdAt',
                 'direction' => 'ASC'
             )
         ));
@@ -98,7 +98,7 @@ class JORK_Mapper_ExplRootTest extends JORK_MapperTest {
         list($db_query, ) = $mapper->map();
         $this->assertEquals(array(
                 array(
-                'column' => cy\DB::expr('avg(t_posts_0.id)'),
+                'column' => cy\DB::expr('avg(t_posts_0.postId)'),
                 'direction' => 'ASC'
                 )
             ),
