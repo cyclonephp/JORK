@@ -1,5 +1,5 @@
 -- USE jork_test;
-/*
+/**
 drop table if exists t_posts;
 drop table if exists t_topics;
 drop table if exists t_categories;
@@ -11,7 +11,7 @@ create table if not exists t_posts(
     postId int primary key auto_increment,
     name text,
     topicFk int not null,
-    userFk int not null,
+    userFk int,
     createdAt datetime,
     creatorFk int not null,
     modifiedAt datetime,

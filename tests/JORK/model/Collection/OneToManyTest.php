@@ -49,15 +49,15 @@ class JORK_Model_Collection_OneToManyTest extends JORK_DbTest {
         $this->assertEquals(5, $post->id);
         $this->assertEquals(5, $post->user_fk);
 
-        $result = cy\DB::select()->from('t_posts')->where('id', '=', cy\DB::esc(5))->exec('jork_test');
+        $result = cy\DB::select()->from('t_posts')->where('postId', '=', cy\DB::esc(5))->exec('jork_test');
         $this->assertEquals(1, count($result));
 
         $user->posts->delete($post);
         $user->posts->save();
 
-        $result = cy\DB::select()->from('t_posts')->where('id', '=', cy\DB::esc(5))->exec('jork_test');
+        $result = cy\DB::select()->from('t_posts')->where('postId', '=', cy\DB::esc(5))->exec('jork_test');
         foreach ($result as $row) {
-            $this->assertEquals(NULL, $row['user_fk']);
+            $this->assertEquals(NULL, $row['userFk']);
         }
     }
 

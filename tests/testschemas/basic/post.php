@@ -8,17 +8,17 @@ $schema->db_conn = 'jork_test';
 
 $schema->db_conn = 'jork_test';
 $schema->table = 't_posts';
-$schema->primitive(cy\JORK::primitive('id', 'int')
+$schema->primitive(cy\JORK::primitive('id', 'int')->column('postId')
         ->primary_key()
 )->primitive(cy\JORK::primitive('name', 'string')
-)->primitive(cy\JORK::primitive('topic_fk', 'int')
-)->primitive(cy\JORK::primitive('user_fk', 'int'));
+)->primitive(cy\JORK::primitive('topic_fk', 'int')->column('topicFk')
+)->primitive(cy\JORK::primitive('user_fk', 'int')->column('userFk'));
 
 $schema->component(cy\JORK::component('author', 'Model_User')
         ->mapped_by('posts')
 )->component(cy\JORK::component('topic', 'Model_Topic')
         ->type(cy\JORK::MANY_TO_ONE)
-        ->join_column('topic_fk')
+        ->join_column('topicFk')
 )->embedded_component('modinfo', 'Model_ModInfo');
 
 return $schema;

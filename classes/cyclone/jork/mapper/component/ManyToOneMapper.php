@@ -23,7 +23,8 @@ class ManyToOneMapper extends AbstractMapper {
         $remote_join_tables = $remote_schema->table_names_for_columns($remote_join_cols);
         $joins = array();
         foreach ($join_cols as $idx => $join_col) {
-            $join_col_schema = $this->_parent_mapper->_entity_schema->get_property_schema($join_col);
+            $join_col_schema = $this->_parent_mapper->_entity_schema
+                ->primitive_by_col($join_col);
             $join_table = $join_tables[$idx];
 
             $this->_parent_mapper->add_table($join_table);
@@ -66,7 +67,7 @@ class ManyToOneMapper extends AbstractMapper {
         $joins = array();
 
         foreach ($remote_columns as $idx => $remote_join_col) {
-            $remote_join_col_def = $remote_schema->primitives[$remote_join_col];
+            //$remote_join_col_def = $remote_schema->primitives[$remote_join_col];
             $remote_join_table = $remote_tables[$idx];
             $remote_table_alias = $this->table_alias($remote_join_table);
             $remote_column = $remote_columns[$idx];

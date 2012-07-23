@@ -27,15 +27,15 @@ class JORK_Mapper_ExplRootTest extends JORK_MapperTest {
     public function testWith() {
         $jork_query = cy\JORK::from('Model_Topic t')->with('t.posts');
         $db_query = cy\DB::select(
-            array('t_posts_0.id', 't_posts_0_id'),
+            array('t_posts_0.postId', 't_posts_0_postId'),
             array('t_posts_0.name', 't_posts_0_name'),
-            array('t_posts_0.topic_fk', 't_posts_0_topic_fk'),
-            array('t_posts_0.user_fk', 't_posts_0_user_fk'),
-            array('t_topics_0.id', 't_topics_0_id'),
+            array('t_posts_0.topicFk', 't_posts_0_topicFk'),
+            array('t_posts_0.userFk', 't_posts_0_userFk'),
+            array('t_topics_0.topicId', 't_topics_0_topicId'),
             array('t_topics_0.name', 't_topics_0_name')
         )->from(array('t_topics', 't_topics_0'))
             ->left_join(array('t_posts', 't_posts_0'))
-            ->on('t_topics_0.id', '=', 't_posts_0.topic_fk');
+            ->on('t_topics_0.topicId', '=', 't_posts_0.topicFk');
         $this->assertCompiledTo($jork_query, $db_query);
     }
 
@@ -46,29 +46,29 @@ class JORK_Mapper_ExplRootTest extends JORK_MapperTest {
         $this->assertEquals($db_query->tables, array(
             array('t_topics', 't_topics_0')
         ));
-        $this->assertEquals($db_query->joins, array(
+        $this->assertEquals(array(
             array(
                 'table' => array('t_users', 't_users_0'),
                 'type' => 'LEFT',
                 'conditions' => array(
-                    new db\BinaryExpression('t_topics_0.creator_fk', '=', 't_users_0.id')
+                    new db\BinaryExpression('t_topics_0.creatorFk', '=', 't_users_0.userId')
                 )
             ),
             array(
                 'table' => array('user_contact_info', 'user_contact_info_0'),
                 'type' => 'LEFT',
                 'conditions' => array(
-                    new db\BinaryExpression('t_users_0.id', '=', 'user_contact_info_0.user_fk')
+                    new db\BinaryExpression('t_users_0.userId', '=', 'user_contact_info_0.userFk')
                 )
             ),
             array(
                 'table' => array('t_posts', 't_posts_0'),
                 'type' => 'LEFT',
                 'conditions' => array(
-                    new db\BinaryExpression('t_users_0.id', '=', 't_posts_0.user_fk')
+                    new db\BinaryExpression('t_users_0.userId', '=', 't_posts_0.userFk')
                 )
             )
-        ));
+        ), $db_query->joins);
     }
 
     public function testOrderBy() {
@@ -112,15 +112,15 @@ class JORK_Mapper_ExplRootTest extends JORK_MapperTest {
         $mapper = jork\mapper\SelectMapper::for_query($jork_query);
         list($db_query, ) = $mapper->map();
         $this->assertEquals(array(
-            'table' => array(cy\DB::select_distinct(array('t_topics_1.id', 't_topics_1_id')
-                    , array('t_categories_1.id', 't_categories_1_id'))
+            'table' => array(cy\DB::select_distinct(array('t_topics_1.topicId', 't_topics_1_topicId')
+                    , array('t_categories_1.categoryId', 't_categories_1_categoryId'))
                 ->from(array('t_topics', 't_topics_1'))
                 ->from(array('t_categories', 't_categories_1'))
                 ->offset(20)->limit(10), 'jork_offset_limit_subquery_0'),
             'type' => 'RIGHT',
             'conditions' => array(
-                new db\BinaryExpression('t_topics_0.id', '=', 'jork_offset_limit_subquery_0.t_topics_1_id'),
-                new db\BinaryExpression('t_categories_0.id', '=', 'jork_offset_limit_subquery_0.t_categories_1_id')
+                new db\BinaryExpression('t_topics_0.topicId', '=', 'jork_offset_limit_subquery_0.t_topics_1_topicId'),
+                new db\BinaryExpression('t_categories_0.categoryId', '=', 'jork_offset_limit_subquery_0.t_categories_1_categoryId')
             )
         ), $db_query->joins[1]);
     }

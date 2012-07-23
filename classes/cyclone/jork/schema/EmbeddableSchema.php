@@ -65,6 +65,20 @@ class EmbeddableSchema {
     }
 
     /**
+     * @param string $col_name
+     * @return PrimitivePropertySchema
+     */
+    public function primitive_by_col($col_name) {
+        foreach ($this->primitives as $prim) {
+            if ($prim->column === $col_name)
+                return $prim;
+        }
+        if (isset($this->primitives[$col_name]))
+            return $this->primitives[$col_name];
+        throw new jork\SchemaException("no property is mapped to column '$col_name' in class " . $this->class);
+    }
+
+    /**
      * @param string $comp_name
      * @return boolean <code>TRUE</code> if the component is a to-many component
      * @throws cyclone\jork\SchemaException if this model doesn't have a component named <code>$comp_name</code>

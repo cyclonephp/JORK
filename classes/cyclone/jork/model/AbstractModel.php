@@ -605,7 +605,8 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             if (count($pk_primitive) > 1)
                 throw new jork\Exception("composite primary key entity saving is not yet supported");
 
-            $pk_primitive = $pk_primitive[0];
+            $pk_primitive_prop = $pk_primitive[0];
+            $pk_primitive_col = $schema->primitives[$pk_primitive_prop]->column ?: $pk_primitive_prop;
             if ($pk_strategy == cy\JORK::ASSIGN && ! isset($this->_primitives[$pk_primitive]))
                 throw new jork\Exception("can not save '"
                         . $schema->class
@@ -639,7 +640,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                     $prim_table = $schema->table_name_for_property($col_name);
                 }
             }
-            
+
             if (empty($values))
                 throw new jork\Exception("error while saving '{$schema->class}' instance: no values to be inserted");
 
@@ -651,11 +652,11 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             } else {
                 foreach ($values as $tbl_name => $ins_values) {
                     $insert_sqls[$tbl_name]->values = array($ins_values);
-                    $tmp_id = $insert_sqls[$tbl_name]->exec($schema->db_conn)->rows[0][$pk_primitive];
+                    $tmp_id = $insert_sqls[$tbl_name]->exec($schema->db_conn)->rows[0][$pk_primitive_col];
                     if ($prim_table == $tbl_name) {
-                        $this->_primitives[$pk_primitive] = array(
+                        $this->_primitives[$pk_primitive_prop] = array(
                             'value' => self::$_cfg['force_type']
-                                ? $this->force_type($tmp_id, $schema->primitives[$pk_primitive]->type)
+                                ? $this->force_type($tmp_id, $schema->primitives[$pk_primitive_prop]->type)
                                 : $tmp_id,
                             'persistent' => TRUE
                         );
@@ -737,7 +738,8 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                     }
                 }
                 $schema_primary_keys = $schema->primary_keys();
-                $update_sqls[$tbl_name]->where($schema_primary_keys[0], '='
+                $prim_key_col = $schema->primitives[$schema_primary_keys[0]]->column ?: $schema_primary_keys[0];
+                $update_sqls[$tbl_name]->where($prim_key_col, '='
                         , DB::esc($pk[0]));
                 $update_sqls[$tbl_name]->exec($schema->db_conn);
             }

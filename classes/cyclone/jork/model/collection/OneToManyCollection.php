@@ -4,6 +4,7 @@ namespace cyclone\jork\model\collection;
 
 use cyclone as cy;
 use cyclone\jork;
+use cyclone\jork\schema;
 use cyclone\db;
 
 /**
@@ -22,9 +23,13 @@ class OneToManyCollection extends AbstractCollection {
 
     public function  append($value) {
         parent::append($value);
+        $remote_schema = schema\SchemaPool::inst()->get_schema($this->_comp_class);
+        $local_schema = $this->_owner->schema();
         foreach ($this->_join_columns as $idx => $join_col) {
-            $value->{$join_col}
-                = $this->_owner->{$this->_inverse_join_columns[$idx]};
+            $remote_prop = $remote_schema->primitive_by_col($join_col);
+            $local_prop = $local_schema->primitive_by_col($this->_inverse_join_columns[$idx]);
+            $value->{$remote_prop->name}
+                = $this->_owner->{$local_prop->name};
         }
     }
 
@@ -34,8 +39,10 @@ class OneToManyCollection extends AbstractCollection {
         }
         $this->_deleted[$pk]
             = $this->_storage[$pk]['value'];
+        $remote_schema = schema\SchemaPool::inst()->get_schema($this->_comp_class);
         foreach ($this->_join_columns as $join_col) {
-            $this->_deleted[$pk]->{$join_col} = NULL;
+            $local_prop_name = $remote_schema->primitive_by_col($join_col)->name;
+            $this->_deleted[$pk]->{$local_prop_name} = NULL;
         }
         unset($this->_storage[$pk]);
         $this->_persistent = FALSE;
@@ -50,10 +57,13 @@ class OneToManyCollection extends AbstractCollection {
                 return;
             }
             $itm_join_col = $this->_join_columns[0];
+            $itm_join_prop = schema\SchemaPool::inst()
+                ->get_schema($this->_comp_class)
+                ->primitive_by_col($itm_join_col)->name;
             $owner_pk = $entity->pk();
             foreach ($this->_storage as $item) {
                 $item['persistent'] = FALSE;
-                $item['value']->$itm_join_col = $owner_pk[0];
+                $item['value']->$itm_join_prop = $owner_pk[0];
             }
             return;
         }

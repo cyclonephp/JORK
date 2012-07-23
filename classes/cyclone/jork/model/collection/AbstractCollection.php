@@ -42,7 +42,7 @@ abstract class AbstractCollection implements \ArrayAccess, \Iterator, \Countable
     /**
      * The owner of the components, the left side of the to-many relationship.
      *
-     * @var cyclone\jork\model\AbstractModel
+     * @var \cyclone\jork\model\AbstractModel
      */
     protected $_owner;
 

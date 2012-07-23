@@ -6,16 +6,16 @@ use cyclone\jork\model;
 $schema = new \cyclone\jork\schema\ModelSchema();
 $schema->db_conn = 'jork_test';
 $schema->table = 't_categories';
-$schema->primitive(cy\JORK::primitive('id', 'int')
+$schema->primitive(cy\JORK::primitive('id', 'int')->column('categoryId')
         ->primary_key()
-)->primitive(cy\JORK::primitive('name', 'string')->column('c_name')
-)->primitive(cy\JORK::primitive('moderator_fk', 'int')
+)->primitive(cy\JORK::primitive('name', 'string')
+)->primitive(cy\JORK::primitive('moderatorFk', 'int')
 );
 
 $schema->component(cy\JORK::component('topics', 'Model_Topic')
         ->type(cy\JORK::MANY_TO_MANY)->mapped_by('categories')
 )->component(cy\JORK::component('moderator', 'Model_User')
-        ->type(cy\JORK::ONE_TO_ONE)->join_column('moderator_fk')
+        ->type(cy\JORK::ONE_TO_ONE)->join_column('moderatorFk')
 )->embedded_component('modinfo', 'Model_ModInfo');
 
 return $schema;

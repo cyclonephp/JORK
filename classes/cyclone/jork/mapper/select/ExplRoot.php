@@ -262,12 +262,13 @@ class ExplRoot extends jork\mapper\SelectMapper {
             $subquery->tables []= array($ent_schema->table, $table_alias);
 
             foreach ($ent_schema->primary_keys() as $primary_key) {
-                $column_alias = $table_alias . '_' . $primary_key;
+                $prim_key_col = $ent_schema->primitives[$primary_key]->column ?: $primary_key;
+                $column_alias = $table_alias . '_' . $prim_key_col;
 
-                $subquery->columns []= array($table_alias . '.' . $primary_key
+                $subquery->columns []= array($table_alias . '.' . $prim_key_col
                 , $column_alias);
 
-                $join_conditions []= new db\BinaryExpression($existing_table_alias . '.' . $primary_key
+                $join_conditions []= new db\BinaryExpression($existing_table_alias . '.' . $prim_key_col
                     , '=', $subquery_alias . '.' . $column_alias);
             }
         }

@@ -20,11 +20,11 @@ class JORK_Mapper_Select_ImplRootTest extends JORK_MapperTest {
         $mapper = jork\mapper\SelectMapper::for_query($jork_query);
         list($db_query, ) = $mapper->map();
         $this->assertEquals($db_query->columns, array(
-            array('t_users_0.id', 't_users_0_id'), array('t_users_0.name', 't_users_0_name')
+            array('t_users_0.userId', 't_users_0_userId'), array('t_users_0.name', 't_users_0_name')
             , array('t_users_0.password', 't_users_0_password')
-            , array('t_users_0.created_at', 't_users_0_created_at')
+            , array('t_users_0.createdAt', 't_users_0_createdAt')
             , array('user_contact_info_0.email', 'user_contact_info_0_email')
-            , array('user_contact_info_0.phone_num', 'user_contact_info_0_phone_num')
+            , array('user_contact_info_0.phoneNum', 'user_contact_info_0_phoneNum')
         ));
         $this->assertEquals(array(
             array('column' => 't_users_0.name', 'direction' => 'asc')
@@ -37,15 +37,15 @@ class JORK_Mapper_Select_ImplRootTest extends JORK_MapperTest {
     public function testWith() {
         $jork_query = cy\JORK::from('Model_Topic')->with('posts');
         $db_query = cy\DB::select(
-            array('t_posts_0.id', 't_posts_0_id'),
+            array('t_posts_0.postId', 't_posts_0_postId'),
             array('t_posts_0.name', 't_posts_0_name'),
-            array('t_posts_0.topic_fk', 't_posts_0_topic_fk'),
-            array('t_posts_0.user_fk', 't_posts_0_user_fk'),
-            array('t_topics_0.id', 't_topics_0_id'),
+            array('t_posts_0.topicFk', 't_posts_0_topicFk'),
+            array('t_posts_0.userFk', 't_posts_0_userFk'),
+            array('t_topics_0.topicId', 't_topics_0_topicId'),
             array('t_topics_0.name', 't_topics_0_name')
         )->from(array('t_topics', 't_topics_0'))
             ->left_join(array('t_posts', 't_posts_0'))
-            ->on('t_topics_0.id', '=', 't_posts_0.topic_fk')
+            ->on('t_topics_0.topicId', '=', 't_posts_0.topicFk')
         ->order_by('t_topics_0.name', 'asc');
         $this->assertCompiledTo($jork_query, $db_query);
     }
@@ -56,9 +56,9 @@ class JORK_Mapper_Select_ImplRootTest extends JORK_MapperTest {
         $mapper = jork\mapper\SelectMapper::for_query($jork_query);
         list($db_query, ) = $mapper->map();
         $this->assertEquals(array(
-            array('t_categories_0.id', 't_categories_0_id')
-            , array('t_categories_0.c_name', 't_categories_0_c_name')
-            , array('t_categories_0.moderator_fk', 't_categories_0_moderator_fk')
+            array('t_categories_0.categoryId', 't_categories_0_categoryId')
+            , array('t_categories_0.name', 't_categories_0_name')
+            , array('t_categories_0.moderatorFk', 't_categories_0_moderatorFk')
         ), $db_query->columns);
         $this->assertEquals($db_query->tables, array(
             array('t_categories', 't_categories_0')
@@ -67,7 +67,7 @@ class JORK_Mapper_Select_ImplRootTest extends JORK_MapperTest {
         $mapper = jork\mapper\SelectMapper::for_query($jork_query);
         list($db_query, ) = $mapper->map();
         $this->assertEquals($db_query->columns, array(
-            array('t_categories_0.id', 't_categories_0_id')
+            array('t_categories_0.categoryId', 't_categories_0_categoryId')
         ));
     }
 
@@ -77,9 +77,9 @@ class JORK_Mapper_Select_ImplRootTest extends JORK_MapperTest {
         $mapper = jork\mapper\SelectMapper::for_query($jork_query);
         list($db_query, ) = $mapper->map();
         $this->assertEquals($db_query->columns, array(
-            array('t_topics_0.id', 't_topics_0_id')
+            array('t_topics_0.topicId', 't_topics_0_topicId')
             , array('t_topics_0.name', 't_topics_0_name')
-            , array('t_posts_0.id', 't_posts_0_id')
+            , array('t_posts_0.postId', 't_posts_0_postId')
         ));
         $this->assertEquals($db_query->tables, array(
             array('t_posts', 't_posts_0')
@@ -89,7 +89,7 @@ class JORK_Mapper_Select_ImplRootTest extends JORK_MapperTest {
                 'table' => array('t_topics', 't_topics_0'),
                 'type' => 'LEFT',
                 'conditions' => array(
-                    new db\BinaryExpression('t_posts_0.topic_fk', '=', 't_topics_0.id')
+                    new db\BinaryExpression('t_posts_0.topicFk', '=', 't_topics_0.topicId')
                 )
             )
         ));
@@ -104,7 +104,7 @@ class JORK_Mapper_Select_ImplRootTest extends JORK_MapperTest {
                 'table' => array('t_users', 't_users_0'),
                 'type' => 'LEFT',
                 'conditions' => array(
-                    new db\BinaryExpression('t_posts_0.user_fk', '=', 't_users_0.id')
+                    new db\BinaryExpression('t_posts_0.userFk', '=', 't_users_0.userId')
                 )
             )
         );
@@ -116,7 +116,7 @@ class JORK_Mapper_Select_ImplRootTest extends JORK_MapperTest {
         list($db_query, ) = $mapper->map();
         $this->assertEquals(array(
                 array(
-                'column' => cy\DB::expr('avg(t_posts_0.id)'),
+                'column' => cy\DB::expr('avg(t_posts_0.postId)'),
                 'direction' => 'ASC'
                 )
             ),
@@ -131,11 +131,11 @@ class JORK_Mapper_Select_ImplRootTest extends JORK_MapperTest {
         list($db_query, ) = $mapper->map();
         //echo $db_query->compile('jork_test');
         $expected = array(
-            'table' => array(cy\DB::select_distinct('id')->from(array('t_topics', 't_topics_1'))
+            'table' => array(cy\DB::select_distinct('topicId')->from(array('t_topics', 't_topics_1'))
                 ->offset(20)->limit(10), 'jork_offset_limit_subquery_0'),
             'type' => 'RIGHT',
             'conditions' => array(
-                new db\BinaryExpression('t_topics_0.id', '=', 'jork_offset_limit_subquery_0.id')
+                new db\BinaryExpression('t_topics_0.topicId', '=', 'jork_offset_limit_subquery_0.topicId')
             ));
         $this->assertEquals($expected, $db_query->joins[1]);
     }

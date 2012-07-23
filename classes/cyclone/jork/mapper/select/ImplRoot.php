@@ -168,8 +168,10 @@ class ImplRoot extends jork\mapper\SelectMapper {
 
         $existing_alias = $this->_naming_srv->table_alias(NULL, $ent_schema->table);
 
+        $subquery->columns = array();
         foreach ($ent_schema->primary_keys() as $primary_key) {
-            $subquery->columns = array($primary_key);
+            $prim_key_col = $ent_schema->primitives[$primary_key]->column ?: $primary_key;
+            $subquery->columns []= $prim_key_col;
             $subquery->tables = array(
                 array($ent_schema->table
                 , $this->_naming_srv->table_alias(NULL, $ent_schema->table, TRUE))
@@ -183,8 +185,8 @@ class ImplRoot extends jork\mapper\SelectMapper {
                     , $subquery_alias),
                 'type' => 'RIGHT',
                 'conditions' => array(
-                    new db\BinaryExpression($existing_alias.'.'.$primary_key
-                            , '=', $subquery_alias . '.' . $primary_key)
+                    new db\BinaryExpression($existing_alias.'.'.$prim_key_col
+                            , '=', $subquery_alias . '.' . $prim_key_col)
                 )
             );
     }
