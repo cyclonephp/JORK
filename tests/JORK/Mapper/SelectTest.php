@@ -16,18 +16,18 @@ class JORK_Mapper_SelectTest extends JORK_MapperTest {
 
     public function testSelectManyToOne() {
         $jork_query = cy\JORK::select('topic', 'topic.modinfo.creator')->from('Model_Topic topic');
-        $db_query = cy\DB::select(array('t_topics_0.id', 't_topics_0_id')
+        $db_query = cy\DB::select(array('t_topics_0.topicId', 't_topics_0_topicId')
             , array('t_topics_0.name', 't_topics_0_name')
-            , array('t_users_0.id', 't_users_0_id')
+            , array('t_users_0.userId', 't_users_0_userId')
             , array('t_users_0.name', 't_users_0_name')
             , array('t_users_0.password', 't_users_0_password')
-            , array('t_users_0.created_at', 't_users_0_created_at')
+            , array('t_users_0.createdAt', 't_users_0_createdAt')
             , array('user_contact_info_0.email', 'user_contact_info_0_email')
-            , array('user_contact_info_0.phone_num', 'user_contact_info_0_phone_num'))->from(array('t_topics', 't_topics_0'))
+            , array('user_contact_info_0.phoneNum', 'user_contact_info_0_phoneNum'))->from(array('t_topics', 't_topics_0'))
             ->left_join(array('t_users', 't_users_0'))
-                ->on('t_topics_0.creator_fk', '=', 't_users_0.id')
+                ->on('t_topics_0.creatorFk', '=', 't_users_0.userId')
             ->left_join(array('user_contact_info', 'user_contact_info_0'))
-                ->on('t_users_0.id', '=', 'user_contact_info_0.user_fk');
+                ->on('t_users_0.userId', '=', 'user_contact_info_0.userFk');
         $this->assertCompiledTo($jork_query, $db_query);
     }
 
@@ -35,53 +35,53 @@ class JORK_Mapper_SelectTest extends JORK_MapperTest {
         $jork_query = cy\JORK::select('post', 'post.topic.modinfo.creator')
                 ->from('Model_Post post');
 
-        $db_query = cy\DB::select(array('t_posts_0.id', 't_posts_0_id')
+        $db_query = cy\DB::select(array('t_posts_0.postId', 't_posts_0_postId')
             , array('t_posts_0.name', 't_posts_0_name')
-            , array('t_posts_0.topic_fk', 't_posts_0_topic_fk')
-            , array('t_posts_0.user_fk', 't_posts_0_user_fk')
-            , array('t_users_0.id', 't_users_0_id')
+            , array('t_posts_0.topicFk', 't_posts_0_topicFk')
+            , array('t_posts_0.userFk', 't_posts_0_userFk')
+            , array('t_users_0.userId', 't_users_0_userId')
             , array('t_users_0.name', 't_users_0_name')
             , array('t_users_0.password', 't_users_0_password')
-            , array('t_users_0.created_at', 't_users_0_created_at')
+            , array('t_users_0.createdAt', 't_users_0_createdAt')
             , array('user_contact_info_0.email', 'user_contact_info_0_email')
-            , array('user_contact_info_0.phone_num', 'user_contact_info_0_phone_num')
-            , array('t_topics_0.id', 't_topics_0_id')
+            , array('user_contact_info_0.phoneNum', 'user_contact_info_0_phoneNum')
+            , array('t_topics_0.topicId', 't_topics_0_topicId')
         )->from(array('t_posts', 't_posts_0'))
             ->left_join(array('t_topics', 't_topics_0'))
-                ->on('t_posts_0.topic_fk', '=', 't_topics_0.id')
+                ->on('t_posts_0.topicFk', '=', 't_topics_0.topicId')
             ->left_join(array('t_users', 't_users_0'))
-                ->on('t_topics_0.creator_fk', '=', 't_users_0.id')
+                ->on('t_topics_0.creatorFk', '=', 't_users_0.userId')
             ->left_join(array('user_contact_info', 'user_contact_info_0'))
-                ->on('t_users_0.id', '=', 'user_contact_info_0.user_fk');
+                ->on('t_users_0.userId', '=', 'user_contact_info_0.userFk');
 
         $this->assertCompiledTo($jork_query, $db_query);
     }
 
     public function testSelectManyToOneReverse() {
         $jork_query = cy\JORK::select('t', 't.posts')->from('Model_Topic t');
-        $db_query = cy\DB::select(array('t_topics_0.id', 't_topics_0_id')
+        $db_query = cy\DB::select(array('t_topics_0.topicId', 't_topics_0_topicId')
                 , array('t_topics_0.name', 't_topics_0_name')
-                , array('t_posts_0.id', 't_posts_0_id')
+                , array('t_posts_0.postId', 't_posts_0_postId')
                 , array('t_posts_0.name', 't_posts_0_name')
-                , array('t_posts_0.topic_fk', 't_posts_0_topic_fk')
-                , array('t_posts_0.user_fk', 't_posts_0_user_fk'))
+                , array('t_posts_0.topicFk', 't_posts_0_topicFk')
+                , array('t_posts_0.userFk', 't_posts_0_userFk'))
             ->from(array('t_topics', 't_topics_0'))
             ->left_join(array('t_posts', 't_posts_0'))
-                ->on('t_topics_0.id', '=', 't_posts_0.topic_fk');
+                ->on('t_topics_0.topicId', '=', 't_posts_0.topicFk');
         $this->assertCompiledTo($jork_query, $db_query);
     }
 
     public function testSelectOneToMany() {
         $jork_query = cy\JORK::select('posts')
             ->from('Model_User');
-        $db_query =cy\DB::select(array('t_posts_0.id', 't_posts_0_id')
+        $db_query =cy\DB::select(array('t_posts_0.postId', 't_posts_0_postId')
             , array('t_posts_0.name', 't_posts_0_name')
-            , array('t_posts_0.topic_fk', 't_posts_0_topic_fk')
-            , array('t_posts_0.user_fk', 't_posts_0_user_fk')
-            , array('t_users_0.id', 't_users_0_id')
+            , array('t_posts_0.topicFk', 't_posts_0_topicFk')
+            , array('t_posts_0.userFk', 't_posts_0_userFk')
+            , array('t_users_0.userId', 't_users_0_userId')
         )->from(array('t_users', 't_users_0'))
             ->left_join(array('t_posts', 't_posts_0'))
-                ->on('t_users_0.id', '=', 't_posts_0.user_fk')
+                ->on('t_users_0.userId', '=', 't_posts_0.userFk')
         ->order_by('t_users_0.name', 'asc');
 
         $this->assertCompiledTo($jork_query, $db_query);
@@ -93,7 +93,7 @@ class JORK_Mapper_SelectTest extends JORK_MapperTest {
                 'table' => array('t_posts', 't_posts_0'),
                 'type' => 'LEFT',
                 'conditions' => array(
-                    new db\BinaryExpression('t_users_0.id', '=', 't_posts_0.user_fk')
+                    new db\BinaryExpression('t_users_0.userId', '=', 't_posts_0.userFk')
                 )
             )
         ));
@@ -101,47 +101,47 @@ class JORK_Mapper_SelectTest extends JORK_MapperTest {
 
     public function testSelectOneToManyReverse() {
         $jork_query = cy\JORK::select('author')->from('Model_Post');
-        $db_query = cy\DB::select(array('t_users_0.id', 't_users_0_id')
+        $db_query = cy\DB::select(array('t_users_0.userId', 't_users_0_userId')
             , array('t_users_0.name', 't_users_0_name')
             , array('t_users_0.password', 't_users_0_password')
-            , array('t_users_0.created_at', 't_users_0_created_at')
+            , array('t_users_0.createdAt', 't_users_0_createdAt')
             , array('user_contact_info_0.email', 'user_contact_info_0_email')
-            , array('user_contact_info_0.phone_num', 'user_contact_info_0_phone_num')
-            , array('t_posts_0.id', 't_posts_0_id'))->from(array('t_posts', 't_posts_0'))
+            , array('user_contact_info_0.phoneNum', 'user_contact_info_0_phoneNum')
+            , array('t_posts_0.postId', 't_posts_0_postId'))->from(array('t_posts', 't_posts_0'))
             ->left_join(array('t_users', 't_users_0'))
-                ->on('t_posts_0.user_fk', '=', 't_users_0.id')
+                ->on('t_posts_0.userFk', '=', 't_users_0.userId')
             ->left_join(array('user_contact_info', 'user_contact_info_0'))
-                ->on('t_users_0.id', '=', 'user_contact_info_0.user_fk');
+                ->on('t_users_0.userId', '=', 'user_contact_info_0.userFk');
 
         $this->assertCompiledTo($jork_query, $db_query);
     }
 
     public function testOneToOne() {
         $jork_query = cy\JORK::select('moderator')->from('Model_Category');
-        $db_query = cy\DB::select(array('t_users_0.id', 't_users_0_id')
+        $db_query = cy\DB::select(array('t_users_0.userId', 't_users_0_userId')
             , array('t_users_0.name', 't_users_0_name')
             , array('t_users_0.password', 't_users_0_password')
-            , array('t_users_0.created_at', 't_users_0_created_at')
+            , array('t_users_0.createdAt', 't_users_0_createdAt')
             , array('user_contact_info_0.email', 'user_contact_info_0_email')
-            , array('user_contact_info_0.phone_num', 'user_contact_info_0_phone_num')
-            , array('t_categories_0.id', 't_categories_0_id'))->from(array('t_categories', 't_categories_0'))
+            , array('user_contact_info_0.phoneNum', 'user_contact_info_0_phoneNum')
+            , array('t_categories_0.categoryId', 't_categories_0_categoryId'))->from(array('t_categories', 't_categories_0'))
             ->left_join(array('t_users', 't_users_0'))
-                ->on('t_categories_0.moderator_fk', '=', 't_users_0.id')
+                ->on('t_categories_0.moderatorFk', '=', 't_users_0.userId')
             ->left_join(array('user_contact_info', 'user_contact_info_0'))
-                ->on('t_users_0.id', '=', 'user_contact_info_0.user_fk');
+                ->on('t_users_0.userId', '=', 'user_contact_info_0.userFk');
 
         $this->assertCompiledTo($jork_query, $db_query);
     }
 
     public function testOneToOneReverse() {
         $jork_query = cy\JORK::select('moderated_category')->from('Model_User');
-        $db_query = cy\DB::select(array('t_categories_0.id', 't_categories_0_id')
-            , array('t_categories_0.c_name', 't_categories_0_c_name')
-            , array('t_categories_0.moderator_fk', 't_categories_0_moderator_fk')
-            , array('t_users_0.id', 't_users_0_id')
+        $db_query = cy\DB::select(array('t_categories_0.categoryId', 't_categories_0_categoryId')
+            , array('t_categories_0.name', 't_categories_0_name')
+            , array('t_categories_0.moderatorFk', 't_categories_0_moderatorFk')
+            , array('t_users_0.userId', 't_users_0_userId')
         )->from(array('t_users', 't_users_0'))
             ->left_join(array('t_categories', 't_categories_0'))
-                ->on('t_users_0.id', '=', 't_categories_0.moderator_fk')
+                ->on('t_users_0.userId', '=', 't_categories_0.moderatorFk')
         ->order_by('t_users_0.name', 'asc');
         $this->assertCompiledTo($jork_query, $db_query);
     }
@@ -157,15 +157,15 @@ class JORK_Mapper_SelectTest extends JORK_MapperTest {
 
     public function testManyToMany() {
         $jork_query = cy\JORK::from('Model_Topic')->with('categories');
-        $db_query = cy\DB::select(array('t_categories_0.id', 't_categories_0_id')
-            , array('t_categories_0.c_name', 't_categories_0_c_name')
-            , array('t_categories_0.moderator_fk', 't_categories_0_moderator_fk')
-            , array('t_topics_0.id', 't_topics_0_id')
+        $db_query = cy\DB::select(array('t_categories_0.categoryId', 't_categories_0_categoryId')
+            , array('t_categories_0.name', 't_categories_0_name')
+            , array('t_categories_0.moderatorFk', 't_categories_0_moderatorFk')
+            , array('t_topics_0.topicId', 't_topics_0_topicId')
             , array('t_topics_0.name', 't_topics_0_name'))->from(array('t_topics', 't_topics_0'))
             ->left_join(array('categories_topics', 'categories_topics_0'))
-                ->on('t_topics_0.id', '=', 'categories_topics_0.topic_fk')
+                ->on('t_topics_0.topicId', '=', 'categories_topics_0.topicFk')
             ->left_join(array('t_categories', 't_categories_0'))
-                ->on('categories_topics_0.category_fk', '=', 't_categories_0.id')
+                ->on('categories_topics_0.categoryFk', '=', 't_categories_0.categoryId')
         ->order_by('t_topics_0.name', 'asc');
 
         $this->assertCompiledTo($jork_query, $db_query);
@@ -173,16 +173,16 @@ class JORK_Mapper_SelectTest extends JORK_MapperTest {
 
     public function testManyToManyReverse() {
         $jork_query = cy\JORK::from('Model_Category')->with('topics');
-        $db_query = cy\DB::select(array('t_topics_0.id', 't_topics_0_id')
+        $db_query = cy\DB::select(array('t_topics_0.topicId', 't_topics_0_topicId')
             , array('t_topics_0.name', 't_topics_0_name')
-            , array('t_categories_0.id', 't_categories_0_id')
-            , array('t_categories_0.c_name', 't_categories_0_c_name')
-            , array('t_categories_0.moderator_fk', 't_categories_0_moderator_fk')
+            , array('t_categories_0.categoryId', 't_categories_0_categoryId')
+            , array('t_categories_0.name', 't_categories_0_name')
+            , array('t_categories_0.moderatorFk', 't_categories_0_moderatorFk')
         )->from(array('t_categories', 't_categories_0'))
             ->left_join(array('categories_topics', 'categories_topics_0'))
-                ->on('t_categories_0.id', '=', 'categories_topics_0.category_fk')
+                ->on('t_categories_0.categoryId', '=', 'categories_topics_0.categoryFk')
             ->left_join(array('t_topics', 't_topics_0'))
-                ->on('categories_topics_0.topic_fk', '=', 't_topics_0.id');
+                ->on('categories_topics_0.topicFk', '=', 't_topics_0.topicId');
         $this->assertCompiledTo($jork_query, $db_query);
     }
 
