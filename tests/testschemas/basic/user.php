@@ -15,7 +15,7 @@ $schema->primitive(cy\JORK::primitive('id', 'int')->column('userId')
 )->primitive(cy\JORK::primitive('password', 'string')
 )->primitive(cy\JORK::primitive('created_at', 'string')->column('createdAt')
 )->primitive(cy\JORK::primitive('email', 'string')->table('user_contact_info')
-)->primitive(cy\JORK::primitive('phone_num', 'string')->table('user_contact_info')
+)->primitive(cy\JORK::primitive('phone_num', 'string')->table('user_contact_info')->column('phoneNum')
 )->natural_ordering('name');
 
 $schema->component(cy\JORK::component('posts', 'Model_Post')
