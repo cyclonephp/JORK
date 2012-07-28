@@ -912,7 +912,8 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
 
         $upd_stmt = new db\query\Update;
 
-        $remote_primitive_schema = $remote_class_schema->primitives[$remote_comp_schema->join_columns[0]];
+        $remote_primitive_schema = $remote_class_schema->primitive_by_col($remote_comp_schema->join_columns[0]);
+        //$remote_primitive_schema = $remote_class_schema->primitives[$remote_comp_schema->join_columns[0]];
 
         $remote_join_col = isset($remote_primitive_schema->column)
             ? $remote_primitive_schema->column
@@ -929,7 +930,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                 : $schema_primary_key[0];
 
         $local_join_col = isset($schema->primitives[$local_join_atomic]->column)
-                ? $schema->atomics[$local_join_atomic]->column
+                ? $schema->primitives[$local_join_atomic]->column
                 : $local_join_atomic;
 
         $upd_stmt->table = isset($remote_primitive_schema->table)

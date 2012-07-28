@@ -24,10 +24,10 @@ class JORK_Result_MapperTest extends JORK_DbTest {
         list($db_query, $mappers) = $mapper->map();
 
         $resultset = array(
-            array('t_topics_0_id' => '1', 't_topics_0_name' => 'hello'
-                , 't_topics_0_created_at' => '2011-01-05', 't_topics_0_creator_fk' => 1, 't_topics_0_modified_at' => '2011-01-05', 't_topics_0_modifier_fk' => 1 )
-            , array('t_topics_0_id' => '1', 't_topics_0_name' => 'hello'
-                , 't_topics_0_created_at' => '2011-01-05', 't_topics_0_creator_fk' => 1, 't_topics_0_modified_at' => '2011-01-05', 't_topics_0_modifier_fk' => 1 )
+            array('t_topics_0_topicId' => '1', 't_topics_0_name' => 'hello'
+                , 't_topics_0_createdAt' => '2011-01-05', 't_topics_0_creatorFk' => 1, 't_topics_0_modifiedAt' => '2011-01-05', 't_topics_0_modifierFk' => 1 )
+            , array('t_topics_0_topicId' => '1', 't_topics_0_name' => 'hello'
+                , 't_topics_0_createdAt' => '2011-01-05', 't_topics_0_creatorFk' => 1, 't_topics_0_modifiedAt' => '2011-01-05', 't_topics_0_modifierFk' => 1 )
         );
         foreach ($resultset as $idx => $row) {
             $topic = $mappers[NULL]->map_row($resultset[0]);

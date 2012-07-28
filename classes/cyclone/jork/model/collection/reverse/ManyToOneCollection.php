@@ -4,6 +4,7 @@ namespace cyclone\jork\model\collection\reverse;
 
 use cyclone as cy;
 use cyclone\jork;
+use cyclone\jork\schema;
 use cyclone\db;
 
 /**
@@ -26,8 +27,12 @@ class ManyToOneCollection extends jork\model\collection\AbstractCollection {
     public function append($value) {
         parent::append($value);
         $inv_join_cols = $this->_inverse_join_columns;
+        $remote_schema = schema\SchemaPool::inst()->get_schema($this->_comp_class);
+        $local_schema = $this->_owner->schema();
         foreach ($this->_join_columns as $idx => $join_col) {
-            $value->{$inv_join_cols[$idx]} = $this->_owner->$join_col;
+            $local_prop = $local_schema->primitive_by_col($join_col)->name;
+            $remote_prop = $remote_schema->primitive_by_col($this->_inverse_join_columns[$idx])->name;
+            $value->{$remote_prop} = $this->_owner->{$local_prop};
         }
     }
 
@@ -36,8 +41,10 @@ class ManyToOneCollection extends jork\model\collection\AbstractCollection {
             $pk = array($pk);
         }
         $this->_deleted[$pk] = $this->_storage[$pk];
+        $remote_schema = schema\SchemaPool::inst()->get_schema($this->_comp_class);
         foreach ($this->_inverse_join_columns as $inv_join_col) {
-            $this->_deleted[$pk]['value']->$inv_join_col = NULL;
+            $inv_join_prop = $remote_schema->primitive_by_col($inv_join_col)->name;
+            $this->_deleted[$pk]['value']->$inv_join_prop = NULL;
         }
         unset($this->_storage[$pk]);
         $this->_persistent = FALSE;
@@ -53,9 +60,11 @@ class ManyToOneCollection extends jork\model\collection\AbstractCollection {
                 return;
             }
             $itm_join_col = $this->_inverse_join_columns[0];
+            $remote_schema = schema\SchemaPool::inst()->get_schema($this->_comp_class);
+            $itm_join_prop = $remote_schema->primitive_by_col($itm_join_col)->name;
             foreach ($this->_storage as $item) {
                 $item['persistent'] = FALSE;
-                $item['value']->$itm_join_col = $owner_pk[0];
+                $item['value']->$itm_join_prop = $owner_pk[0];
             }
             return;
         }
@@ -74,8 +83,8 @@ class ManyToOneCollection extends jork\model\collection\AbstractCollection {
                 ->get_property_schema($this->_comp_schema->mapped_by);
 
             $primitive_name = $remote_comp_schema->join_columns[0];
-
-            $col_schema = $children_schema->get_property_schema($primitive_name);
+            $primitive_prop_name = $children_schema->primitive_by_col($primitive_name)->name;
+            $col_schema = $children_schema->get_property_schema($primitive_prop_name);
             
             $upd_stmt->table = isset($col_schema->table)
                     ? $col_schema->table

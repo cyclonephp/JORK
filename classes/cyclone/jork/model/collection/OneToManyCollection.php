@@ -82,7 +82,7 @@ class OneToManyCollection extends AbstractCollection {
             $children_schema = jork\model\AbstractModel::schema_by_class($this->_comp_class);
             $join_primitive = $this->_comp_schema->join_columns[0];
 
-            $join_primitive_schema = $children_schema->primitives[$join_primitive];
+            $join_primitive_schema = $children_schema->primitive_by_col($join_primitive);
 
             $join_column = isset($join_primitive_schema->column)
                     ? $join_primitive_schema->column

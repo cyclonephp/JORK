@@ -42,11 +42,11 @@ class JORK_Model_Collection_Reverse_ManyToManyTest extends JORK_DbTest {
         
         $category->topics->save();
         $result = cy\DB::select()->from('categories_topics')
-                ->where('category_fk', '=', cy\DB::esc(2))
+                ->where('categoryFk', '=', cy\DB::esc(2))
                 ->exec('jork_test')->as_array();
         $this->assertEquals(2, count($result));
-        $this->assertEquals(1, $result[0]['topic_fk']);
-        $this->assertEquals(3, $result[1]['topic_fk']);
+        $this->assertEquals(1, $result[0]['topicFk']);
+        $this->assertEquals(3, $result[1]['topicFk']);
     }
     
 }

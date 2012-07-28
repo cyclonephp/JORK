@@ -65,7 +65,7 @@ class JORK_Model_Collection_OneToManyTest extends JORK_DbTest {
         Model_User::get(1)->delete();
 
         $this->assertEquals(2, count(cy\DB::select()->from('t_posts')
-                ->where('user_fk', 'IS', NULL)
+                ->where('userFk', 'IS', NULL)
                 ->exec('jork_test')->as_array()));
     }
 }

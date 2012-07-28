@@ -107,12 +107,12 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
 
         $user->save();
 
-        $result = cy\DB::select()->from('t_users')->where('id', '=', cy\DB::esc(4))->exec('jork_test');
+        $result = cy\DB::select()->from('t_users')->where('userId', '=', cy\DB::esc(4))->exec('jork_test');
         foreach ($result as $row) {
             $this->assertEquals('foo', $row['name']);
         }
 
-        $result = cy\DB::select()->from('t_posts')->where('id', '=', cy\DB::esc(5))->exec('jork_test');
+        $result = cy\DB::select()->from('t_posts')->where('postId', '=', cy\DB::esc(5))->exec('jork_test');
         $this->assertEquals(1, count($result));
     }
 
@@ -122,7 +122,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
        $post = $result[0];
        $post->delete();
        $this->assertEquals(0, count(cy\DB::select()->from('t_posts')
-               ->where('id', '=', cy\DB::esc(4))->exec('jork_test')));
+               ->where('postId', '=', cy\DB::esc(4))->exec('jork_test')));
 
        $user = new Model_User;
        $user->delete();
@@ -139,7 +139,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $topic = $result[0];
         $topic->delete();
         $this->assertEquals(2, count(DB::select()->from('t_posts')
-                ->where('topic_fk', 'is', NULL)->exec('jork_test')));
+                ->where('topicFk', 'is', NULL)->exec('jork_test')));
 
     }
 
@@ -151,7 +151,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         $user->delete();
 
         $this->assertEquals(2, count(
-            cy\DB::select()->from('t_categories')->where('moderator_fk', 'is', NULL)
+            cy\DB::select()->from('t_categories')->where('moderatorFk', 'is', NULL)
                 ->exec('jork_test')->as_array()
         ));
     }

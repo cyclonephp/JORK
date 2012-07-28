@@ -9,7 +9,7 @@ $schema->table = 't_categories';
 $schema->primitive(cy\JORK::primitive('id', 'int')->column('categoryId')
         ->primary_key()
 )->primitive(cy\JORK::primitive('name', 'string')
-)->primitive(cy\JORK::primitive('moderatorFk', 'int')
+)->primitive(cy\JORK::primitive('moderator_fk', 'int')->column('moderatorFk')
 );
 
 $schema->component(cy\JORK::component('topics', 'Model_Topic')

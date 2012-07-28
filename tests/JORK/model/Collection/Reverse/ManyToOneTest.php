@@ -43,6 +43,6 @@ class JORK_Model_Collection_Reverse_ManyToOneTest extends Kohana_Unittest_TestCa
         $topic->delete();
 
         $this->assertEquals(2, count(cy\DB::select()->from('t_posts')
-                ->where('topic_fk', 'is', NULL)->exec('jork_test')));
+                ->where('topicFk', 'is', NULL)->exec('jork_test')));
     }
 }

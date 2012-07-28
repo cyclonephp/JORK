@@ -41,9 +41,9 @@ class JORK_Model_Collection_ManyToManyTest extends JORK_DbTest {
         unset($topic->categories[2]);
         $topic->save();
         $result = cy\DB::select()->from('categories_topics')
-                ->where('topic_fk', '=', cy\DB::esc(2))->exec('jork_test')->as_array();
+                ->where('topicFk', '=', cy\DB::esc(2))->exec('jork_test')->as_array();
         $this->assertEquals(1, count($result));
-        $this->assertEquals(3, $result[0]['category_fk']);
+        $this->assertEquals(3, $result[0]['categoryFk']);
         $this->assertEquals(4, count(cy\DB::select()->from('categories_topics')
                 ->exec('jork_test')->as_array()));
     }

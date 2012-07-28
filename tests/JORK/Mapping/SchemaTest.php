@@ -21,7 +21,7 @@ class JORK_Mapping_SchemaTest extends JORK_MapperTest {
                 'geneneration_strategy' => 'auto'
             ));*/
 
-        $this->assertEquals(cy\JORK::primitive('id', 'int')
+        $this->assertEquals(cy\JORK::primitive('id', 'int')->column('userId')
                 ->primary_key()
                 , $schema->get_property_schema('id'));
 
@@ -33,7 +33,7 @@ class JORK_Mapping_SchemaTest extends JORK_MapperTest {
             ));*/
 
         $this->assertEquals(cy\JORK::component('posts', 'Model_Post')
-                ->type(cy\JORK::ONE_TO_MANY)->join_column('user_fk')
+                ->type(cy\JORK::ONE_TO_MANY)->join_column('userFk')
                 ->on_delete(cy\JORK::SET_NULL)
                 , $schema->get_property_schema('posts'));
         

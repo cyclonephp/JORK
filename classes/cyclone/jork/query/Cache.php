@@ -146,8 +146,9 @@ class Cache {
                 throw new jork\Exception("deleting composite primary key entities is not yet supported");
 
             $primary_key = $primary_key[0];
+            $primary_key_col = $this->_schema->primitives[$primary_key]->column ?: $primary_key;
             $prim_tbl_del->conditions = array(
-                new db\BinaryExpression($primary_key, '=', NULL)
+                new db\BinaryExpression($primary_key_col, '=', NULL)
             );
             $this->_delete_sql = array($prim_tbl_del);
             if ($this->_schema->secondary_tables != NULL) {
