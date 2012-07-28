@@ -281,41 +281,45 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * @param array $comp_schema
      */
     protected function update_component_fks_reverse($key, $val = NULL, $comp_schema) {
-        $remote_schema = $val->schema()->components[$comp_schema->mapped_by];
+        $remote_schema = $val->schema();
+        $remote_comp_schema = $remote_schema->components[$comp_schema->mapped_by];
         if (NULL === $val) {
-            foreach ($remote_schema->join_columns as $join_column) {
+            foreach ($remote_comp_schema->join_columns as $join_column) {
                 $this->_primitives[$join_column] = array(
                     'value' => NULL,
                     'persistent' => FALSE
                 );
             }
         } else {
-            if ($remote_schema->type == cy\JORK::ONE_TO_MANY) {
-                if (empty($remote_schema->inverse_join_columns)) {
+            if ($remote_comp_schema->type == cy\JORK::ONE_TO_MANY) {
+                if (empty($remote_comp_schema->inverse_join_columns)) {
                     $values = $val->pk();
                 } else {
                     $values = array();
-                    foreach ($remote_schema->inverse_join_columns as $inv_join_col) {
+                    foreach ($remote_comp_schema->inverse_join_columns as $inv_join_col) {
                         $values [] = $val->_primitives[$inv_join_col]['value'];
                     }
                 }
-                foreach ($remote_schema->join_columns as $idx => $join_col) {
-                    $this->_primitives[$join_col] = array(
+                $local_schema = $this->schema();
+                foreach ($remote_comp_schema->join_columns as $idx => $join_col) {
+                    $join_prop = $local_schema->primitive_by_col($join_col)->name;
+                    $this->_primitives[$join_prop] = array(
                         'value' => $values[$idx],
                         'persistent' => FALSE
                     );
                 }
             } else {
-                if (empty($remote_schema->inverse_join_columns)) {
+                if (empty($remote_comp_schema->inverse_join_columns)) {
                     $values = $this->pk();
                 } else {
                     $values = array();
-                    foreach ($remote_schema->inverse_join_columns as $inv_join_col) {
+                    foreach ($remote_comp_schema->inverse_join_columns as $inv_join_col) {
                         $values [] = $this->_primitives[$inv_join_col]['value'];
                     }
                 }
-                foreach ($remote_schema->join_columns as $idx => $join_col) {
-                    $val->_primitives[$join_col] = array(
+                foreach ($remote_comp_schema->join_columns as $idx => $join_col) {
+                    $join_prop = $remote_schema->primitive_by_col($join_col)->name;
+                    $val->_primitives[$join_prop] = array(
                         'value' => $values[$idx],
                         'persistent' => FALSE
                     );
@@ -353,8 +357,9 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                 }
             }
             foreach ($comp_schema->join_columns as $idx => $comp_join_col) {
-                $this->_primitives[$comp_join_col]['value'] = $inv_join_vals[$idx];
-                $this->_primitives[$comp_join_col]['persistent'] = FALSE;
+                $comp_join_prop = $schema->primitive_by_col($comp_join_col)->name;
+                $this->_primitives[$comp_join_prop]['value'] = $inv_join_vals[$idx];
+                $this->_primitives[$comp_join_prop]['persistent'] = FALSE;
             }
         }
     }

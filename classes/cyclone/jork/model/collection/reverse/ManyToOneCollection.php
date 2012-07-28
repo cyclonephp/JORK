@@ -102,7 +102,7 @@ class ManyToOneCollection extends jork\model\collection\AbstractCollection {
                 new db\BinaryExpression($col_name, '='
                         , $owner_pk)
             );
-            
+
             $upd_stmt->exec($this->_owner->schema()->db_conn);
         } elseif (cy\JORK::CASCADE == $on_delete) {
             throw new jork\Exception('cascade delete is not yet implemented');

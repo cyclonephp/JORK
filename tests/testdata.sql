@@ -10,7 +10,7 @@ drop table if exists categories_topics;
 create table if not exists t_posts(
     postId int primary key auto_increment,
     name text,
-    topicFk int not null,
+    topicFk int,
     userFk int,
     createdAt datetime,
     creatorFk int not null,
