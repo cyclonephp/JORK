@@ -1,0 +1,519 @@
+<p>JORK is an ORM (Object-Relational Mapping) library for the CyclonePHP framework.
+It is designed to provide fast, flexible and featureful mapping mechanism
+between PHP object graphs and relational databases.</p>
+
+@section jork-orm-intro Introduction to ORM
+
+<p>The problem of object-relational mapping occurs when we try to build an application using an
+   object-oriented programming language and using a relational database for data storage. The
+   source of the problem is the theoretical difference between the data representation in object-
+   oriented context and in RDBMS systems. In a nutshell OO systems consider any kind of data as a
+   network or graph of connected object, and on the other hand the database handles the data in
+   tables and represents connections using key columns. ORM systems are used to automatize the
+   process of mapping objects to database records and vica-versa.
+</p>
+
+@subsection jork-orm-intro-problem The problem
+
+<p>The base idea is to map an object to a row of a database relation. This task itself is simple, but
+the theoretical mismatch between the data approach of object-oriented programming languages
+and relational databases makes it complex, mainly because of the different representation of
+connected entities.</p>
+
+<h5>Terminology:</h5>
+
+(terms used in the rest of the manual)
+<dl>
+<dt>entity class, model class:</dt>
+    <dd>a class which' instances should be managed by the ORM library.
+        In most cases these are business entities.</dd>
+<dt>entity, model:</dt>
+    <dd>an instance of an entity class.</dd>
+</dl>
+The "database", "database relation" and "database row" terms will also be used in the
+further discussion of the topic.
+
+<p>
+In database tables the entities are stored in rows, every table has one or more columns which'
+value is unique and not null (so-called primary keys), these are used to exactly identify an entity
+in the storage. The connections between entities are represented using foreign keys. A foreign
+key is on (or more) column of a database table (table A) which' value should be the same as the
+value of a primary key in an other (or in special cases in the same) table (table B). In such case it
+is interpreted as the foreign key value in a row in table A "refers to" a row in table B. Furthermore
+table B also refers to table A, using the primary key of table B and the foreign key of table A the
+connection between the two entities can be easily fetched from both sides. It means that the
+connection between entities are always bi-directional in a relational database.
+</p>
+
+<p>The data representation in object-oriented languages differ basically in three things:
+<ol>
+<li>The entities represented by objects don't necessarily have one (or more) unique not-null
+properties which can be used to exactly identify the entity. This is not needed in OO context since
+the objects can be properly identified by their memory address and the memory address can be
+referenced theoretically from any part of the application. Such physical address of the entities is
+not accessible in relational databases, therefore it can't be used to identify the entities, primary
+keys are used instead.</li>
+<li>
+The connections in a relational database are always bi-directional. In the case of object-
+oriented languages if object A has a reference to object B then it doesn't necessarily mean that
+object B also holds a reference to object A therefore the connections can easily be uni-directional.</li>
+<li>
+Foreign keys are also unneeded and unused in OO context since - as stated above - the
+memory address of the objects is used to identify them via references (pointers). The entities hold
+references (in their properties) to their components or (in the case of to-many relations) to
+collections which store the components.</li>
+</ol>
+
+<em>Note: in point 1. we stated that the primary key property is not necessary for the in-memory
+    identification of an entity, however for practical reasons such primary key-like properties are
+    maintained for entities. For example during network communication this primary key is often
+    used to identify an entity, and this primary key value is practically the same as the primary key
+    value of the corresponding database row. Furthermore most ORM libraries require the presence
+    of the primary key mapping property in the entity classes.
+</em>
+</p>
+
+@section jork-orm-intro-oo Representing connections between entities in OO systems
+
+<p>In this chapter we will discuss in more details how the representation of the connections between
+   entities differ in OO systems and relational databases. This discussion will only cover the so-
+   called standard, well-known connection representations, since in some programming languages
+   and database systems very environment-specific connection representations can be implemented.
+   In this chapter by “connection” associations are meant, and a short brief about mapping
+   compositions will also be included. An object association is a relationship between two objects
+   such that at least one of them can navigate to the other one. The connection is bi-directional if the
+   navigation is also possible in the reverse order, otherwise it is unidirectional. Associations can be
+   classified by their cardinality which defines how many objects can take part in the association on
+   each side.
+</p>
+
+@subsection jork-orm-1-1 One-to-One (1:1) connections
+
+In OO context we can say that A and B classes are in one-to-one connection if
+<ul>
+    <li>the instances of class A have a property with type class B.</li>
+    <li>Optionally the instances of class B can have a property with type class A. In such case the
+        connection is bi-directional.</li>
+</ul>
+Representing one-to-one connections in database systems:
+<ul>
+    <li>separate tables should be created for storing the entities of class A and class B (table_a
+        and table_b).</li>
+    <li>table_b should have a unique foreign key to table_a to map the connection</li>
+</ul>
+
+In cases when the one-to-one connection is a part-and-whole association (i.e. composition) the
+foreign key in table_b should have a “not null” constraint. Practically in such case the primary
+key of table_b can also be used as the foreign key to table_a. The foreign key references in most
+cases (but not necessarily) the primary key of table_a.
+
+@subsection jork-orm-1-n One-to-Many (1:N) connections
+
+In OO context we can say that A and B classes are in one-to-many connection if
+<ul>
+    <li>the instances of class A have a property with a collection type which' items are instances
+        of class B.</li>
+    <li>Optionally the instances of class B can have a property which' values should be instances
+        of class A. In such case the connection is bi-directional.</li>
+</ul>
+
+Representing one-to-many connections in database systems:
+<ul>
+    <li>separate tables should be created for storing the entities of class A and class B (table_a
+        and table_b).</li>
+    <li>table_b most have a foreign key to table_a. This foreign key in most cases references the
+        primary key of table_a but it is not mandatory. The foreign key in table_a shouldn't be unique, but
+        the referenced column(s) in table_a should be unique.</li>
+</ul>
+
+This is a widespread database representation of a one-to-many connection, though it introduces
+further constraints on the data structure (in addition to the ones described above): no instances of
+class B can occur multiple times in a collection of a given A instance. The object model described
+above theoretically doesn't have such constraint, though in practice in most cases this restriction
+on the object graph is implied by the underlying database. The entity collection implementations
+of JORK take the advantage of this restriction and will be referred in the subsequent parts of the manual.
+
+@subsection jork-orm-n-1 Many-to-One (N:1) connections
+
+A many-to-one connection is the inverse of a one-to-many connection. In OO context we can say
+that A and B classes are in many-to-one connection if
+<ul>
+    <li>the instances of class A have a property with a collection type which' items are instances of class
+        B.</li>
+    <li>no instances of class B may be referred by more than one instance of class A.</li>
+    <li>Optionally the instances of class B may have a property with type class A.</li>
+</ul>
+
+Representing many-to-one connections in database systems can be done in the same way as one-
+to-many connections, but in this case table_a should own the foreign table and it should reference
+table_b.
+
+@subsection jork-orm-n-m Many-to-Many (N:M) connections
+
+In OO terminology we can say that class A and class B are many-to-many connection
+<ul>
+    <li>if the instances of class A have a property with a collection type which' items should be
+        instances of class B.</li>
+    <li>Optionally if the instances of class B have a property with a collection type which' items
+        must be instances of class A and it is used to traverse the same connection then the
+        connection is bi-directional.</li>
+</ul>
+Representing many-to-many connections in database systems can be done using in the following
+way:
+<ul>
+    <li>separate tables should be created for class A and class B (table_a and table_b).</li>
+    <li>a join table should be created which contains a separate foreign key both to table_a and table_b.
+        The columns of these foreign keys should have a “not null” constraint. The foreign keys reference
+        in most cases (but not necessarily) the primary key of table_a and table_b.</li>
+</ul>
+
+
+<p>The ORM libraries do this mapping process using a mapping schema defined by the developer
+   (the user of the ORM library). The mapping schema definition can be done in XML, annotations,
+   or any other markup. The mapping schema defines mapping between class hierarchies and
+   database schema.</p>
+
+@section jork-activerecord The Active Record design pattern
+
+<p>From the aspect of handling entities run-time at the object-oriented side of the application there
+   are two concepts which classify the ORM libraries. These concepts are tigthly related to two
+   design patterns called active record and data mapper patterns. JORK takes the advantage of
+   the Active Record design pattern which will be described in this chapter.</p>
+
+In short an active record is an object that
+<ol>
+<li>wraps a row in a database table or view,</li>
+<li>encapsulates the database access,</li>
+<li>3.and adds domain logic on that data</li>
+</ol>
+
+<p>Many ORM solutions implement the objects (entities) at run-time at the OO side of the mapping
+   as active record instances. They make the usage of these active records easier by providing an
+   abstract base class for the entity classes which has some common methods for simple data
+   operations like inserting/updating an entity, simple querying. The disadvantage of these
+   implementation is that the entity classes must be extended from an abstract active record class,
+   therefore the superclass of the entity classes is "reserved" by the used ORM library. In single-
+   inheritance OO languages it might cause problems if the programmer wants to use an other
+   technology too which reserves the superclass of the entity classes.</p>
+
+<p>On the other hand a reasonable advantage of such active record implementation is that it properly
+   encapsulates the entity data with its related operations, therefore it makes any additional DAO
+   layer unnecessary. The abstract base active record class can implement the
+   general, simple operations (methods) of the entity classes, and the concrete subclasses can add
+   their required entity-specific methods to it.</p>
+
+@section jork-mapping-schema Mapping schema
+
+<p>In JORK the entity classes should extend the @c cyclone\jork\model\AbstractModel class and implement
+its abstract static method @c cyclone\jork\model\AbstractModel::setup() which should return a
+@c cyclone\jork\schema\ModelSchema instance. The mapping schema should be created programmatically
+in the <code>setup()</code> method, where the mapping schema is built with chained setter method calls.
+The schema will be loaded by the library when it is needed first time.</p>
+
+<p>In the rest of the manual we will work with the following database schema:<br/>
+@img img/db-schema.png <br/>
+
+It is the data model of an imaginary forum application. It is really simple, but all connection types
+have at least one instance in it, therefore it will be good enough for describing the way how to
+define the mapping schema in JORK entities.
+</p>
+
+<p>Lets the Model_Post class, which will be mapped to the t_posts table: @code
+<?php
+
+use cyclone as cy;
+use cyclone\JORK;
+use cyclone\jork\model;
+use cyclone\jork\schema\ModelSchema;
+
+
+class Model_Post extends model\AbstractModel {
+
+
+    public static function setup() {
+        // creating the ModelSchema instance using its static factory method
+        return ModelSchema::factory()
+        // setting the name of the database connection where the underlying database table exists
+        // it is an optional property, by default the 'default' connection is used. See the manual
+        // of the DB library for more details.
+            ->db_conn('jork_test')
+        // setting the table name
+            ->table('t_posts')
+        // creating a primitive property which' name is 'id' and its PHP type is int
+            ->primitive(JORK::primitive('id', 'int')
+        // setting up the table column name where the 'id' property should be mapped to
+        // it is an optional property, by default the property name is used as column name
+                ->column('postId')
+        // marking the 'id' property as the auto-generated primary key of the entity
+                ->primary_key()
+        // creating a new primitive - the property name and the database column name are the same
+        )->primitive(JORK::primitive('name', 'string')
+        // yet another primitive, the property name and the column name are different
+        )->primitive(JORK::primitive('topic_fk', 'int')->column('topicFk')
+        // same
+        )->primitive(JORK::primitive('user_fk', 'int')->column('userFk')
+        // creating a component. A Model_Post instance will have a property named 'topic'
+        // and its type will be Model_Topic - an other entity.
+        )->component(JORK::component('topic', 'Model_Topic')
+        // the connection's cardinality is many-to-one
+        // meaning that many posts can have the same topic, but only one topic
+        // can belong to a post
+                ->type(JORK::MANY_TO_ONE)
+        // the join column for representing this connection between the Model_Post and Model_Topic entities
+        // (or between the t_posts and t_topics tables) will be the 'topicFk' column. It means that
+        // a column named 'topicFk' exists in the t_posts table and it is a foreign key referencing
+        // the primary key of the t_topics table (which is actually the topicId column).
+                ->join_column('topicFk')
+        // creating a component. A Model_Post instance will have a property named 'author'
+        // and its type is Model_User - an other entity.
+        )->component(JORK::component('author', 'Model_User')
+            // the mapping schema of this property is defined on the other side
+            // i.e. the Model_User class will have a property named 'posts' and its definition will
+            // contain the mapping schema for this connection
+                ->mapped_by('posts')
+        // embedded components will be discussed later
+        )->embedded_component('modinfo', 'Model_ModInfo');
+    }
+
+}
+@endcode
+
+The comments in the above definition basically describe what is going on here. Some further notes:
+<ol>
+<li>Line 18: In most cases you won't need to set the @c cyclone\jork\schema\ModelSchema::$db_conn property,
+since in most cases applications use only one database, and its connection is named 'default'. On
+the other hand the <code>db_conn</code> property can be very useful for applications working with
+multiple databases.</li>
+<li>Line 27: the id property is marked as primary key, and also considered as a primary key being
+automatically generated by the database; but the automatic primary key generation is only the default value.
+If the primary key value is assigned manually, then you have to use <code>->primary_key(JORK::ASSIGN)</code>.</li>
+<li>Line 29: the type in a primitive property definition should always be a PHP scalar type name, NOT an SQL type.
+The following values are accepted: <code>bool</code>, <code>boolean</code>, <code>int</code>,
+<code>integer</code>, <code>string</code>, <code>float</code>.</li>
+<li>Line 45:the join column should not only exist in the database but it also has to be mapped
+to a property of the entity. It means if the join column is 'topic_fk' then a primitive propery
+of the entity should be mapped to the 'topic_fk' database column. Furhermore in this case the
+'topicId' primary key is used in the other table for representing the connection, which is the
+typical case for many-to-one connections. It is just the default value, you can change it using
+the @c cyclone\jork\schema\ComponentSchema::inverse_join_column() .</li>
+</ol>
+
+As you can see above the <code>Model_Post</code> instances have a property named <code>topic</code> which is
+a <code>Model_Topic</code> instance. The <code>Model_Topic</code> is also an entity class therefore
+it also has a mapping schema. Lets see:
+@code
+<?php
+use cyclone as cy;
+use cyclone\jork\model;
+use cyclone\jork\schema\ModelSchema;
+use cyclone\JORK;
+
+class Model_Topic extends model\AbstractModel {
+
+    public static function setup() {
+        // creating the schema instance and setting up the connection and table name
+        return ModelSchema::factory()
+            ->db_conn('jork_test')
+            ->table('t_topics')
+            // setting up the primary key property
+            ->primitive(JORK::primitive('id', 'int')->column('topicId')
+                    ->primary_key()
+            // setting up an ordinary primitive property
+            )->primitive(JORK::primitive('name', 'string')
+            // creating a many-to-many component
+            // it means that a Model_Topic instance will have a property named 'categories'
+            // and its value will be a collection of Model_Category instances
+            )->component(JORK::component('categories', 'Model_Category')
+            // setting the cardinality of the connection (semantics described above)
+                ->type(JORK::MANY_TO_MANY)
+            // for representing the connection in the database, a join table will be used
+            // the name of the join table will be 'categories_topics', with 2 columns:
+            // the 'topicFk' column will be used as a join column referencing the primary key
+            //      of the 't_topics' table
+            // the 'categoryFk' column will be used as a join column referencing the primary key
+            //      of the 't_categories' table
+                ->join_table(JORK::join_table('categories_topics', 'topicFk', 'categoryFk'))
+            // creating a component named 'posts'
+            )->component(JORK::component('posts', 'Model_Post')
+                // its mapping schema is defined on the other side - see the definition
+                // of the 'topic' property in the Model_Post class above, no other property
+                // has to be set here. In the Model_Post class it is defined as a many-to-one
+                // component, which indicates that from the Model_Topic side its a one-to-many
+                // component. As a consequence a Model_Topic instance will have a property named
+                // 'posts' and its value will be a collection of Model_Post instances.
+                ->mapped_by('topic')
+                // The on_delete property defines what to do with the posts when a topic is deleted
+                // In this case it means that the t_posts.topicFk value should be set to NULL to
+                // maintain data integrity
+                ->on_delete(JORK::SET_NULL)
+            // natural ordering: see later
+            )->natural_ordering('name')
+            ->embedded_component('modinfo', 'Model_ModInfo');
+    }
+
+}
+@endcode
+
+<p>
+Notes:
+<ol>
+<li>As you can read above for mapping many-to-many connections the primary keys of the connected entities
+are used by default. You can override this default, but it is a bit more complex. You have to set the
+additional properties of the @c cyclone\jork\schema\JoinTableSchema instance created using
+the @c cyclone\JORK::join_table() call. An example:
+@code
+// ...
+->join_table(JORK::join_table('categories_topics', 'topicFk', 'categoryFk')
+    // the join_column means the join column on the side of the declaring class (Model_Topic)
+    // in this case
+    ->join_column('topicId')
+    // the inverse_join_column means the join column on the other side (Model_Category class in
+    // this case)
+    ->inverse_join_column('categoryId')
+)
+// ...
+@endcode
+It worths noting again that the join columns should be mapped to a primitive property of the entity
+classes. For example in this case the <code>id</code> property of <code>Model_Topic</code> is mapped
+to the <code>topicId</code> join column, and on the other side the <code>id</code> property of
+<code>Model_Category</code> is also mapped to the <code>categoryId</code> property.
+</li>
+<li>
+    A more detailed explanation of the @c cyclone\jork\schema\ComponentSchema::$on_delete property:
+    lets consider a case when you have a topic with id = 5 primary key, and 3 posts belong to it.
+    The latter part means that 3 rows in the t_posts table have topicFk = 5 values. The topicFk
+    is a foreign key referencing the t_topics.topicId column meaning that the topicFk values should
+    be NULL or a value which also exists in the t_topics.topicId column.<br/>
+    <br/>
+    Let's see what happens if we delete our topic with id = 5. It means that in the t_posts
+    table there are 3 rows with topicFk = 5, but the value 5 does not exist anymore in the t_topics
+    table. In such case we can say that our database is in inconsistent state. Such inconsistent
+    state may or may not be detected by the underlying database systems, but anyway it is something
+    our application must avoid. Generally there are 2 ways for resolving this inconsistency:
+    <ol>
+        <li>setting foreign key values to NULL: before the row with id = 5 is deleted from the t_topics table
+            we can run the following SQL statement: UPDATE t_posts SET topicFk = NULL where topicFk = 5;
+            and thats all, the foreign key constraint on the t_posts table won't be violated
+            when the row from the t_topics table is deleted. If you want JORK to perform such
+            operation then create the component schema definition with
+            @c cyclone\jork\schema\ComponentSchema::$on_delete = @c cyclone\JORK::SET_NULL and
+            the library will perform the appropriate UPDATE statement before deleting the Model_Topic
+            entity.</li>
+        <li>cascade deletion: in this context by "cascade" we mean that if an entity is deleted
+            then its components are deleted too. So if in the above definition it would be
+            <code>-&gt;on_delete(JORK::CASCADE)</code> instead of <code>-&gt;on_delete(JORK::SET_NULL)</code>
+            then the library would delete a topic instance's posts too alongside with the topic when
+            the topic's <code>delete()</code> method is called.</li>
+    </ol>
+</li>
+</ol>
+</p>
+
+<p>Now lets see the mapping schema <code>Model_Category</code> which is in many-to-many connection
+with the <code>Model_Topic</code> entity as it is described above.
+@code
+<?php
+
+use cyclone as cy;
+use cyclone\jork\model;
+use cyclone\jork\schema\ModelSchema;
+use cyclone\JORK;
+
+
+class Model_Category extends model\AbstractModel {
+
+
+    public static function setup() {
+        return ModelSchema::factory()
+            ->db_conn('jork_test')
+            ->table('t_categories')
+            ->primitive(JORK::primitive('id', 'int')->column('categoryId')
+                    ->primary_key()
+                )->primitive(JORK::primitive('name', 'string')
+                )->primitive(JORK::primitive('moderator_fk', 'int')->column('moderatorFk')
+                )
+            ->component(JORK::component('topics', 'Model_Topic')
+                    ->type(JORK::MANY_TO_MANY)->mapped_by('categories')
+        // a one-to-one connection example here. By default the primary keys
+        // are used on both sides as join columns. You can override it using
+        // join_column() on the local side and with inverse_join_column() on the other side.
+                )->component(JORK::component('moderator', 'Model_User')
+                    ->type(JORK::ONE_TO_ONE)->join_column('moderatorFk')
+                )->embedded_component('modinfo', 'Model_ModInfo');
+    }
+
+}
+@endcode
+
+In this example you can see how to define the mapping schema for a one-to-one connection. It is
+fairly straightforward, you have to set up the join columns for the connected entities.
+</p>
+
+<p>
+Lets see something more interesting. As it has been mentioned previously in the introduction the
+core idea of ORM is to map an entity class to a database relation. This concept can lead to some
+unwanted constraints on the database schema design and entity class design since it requires
+strict one-to-one mapping between the classes and the relations. JORK has some tools to resolve
+this constraint. One of the options is to use so-called secondary tables which means that you can
+store the properties of the same entity in more than one database tables - and in some cases it is
+good to design your database this way.
+</p>
+
+<p>A typical use-case of such database schema design is when some of the properties of an entity
+are rarely used and/or their values are <code>NULL</code> in some cases. In such case it is efficient
+to store these properties in an other table because this way one row of the base relation of the
+entity consumes less space in the memory (and in the storage too), therefore the DBMS can cache in
+the RAM more rows. The secondary table and the base table are connected using foreign key join columns
+so it is possible to join it into a query when these rarely used properties are needed.</p>
+
+<p>To see an example of how to define an entity schema which works on secondary tables lets examine
+the <code>Model_User</code> entity class:
+@code
+<?php
+
+use cyclone as cy;
+use cyclone\jork\model;
+use cyclone\jork\schema\ModelSchema;
+use cyclone\JORK;
+
+class Model_User extends model\AbstractModel {
+
+
+    public static function setup() {
+        return ModelSchema::factory()
+            ->db_conn('jork_test')
+        // passing the name of the primary (base) table
+            ->table('t_users')
+        // setting up a secondary table
+        // its name will be user_contact_info
+        // in the t_users table the userId column will be used as the join column
+        // in the user_contact_info table the userFk column will be used as the join column
+            ->secondary_table(JORK::secondary_table(
+                'user_contact_info', 'userId', 'userFk'
+                ))
+            ->primitive(JORK::primitive('id', 'int')->column('userId')
+                    ->primary_key()
+                )->primitive(JORK::primitive('name', 'string')
+                )->primitive(JORK::primitive('password', 'string')
+                )->primitive(JORK::primitive('created_at', 'string')->column('createdAt')
+        // setting up the email primitive property
+        // and specifying the user_contact_info for its owner table instead of the
+        // t_users (primary) table which is used by default.
+                )->primitive(JORK::primitive('email', 'string')->table('user_contact_info')
+        // the phone_num property's column, the phoneNum column will also be in the
+        // t_user_contact_info secondary table
+                )->primitive(JORK::primitive('phone_num', 'string')
+                    ->table('user_contact_info')->column('phoneNum')
+                )->natural_ordering('name')
+            ->component(JORK::component('posts', 'Model_Post')
+                    ->type(JORK::ONE_TO_MANY)
+                    ->join_column('userFk')
+                    ->on_delete(JORK::SET_NULL)
+                )->component(JORK::component('moderated_category', 'Model_Category')
+                    ->mapped_by('moderator')
+                    ->on_delete(JORK::SET_NULL)
+                );
+    }
+
+} @endcode
+</p>
