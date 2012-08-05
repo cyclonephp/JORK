@@ -226,7 +226,6 @@ use cyclone\JORK;
 use cyclone\jork\model;
 use cyclone\jork\schema\ModelSchema;
 
-
 class Model_Post extends model\AbstractModel {
 
 
@@ -517,3 +516,338 @@ class Model_User extends model\AbstractModel {
 
 } @endcode
 </p>
+
+<p>In this chapter we discussed how to define the mapping schema metadata between entity classes and
+database relations. In the subsequent chapter we will go on and look at how to use these entities.
+
+@section jork-query Object queries
+
+<p>As it has been mentioned in the introduction JORK has an internal DSL for querying objects. It is
+an "object-oriented" query language which lets you write queries operating on entities and entity
+properties without the exact knowledge of the underlying database schema. This object query is
+compiled into an SQL query by JORK and it will be executed. The result of the SQL query will be
+"translated" to an object graph. In this chapter we will cover the syntax and semantics of the object
+queries.</p>
+
+<p>The query language can be used by calling the static factory methods of the @c cyclone\JORK class.
+In examples below we will assume that the <code>cyclone\JORK</code> is imported (ie. imagine a
+<code>use cyclone\JORK;</code> statement).
+
+@subsection jork-query-from Basic queries
+
+<p>A basic query for selecting an entity looks like this:
+@code $query = JORK::from('Model_Topic'); @endcode
+This statement created the query itself. The <code>$query</code> variable will be an
+@c cyclone\jork\query\SelectQuery instance. You have to call its @c cyclone\jork\query\SelectQuery::exec()
+method to execute it and get the query result. To sum up, you will write
+@code $result = JORK::from('Model_Topic')->exec(); @endcode
+in most cases. The <code>$result</code> variable will be a collection of <code>Model_Topic</code>
+instances:
+@code $result = JORK::from('Model_Topic')->exec();
+foreach ($result as $topic) {
+    echo "topic {$topic->id}: {$topic->name}" . PHP_EOL;
+} @endcode
+</p>
+
+<p><em>Note: as you can see the in this example you can access the <code>id</code> and <code>name</code>
+properties of the <code>Model_Topic</code> instances although we did not declare these as the
+properties of the <code>Model_Topic</code> class. These properties are "simulated" by the base
+active record class, @c cyclone\jork\model\AbstractModel 's <code>__get()</code> and
+<code>__set()</code> magic methods (read more <a href="http://php.net/manual/en/language.oop5.magic.php">
+here</a> if you are not familiar with PHP's magic methods yet).</em></p>
+
+<p>In the above query we specified we want to select <code>Model_Topic</code> instances but we
+didn't give any detailed information about what properties do we want to select. In such case
+JORK will select all of the primitive properties but none of the components. So in this case the
+<code>id</code> and <code>name</code> properties will be loaded but the <code>posts</code> and
+<code>categories</code> won't be loaded.
+
+<p>In the mapping schema examples above you can see that in the schema definition of
+<code>Model_Topic</code> there is a <code>-&gt;natural_ordering('name')</code>call which
+sets the @c cyclone\jork\schema\ModelSchema::$natural_ordering property. Such call means that if
+an object query is executed on the given entity and no other ordering is defined in the object query
+then the query result will be ordered by the natural ordering of the entity. To sum up the
+@code JORK::from('Model_Topic') @endcode
+object query will be translated to an SQL query like
+@code SELECT id, name FROM t_topics ORDER BY t_topics.name @endcode
+
+@subsection jork-query-with Loading components
+
+<p>In our first example we did not define which components have to be loaded. JORK offers two ways
+for specifying component loading, so let's see the first method: using a WITH clause:
+@code $result = JORK::from('Model_Topic')->with('categories')->exec();
+foreach ($result as $topic) {
+    echo "topic {$topic->id}: {$topic->name} belongs to the following categories: " . PHP_EOL;
+    foreach ($topic->categories as $category) {
+        echo "\tcategory {$category->id}: {$category->name}" . PHP_EOL;
+    }
+} @endcode
+The WITH clause of the query can be defined by the @c cyclone\jork\query\SelectQuery::with() method
+which accepts variable-length argument list, so we could also write
+@code  JORK::from('Model_Topic')->with('categories', 'posts')->exec(); @endcode
+in the above example if we would need the posts too for rendering.</p>
+
+<p>The WITH clause works recursively so it is very simple to select the components of a component
+of the root entity:
+
+@code // loading the the moderators of the categories of the topics...
+$result = JORK::from('Model_Topic')->with('categories.moderator')->exec();
+foreach ($result as $topic) {
+    echo "topic {$topic->id}: {$topic->name} belongs to the following categories: " . PHP_EOL;
+    foreach ($topic->categories as $category) {
+        // ... and rendering the name of the moderator too
+        echo "\tcategory {$category->id}: {$category->name} (moderated by {$category->moderator->name})" . PHP_EOL;
+    }
+} @endcode
+Thats all. Such "recursive" property references like <code>'categories.moderator'</code> are called
+property chains and they can be used at almost any part of the object query - therefore the term
+<i>property chain</i> will be used in the rest of the manual.</p>
+
+@subsection jork-query-where Where conditions
+
+<p>The WHERE clauses in an object query can be used for filtering the query result just like
+in SQL, so the semantics are indentical and in a lot of cases you will write WHERE conditions
+with JORK just like you would do with the DB library.</p>
+
+<p><em>Note: the further examples will use the @c cyclone\DB module so an <code>use cyclone\DB;</code>
+   import statement will be assumed.</em></p>
+
+<p>A very simple example:
+@code // selecting the users registered after 2010.11.11
+$users = JORK::from('Model_User')->where('created_at', '>', DB::esc('2010-11-11'))->exec();
+@endcode
+The <code>'2010-11-11'</code> string is a parameter and it will come from untrusted user
+input in most cases - therefore you must escape the parameter using @c cyclone\DB::esc() .
+If you don't wrap the parameter into a <code>DB::esc()</code> call then the <code>'2010-11-11'</code>
+string will be considered as a property of the <code>Model_User</code> entity class - which does
+not exist - therefore the query compilation process will throw an exception. To sum up the code will
+rarely be SQL-injectable since if you forget about proper escaping then your query will fail when
+first running it.</p>
+
+<p>The parameters of an object query can not only be primitive values but entities too. Let's see
+an example:
+@code $topic = new Model_Topic;
+$topic->id = 14;
+$result = cy\JORK::from('Model_Post')->where('topic', '=', $topic)->exec(); @endcode
+Ad you can see they query parameter is a <code>Model_Topic</code> instance. The semantics are
+fairly obvious - we want to filter the posts by the topic they belong to. In the generated SQL
+the <code>$topic</code> object will be replaced with its primary key (which is 14 in this case).
+</p>
+
+<p>In the above example we used a property on the left operand of the selection represented by
+its string literal notation. It is also possible to use such property literals on both sides.
+For example if you want to query the posts which are written by the moderator of one of the
+categories where the post's topic belongs to, you can do it this way:
+@code $result = JORK::from('Model_Post')->where('author', '=', 'topic.categories.moderator')->exec(); @endcode
+Such object comparation expressions are compiled in a type-safe manner, so for example if you write
+@code JORK::from('Model_Post')->where('author', '=', 'topic')->exec(); @endcode
+then a @c cyclone\jork\Exception will be thrown with message <code>unable to check equality of class
+'Model_User' with class 'Model_Topic'</code>.
+
+@subsection jork-query-order-by-offset-limit Order by, offset, limit
+
+<p>The ORDER BY, OFFSET and LIMIT clauses of the object query have the same semantics as
+in SQL (to be exact the OFFSET and LIMIT clauses are not the part of the SQL standard but since
+they exist in the SQL dialect of MySQL, Postgres and some other database systems too we don't cover
+what OFFSET and LIMIT means).</p>
+
+<p>Example:
+@code $result = JORK::from('Model_User')->order_by('id')->offset(20)->limit(10)->exec(); @endcode
+It will be approximately compiled to the following SQL:
+@code SELECT userId, name FROM t_users ORDER BY userId OFFSET 20 LIMIT 10; @endcode
+</p>
+
+@subsection jork-query-select The SELECT clause
+
+<p>In the examples we have covered so far every query had one entity class specified in its FROM
+clause and the query didn't have SELECT clause. The query selected the primitive properties of
+the entity and loaded some components defined by the WITH clause. The queries written this way will
+satisfy your needs in a lot of cases, but it is also possible to construct much more complex queries
+with JORK. In this chapter we will cover these options.</p>
+
+<p>To get started lets look at an objec query with multiple root entities in the FROM clause:
+@code $result = JORK::select('post', 'topic')->from('Model_Post post', 'Model_Topic topic')
+    ->where('post.topic', '=', 'topic')->exec(); @endcode
+
+This query selects every <code>Model_Post</code> instance and the <code>Model_Topic</code> instance
+it belongs to. The main point is that: if you have multiple root entities then you have to specify
+an alias name for it which you can use to reference the entity class in the other parts of the query.
+In this case the alias of <code>Model_Post</code> was <code>post</code> and the alias of
+<code>Model_Topic</code> was <code>topic</code>. These alias names were used in the SELECT clause.
+</p>
+
+<p>The alias name can be used not only to reference the root entity class but its properties too,
+recursively. In other words the items of the SELECT clause can be property chains starting with the
+alias of a root entitiy.</p>
+
+<p>The previous example query can also be written in the following form (by taking the advantage
+of recursive property chains):
+@code $result = JORK::select('post', 'post.topic')->from('Model_Post post'); @endcode
+</p>
+
+<p>Let's go back to the original example and examine the query result:
+@code $result = JORK::select('post', 'topic')->from('Model_Post post', 'Model_Topic topic')
+    ->where('post.topic', '=', 'topic')->exec();
+foreach ($result as $row) {
+    echo "post {$row['post']->id} belongs to topic {$row['topic']->id} ({$tow['topic']->name})" . PHP_EOL;
+}
+@endcode
+The rows of the query result will be associative arrays with the following keys: <code>'post'</code>
+and <code>'topic'</code> - so the property chains specified in the SELECT clause of the query.
+The <code>'post'</code> key will be the index of a <code>Model_Post</code> instance which'
+primitive properties are loaded but none of the components, and the <code>'topic'</code> will
+be the index of a <code>Model_Topic</code> instance loaded in the same way.</p>
+
+<p>The property chains in the SELECT clause can be suffixed by an alias name which can be used for
+2 purposes:
+<ol>
+<li>for referencing the property in the latter parts of the query</li>
+<li>for specifying the array keys in the rows of the query result</li>
+</ol>
+Let's see an example:
+@code $result = JORK::select('post p', 'topic t')->from('Model_Post post', 'Model_Topic topic')
+          ->with('t.categories')
+          ->where('p.topic', '=', 't')->exec();
+foreach ($result as $row) {
+    echo "post {$row['p']->id} belongs to topic {$row['t']->id} ({$tow['t']->name})" . PHP_EOL;
+} @endcode
+As you can see we aliased <code>'post'</code> with <code>'p'</code> and <code>'topic'</code> with
+<code>'t'</code>. We used these aliases for:
+<ul>
+    <li>referencing the topic in the WITH clause to express that we want to load the <code>categories</code>
+    property of the topic (see <code>'-&gt;with('t.categories')</code>).</li>
+    <li>referencing the post and the topic in the WHERE clause (see <code>-&gt;where('p.topic', '=', 't')</code>)</li
+    <li>for using the aliases as array keys while processing the query result (see <code>$row['p']-&gt;id</code> etc).</li>
+</ul>
+</p>
+
+<p>
+<em>In this chapter we discussed how to use property chains in the SELECT clause and how to use their aliases but we
+still selected all primitive properties of the selected entity at the end of the property chain. In the next
+chapter we will examine how to specify exactly the properties of the entity to gain total control on the SELECT
+clause of the generated SQL.</em>
+</p>
+
+@subsection jork-query-projection Property projection
+
+<p>Property projection is a method for defining the properties of an entity we want to select. Its a kind of extension
+of the SELECT clause with a bit different purpose and more compacty, totally different syntax. Let's see an example:
+@code $result = JORK::select('post.author{id,name}', 'post.topic.categories{id,moderator}')
+    ->from('Model_Post post')->exec(); @endcode
+
+In this example we used 2 property projections; these are the parts between the curly braces. Let's see what does it mean:
+<ol>
+    <li><code>post.author{id,name}</code> means that we want to select the author of the post but only load its <code>id</code>
+        and <code>name</code> primitive properties but none of the other properties</li>
+    <li><code>post.topic.categories{id,moderator}</code> means that we want to select the categories of the components
+        but only load
+        <ul>
+            <li>one primitive property (the <code>id</code>)</li>
+            <li>one component (the <code>moderator</code>)</li>
+        </ul>
+        but nothing else.
+</ol>
+</p>
+
+<p>To sum up: with property projection you can specify which properties have to be loaded. If a
+property chain in the SELECT clause ends with a property projection then only the specified
+properties will be loaded and nothing else will be added automatically. Furthermore the properties
+enumerated in the property projection can not only be primitive properties but components too. As
+it has been mentioned at the beginning of the <i>Loading components</i> chapter JORK offers two
+ways for defining component loading in a query - actually one of these is the WITH clause and
+the other one is property projection.</p>
+
+<p>
+<em>
+Note: in the previous paragraph we said "the specified properties will be loaded and nothing else
+will be added automatically". Well it is not exactly true since the join column values will always
+be selected regardless they are enumerated in the projection or not. Some classes in the framework
+require the presence of these values in the active records.
+</em>
+</p>
+
+<p><em>
+Note 2: although it was not shown in the previous example in the property projection it is
+possible to specify not only single properties but property chains too. For example
+@code JORK::select('post.topic.categories{id,moderator.posts.topic}') @endcode
+is also a valid property projection (but take care about the difference between the meaning
+of commas (,) and dots (.) in the projection).
+</em></p>
+
+@subsection jork-query-expr Database expressions
+
+<p>Database expressions are any expressions recognized by your DBMS. They can be arithmetic operations,
+database function calls, user-defined stored function calls, aggregate function calls, case expressions,
+whatever else the underlying DBMS is able to recognize. If an item in the SELECT clause is not
+a property chain passed as a string but a @c cyclone\db\CustomExpression instance (typically
+created using @c cyclone\DB::expr() then it will be considered by JORK as a database expression.</p>
+
+<p>In almost all cases when you want to write a database expressions you will want to reference
+some properties of root entities used in the query, and it comes with a problem since JORK will use
+its own SQL aliases for identifying the tables and columns - so you can never know how to reference
+the column you want to use. Furthermore - even if you "find out" the alias it is not a good practice
+to use the column name alias in the object query since such code could occasionally break on a mapping
+schema change. You simply should not use table and column names in your query but only entity
+classes and properties.</p>
+
+<p>To resolve this problem JORK has a simple method: in database expressions you can use property
+chains between curly braces and JORK will replace these with the appropriate column name during
+query compilation. For example if you want to list users with their email addresses in a single
+column of the result you may do it this way:
+@code $result = JORK::select(DB::expr("concat({user.name}, ' (', {user.email}, ')') as name_email"))
+    ->from('Model_User user')->exec(); @endcode
+Thats all. The <code>{user.name}</code> and <code>{user.email}</code> literals will be replaced
+with the actual column names which hold the property values. In this example these will be
+<code>t_users_0_name</code> and <code>user_contact_info_0_email</code> but its
+implementation-specific and you don't have to know about it. The rows of the query result
+will be associative arrays with one element, and the array key of this element will be
+<code>name_email</code> (this is the part of the database expression after the last whitespace
+occurence, thats why JORK will assume it to be the column name in the SQL query result and
+will also use it in the object query result).</p>
+
+<p>To sum up:
+<ul>
+<li>You have to wrap the database expressions into a \c cyclone\DB::expr() call</li>
+<li>You have to reference properties using curly braces in the database expression</li>
+</ul>
+</p>
+
+<p>Database expressions can be used not only in the SELECT clause but in the WHERE clause and
+the ORDER BY clause too. For example if you want to select the users registered on this week
+you can do it this way:
+@code JORK::from('Model_User')
+    ->where(DB::expr('WEEK( {created_at} )'), '=', DB::expr('WEEK( now() )'))->exec(); @endcode
+</p>
+
+@subsection jork-query-group-by GROUP BY clause
+
+<p>After getting familiar with database expressions we may look at how to write GROUP BY clauses
+with JORK. The only reason why it became the last chapter of the query language discussion is that
+you need to know how to call aggregate functions to use GROUP BY therefore the explanation of
+database expressions were introduced before.</p>
+
+<p>So group by clauses have exactly the same semantics as in SQL. As an example let's see how to
+select the user names and the number of posts written by them:
+@code $result = JORK::select('name', DB::expr("count( {posts.id} )"))->from('Model_User')
+    ->group_by('name'); @endcode
+The semantics are straightforward, nothing else to talk about it.</p>
+
+@section jork-model Models and model collections
+
+<p>The topic of this chapter is the run-time in-memory representation of entities by JORK. In the
+introduction we studied the active record design pattern; in this chapter we will deeply examine
+the active record implementation of JORK</p>.
+
+<p>The aim of the active record implementation is
+<ul>
+    <li>to provide simple operations for manipulating entities</li>
+    <li>to maintain data integrity in its internal data storage. It primarily means foreign key
+        value updates when new component values are assigned to the entity. We will see some
+        examples for better understansing.</li>
+</ul>
+The entities are modeled not only by active records but by active record collections too. If an
+entity has a to-many component property (for example <code>Model_Topic.posts</code> or
+<code>Model_Category.topics</code> then JORK will use its own collection implementations for the
+run-time representation of this collection. The aim of these collection implementations is to
+make it possible to keep the run-time object model and the persistent storage in sync. It is
+also about properly updating foreign keys when it is needed.</p>

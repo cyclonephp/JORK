@@ -9,14 +9,14 @@ class JORK_Mapper_WhereTest extends JORK_MapperTest {
 
     public function testWhereImpl() {
         $jork_query = cy\JORK::from('Model_User')
-                ->where('posts.modinfo.created_at', '>', cy\DB::expr('2010-11-11'))
+                ->where('posts.modinfo.created_at', '>', cy\DB::esc('2010-11-11'))
                 ->where('exists', 'name')
                 ->where('avg({id}) > x');
         $mapper = jork\mapper\SelectMapper::for_query($jork_query);
         list($db_query, ) = $mapper->map();
         $this->assertEquals($db_query->where_conditions, array(
             new db\BinaryExpression('t_posts_0.createdAt', '>'
-                    , cy\DB::expr('2010-11-11')),
+                    , cy\DB::esc('2010-11-11')),
             new db\UnaryExpression('exists', 't_users_0.name'),
             new db\CustomExpression('avg(t_users_0.userId) > x')
         ));

@@ -17,7 +17,7 @@ class JORK_Mapper_Select_ImplRootTest extends JORK_MapperTest {
 
     public function testFrom() {
         $jork_query = cy\JORK::from('Model_User');
-        $mapper = jork\mapper\SelectMapper::for_query($jork_query);
+        /*$mapper = jork\mapper\SelectMapper::for_query($jork_query);
         list($db_query, ) = $mapper->map();
         $this->assertEquals($db_query->columns, array(
             array('t_users_0.userId', 't_users_0_userId'), array('t_users_0.name', 't_users_0_name')
@@ -31,7 +31,18 @@ class JORK_Mapper_Select_ImplRootTest extends JORK_MapperTest {
         ), $db_query->order_by);
         $this->assertEquals($db_query->tables, array(
             array('t_users', 't_users_0'),
-        ));
+        ));*/
+        $db_query = cy\DB::select(
+            array('t_users_0.userId', 't_users_0_userId'), array('t_users_0.name', 't_users_0_name')
+        , array('t_users_0.password', 't_users_0_password')
+        , array('t_users_0.createdAt', 't_users_0_createdAt')
+        , array('user_contact_info_0.email', 'user_contact_info_0_email')
+        , array('user_contact_info_0.phoneNum', 'user_contact_info_0_phoneNum')
+        )->from(array('t_users', 't_users_0'))
+            ->left_join(array('user_contact_info', 'user_contact_info_0'))
+            ->on('t_users_0.userId', '=', 'user_contact_info_0.userFk')
+            ->order_by('t_users_0.name', 'asc');
+        $this->assertCompiledTo($jork_query, $db_query);
     }
 
     public function testWith() {
