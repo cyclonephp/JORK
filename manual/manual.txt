@@ -836,7 +836,7 @@ The semantics are straightforward, nothing else to talk about it.</p>
 
 <p>The topic of this chapter is the run-time in-memory representation of entities by JORK. In the
 introduction we studied the active record design pattern; in this chapter we will deeply examine
-the active record implementation of JORK</p>.
+the active record implementation ( @c cyclone\jork\model\AbstractModel ) of JORK.</p>
 
 <p>The aim of the active record implementation is
 <ul>
@@ -847,7 +847,190 @@ the active record implementation of JORK</p>.
 </ul>
 The entities are modeled not only by active records but by active record collections too. If an
 entity has a to-many component property (for example <code>Model_Topic.posts</code> or
-<code>Model_Category.topics</code> then JORK will use its own collection implementations for the
+<code>Model_Category.topics</code> then JORK will use its own collection implementations
+(subclasses of @c cyclone\jork\model\collection\AbstractCollection ) for the
 run-time representation of this collection. The aim of these collection implementations is to
 make it possible to keep the run-time object model and the persistent storage in sync. It is
 also about properly updating foreign keys when it is needed.</p>
+
+@subsection jork-model-fk Foreign key updates
+
+<p>The JORK active records and collections update foreign key values when it is needed. Atfer
+some time of working with JORK it will feel natural and you will understand intuitively but in
+this chapter we will look at some examples to see what is meant by "updating when it is needed".</p>
+
+<p> @code $post = new Model_Post;
+$topic = new Model_Topic;
+$topic->id = 10;
+$post->topic = $topic;
+echo $post->topic_fk; // prints 10 @endcode
+We created a <code>Model_Topic</code> and a <code>Model_Post</code> instance, manually assigned
+the primary key value of <code>$topic</code> then a component value assignment was made:
+<code>$post->topic = $topic;</code>. When this assignment has been executed the active record
+realized it has to maintain the foreign keys. It fetched the join column names from the mapping
+schema and found that the <code>t_topics.topicId</code> column value - which is stored in the
+<code>Model_Topic.id</code> property - should be assigned to the <code>t_posts.topicFk</code>
+column which is stored in the <code>Model_Post.topic_fk</code> property. This foreign key update
+is needed for the database representation of the post. Therefore internally it made the
+assignment and in the last statement of the above example (<code>echo $post->topic_fk;</code>)
+the updated value is available. This is what is meant by "maintain data integrity in its internal
+data storage" etc.
+</p>
+
+<p>Some further examples (just to get used to it):
+@code $post = new Model_Post;
+$user = new Model_User;
+$user->id = 6;
+$post->author = $user;
+echo $post->user_fk; // prints 6 @endcode
+
+@code $category = new Model_Category;
+$user = new Model_User;
+$user->id = 3;
+$user->moderated_category = $category;
+echo $category->moderator_fk; //prints 3 @endcode </p>
+
+<p>The collection implementations do quite similar job - they update foreign key values both
+in the memory and the database. Example:
+@code $user = new Model_User;
+$user->id = 15;
+$post = new Model_Post;
+$user->posts->append($post);
+echo $post->user_fk; // prints 15 @endcode </p>
+
+@subsection jork-model-collection Collections as hashmaps
+
+<p>An other reasonable feature of the collection implementations is that they are more like a
+hashmap than a collection. A collection is a set of key-value pairs where the values are entity
+instances and the keys are the primary keys of the entity instances. It practically means that
+if you want to look up an entity in a collection then you can obtain it by directly referencing
+it my its primary key instead of searching for it in a foreach loop. Example:
+@code $topic = new Model_Topic;
+$topic->id = 42;
+$post = new Model_Post;
+$post->id = 23;
+$topic->posts->append($post);
+var_dump($post == $topic->posts[23]); // it will be true @endcode
+An other example: if you remember the <i>Loading components</i> chapter you could find an example
+there which looked like this:
+@code $result = JORK::from('Model_Topic')->with('categories')->exec();
+foreach ($result as $topic) {
+    echo "topic {$topic->id}: {$topic->name} belongs to the following categories: " . PHP_EOL;
+    foreach ($topic->categories as $category) {
+        echo "\tcategory {$category->id}: {$category->name}" . PHP_EOL;
+    }
+} @endcode
+Since <code>$topic->categories</code> is an entity collection we could write it this way too:
+@code $result = JORK::from('Model_Topic')->with('categories')->exec();
+foreach ($result as $topic) {
+    echo "topic {$topic->id}: {$topic->name} belongs to the following categories: " . PHP_EOL;
+    // obtaining reference to the collection index with $cat_id
+    foreach ($topic->categories as $cat_id => $category) {
+        // and $cat_id will contain the primary key therefore we
+        // don't have to write $category->id here, $cat_id does the same
+        echo "\tcategory {$cat_id}: {$category->name}" . PHP_EOL;
+    }
+} @endcode <p>
+
+<p>Deleting an entity from the collection can also be done simply by referencing its primary key
+and unsetting it. Example:
+
+@code $user = new Model_User;
+$user->id = 15;
+$post = new Model_Post;
+$post->id = 12;
+$user->posts->append($post);
+
+// deleting by simply unsetting the primary key
+unset($user->posts[12]);
+var_dump(count($user->posts)); // it will be 0 @endcode
+It is important to understand that such <code>unset()</code> call will only remove the
+<code>$post</code> from the <code>$user->posts</code> collection but it won't delete the <code>$post</code>
+itself. Furthermore it will only modify the collection and won't persist the changes to the
+ database directly therefore you should call the @c cyclone\jork\model\collection\AbstractCollection::save()
+ method to save the changes (i.e. <code>$user->posts->save();</code>.</p>
+
+@subsection jork-model-typesafe Type safety
+
+<p>JORK always does type safety checks for component assignments. For example
+@code $user = new Model_User;
+$user->moderated_category = new Model_Post; @endcode
+This assignment will throw a @c cyclone\jork\Exception since the value of the
+<code>Model_User.moderated_category</code> should be a <code>Model_Category</code> instance and
+not a <code>Model_Post</code> instance. The collections are typesafe too so
+@code $topic = new Model_Topic;
+$user = new Model_User;
+$user->posts->append($topic); @endcode
+will also fail with an exception.</p>
+
+<p>JORK can optionally also do forced typecasts on primitive values. This is done only if the
+value of the <code>jork.force_type</code> configuration key is <code>TRUE</code> (therefore it
+can be simply turned off if someone doesn't need it). But let's see what does it mean:
+@code $user = new Model_User;
+// assigning a string value...
+$user->id = '145';
+// ...but after the assignment it becomes an integer
+echo gettype($user->id); // prints 'integer' @endcode
+After the assignment the originally passed string value became an integer. This type casting
+has been done because in the mapping schema the <code>id</code> property was defined with
+<code>int</code> type.</p>
+
+@section jork-lazyloading Lazy loading
+
+@subsection jork-lazyloading-intro Introduction
+
+<p>The properties of each object existing in a complete object graph can be accessed by reading the
+according property of an object, regardless the property is a primitive value or an other object.
+Good quality ORM systems are mostly tending to simulate this feature to let application
+developers use the persisted object graph as an in-memory object graph, this way more
+completely fulfilling the aim of the ORM system. If the application can treat the object graph
+fully existent in the memory - which means treating all aggregated object properties of an object
+loaded - then the underlying complexity of the persistence layer is abstracted away, this way
+letting developerts to concentrate on the business logic. On the other hand from the viewpoint of
+the persistence layer completely loading the persistent objects can't or shouldn't be done, since as
+a consequence loading one object would mean loading all of its related object properties
+(recursively), which can easily result in a lot of unwanted SQL joins, and querying a lot of
+objects which might be needed later, but far not necessarily. If an object loading would come with
+loading all of its related properties (recursively) then such behavior would result in serious
+unneeded memory consumption and IO overhead, therefore it is not viable alternative. Lazy
+loading is a mechanism which is intended to solve this problem basically by loading an object
+property of an entity only when it is needed. The lazy loading process is always done by the
+persistence layer transparently for the application.</p>
+
+@subsection jork-lazyloading-problem The problem with the idea of lazy loading
+
+<p>One of the most criticized features of ORM at all is the potential database overhead caused
+by lazy loading. A lot of ORM systems run their lazy loading algorithm when an unloaded property
+is referenced by the application. It practically means that if you need a component but you
+forgot about loading it (with property projection or WITH clause in the case of JORK) then
+the ORM won't notify you about this problem but will execute an SQL query to fetch the
+property value. It is bad if it happens once and can be terrible if it happens in the body
+of a foreach loop (or whatever else). What's more it is "magically" done by the ORM therefore
+it is quite difficult to recognize the problem.</p>
+
+@subsection jork-lazyloading-jork Lazy loadig with JORK
+
+<p>JORK solves the problem in the following way: if you want to read a property via a property
+access then no lazy-loading will be done if the property is not loaded; the returned value will
+be <code>NULL</code>. But if you use the property name as a method name then the lazy loading
+process will be executed (if the property is not loaded yet). To make it less cryptic let's see
+an example:
+@code
+$result = JORK::from('Model_Post')->where('id', '=', DB::esc(1))->exec();
+$post = $result[0];
+// it will be NULL
+var_dump( $post->author );
+// it will do the lazy loading and the Model_User instance will be returned
+var_dump( $post->author() ); @endcode
+The problem is that we loaded the <code>$post</code> but didn't load its <code>author</code>
+property which we want to use later. In the first property access we used <code>author</code>
+as a property name - therefore no lazy loading has been made by JORK and we got <code>NULL</code>.
+In the second property access we used <code>author()</code> as a method name and in this form
+JORK executed its lazy loading process and fetched the author of the post.</p>
+
+<p>By this simple differentiation you can simply avoid unneeded lazy loadings by using
+property names in as many cases as possible - but if something seems to be really complicated
+or when you fetch the data you simply don't know yet what components will you need then the
+lazy loading is still available by using the property name as a method name. It is a good practice
+to not to rely on lazy loading and access properties by property names - but in some rare cases
+the lazy loading (available by the method-name format) can be extremely useful.</p>
