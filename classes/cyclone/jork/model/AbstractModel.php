@@ -20,8 +20,6 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      *
      * It will only be called when the singleton instance is created. In the
      * method the schema object if accessible via <code>$this->_schema</code>.
-     *
-     * @usedby JORK_Model_Abstract::_inst()
      */
     public static function setup() {
 
@@ -179,11 +177,11 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     /**
      * Only for internal usage.
      *
-     * Used by <code>JORK_Mapper_Entity::map_row()</code> to quickly load the atomic properties
-     * instead of executing <code>JORK_Model_Abstract::__set()</code> each time.
+     * Used by @c jork\mapper\EntityMapper::map_row() to quickly load the primitive properties
+     * instead of executing @c AbstractModel::__set() each time.
      *
      * @param array $atomics
-     * @usedby JORK_Mapper_Entity::map_row()
+     * @usedby cyclone\jork\mapper\EntityMapper::map_row()
      */
     public function populate_atomics($atomics) {
         $schema = $this->schema();
@@ -210,7 +208,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * @param boolean $strict if FALSE then the properties in <code>$properties</code>
      * 	which don't exist in the model properties will be skipped without any warnings.
      *  Otherwise an exception will be thrown on non-existent properties.
-     * @throws cyclone\jork\Exception
+     * @throws \cyclone\jork\Exception
      */
     public function populate($properties, $strict = TRUE) {
         $schema = $this->schema();
@@ -960,7 +958,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                 $local_join_cond->columns = array($local_join_col);
                 $local_join_cond->tables = array(
                     isset($schema->primitives[$local_join_atomic]->table)
-                            ? $schema->atomics[$local_join_atomic]->table
+                            ? $schema->primitives[$local_join_atomic]->table
                             : $schema->table
                 );
                 $local_join_cond->where_conditions = array(
@@ -1018,8 +1016,11 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
         return $rval;
     }
 
-    public function as_string($tab_cnt = 0) {
-        if ( ! cy\Env::$is_cli)
+    public function as_string($tab_cnt = 0, $is_cli = NULL) {
+        if (NULL === $is_cli) {
+            $is_cli = cy\Env::$is_cli;
+        }
+        if ( ! $is_cli)
             return $this->as_html(0);
 
         if ($this->_as_string_in_progress)
