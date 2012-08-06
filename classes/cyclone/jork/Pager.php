@@ -105,7 +105,8 @@ class Pager {
         $readonly_fields = array('page', 'page_size', 'total_count', 'page_count');
         if (in_array($name, $readonly_fields))
             return $this->{'_' . $name};
-        return parent::__get($name);
+
+        throw new \cyclone\PropertyAccessException(get_class($this), $name);
     }
 
 }

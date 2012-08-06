@@ -21,7 +21,8 @@ class ValidationResult {
         if (property_exists(get_class($this), $candidate)) {
             return $this->$candidate;
         }
-        throw new jork\Exception("property " . get_class($this) . '::$' . $name . ' doesn\'t exist');
+
+        throw new \cyclone\PropertyAccessException(get_class($this), $name);
     }
 
     public function merge(ValidationResult $other) {
