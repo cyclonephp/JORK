@@ -3,6 +3,7 @@
 namespace cyclone\jork\mapper\component;
 
 use cyclone\jork;
+use cyclone\jork\schema\SchemaPool;
 use cyclone\db;
 use cyclone as cy;
 
@@ -14,7 +15,7 @@ class ManyToOneMapper extends AbstractMapper {
 
     protected function comp2join() {
         $comp_schema = $this->_parent_mapper->_entity_schema->components[$this->_comp_name];
-        $remote_schema = jork\model\AbstractModel::schema_by_class($comp_schema->class);
+        $remote_schema = SchemaPool::inst()->get_schema($comp_schema->class);
 
         $join_cols = $comp_schema->join_columns;
         $join_tables = $this->_parent_mapper->_entity_schema->table_names_for_columns($join_cols);
@@ -55,7 +56,7 @@ class ManyToOneMapper extends AbstractMapper {
         
         $remote_class = $local_schema->class;
         
-        $remote_schema = jork\model\AbstractModel::schema_by_class($remote_class);
+        $remote_schema = SchemaPool::inst()->get_schema($remote_class);
 
         $remote_comp_def = $remote_schema->components[$local_schema->mapped_by];
         $remote_columns = $remote_comp_def->join_columns;

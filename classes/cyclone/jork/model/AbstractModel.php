@@ -4,6 +4,7 @@ namespace cyclone\jork\model;
 
 use cyclone\jork;
 use cyclone\jork\query;
+use cyclone\jork\schema\SchemaPool;
 use cyclone\db;
 use cyclone as cy;
 
@@ -41,14 +42,6 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
         if ( ! $schema_pool->schema_exists(get_class($this))) {
             $schema_pool->add_schema(get_class($this), static::setup());
         }
-    }
-
-    /**
-     * @param string $class
-     * @return jork\schema\ModelSchema
-     */
-    public static function schema_by_class($class) {
-        return jork\schema\SchemaPool::inst()->get_schema($class);
     }
 
     /**
@@ -879,7 +872,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                         $this->_components[$comp_name]['value']->notify_owner_deletion($pk);
                     } elseif (isset($comp_def->mapped_by)) {
                         // we handle reverse one-to-one components here
-                        $remote_class_schema = self::schema_by_class($comp_def->class);
+                        $remote_class_schema = SchemaPool::inst()->get_schema($comp_def->class);
                         if (cy\JORK::ONE_TO_ONE == $remote_class_schema
                             ->components[$comp_def->mapped_by]->type) {
                             $this->set_null_fk_for_reverse_one_to_one($remote_class_schema

@@ -2,6 +2,8 @@
 
 namespace cyclone\jork;
 
+use cyclone\jork\schema\SchemaPool;
+
 /**
  * @author Bence Eros <crystal@cyclonephp.org>
  * @package JORK
@@ -43,7 +45,7 @@ class NamingService {
     public function set_implicit_root($class) {
         $this->_entity_aliases[NULL] =
         $this->_entity_aliases[$class] =
-        $this->_implicit_root_schema = model\AbstractModel::schema_by_class($class);
+        $this->_implicit_root_schema = SchemaPool::inst()->get_schema($class);
     }
 
     /**
@@ -69,7 +71,7 @@ class NamingService {
         $segments = explode('.', $name);
         if (1 == count($segments)) {
             if (NULL == $this->_implicit_root_schema) {
-                $this->_entity_aliases[$name] = model\AbstractModel::schema_by_class($name);
+                $this->_entity_aliases[$name] = SchemaPool::inst()->get_schema($name);
                 return;
             } else {
                 if (isset($this->_implicit_root_schema->primitives[$name])) {
@@ -78,12 +80,12 @@ class NamingService {
                 }
                 if (isset($this->_implicit_root_schema->components[$name])) {
                     $cmp_schema = $this->_implicit_root_schema->components[$name];
-                    $this->_entity_aliases[$name] = model\AbstractModel::schema_by_class($cmp_schema->class);
+                    $this->_entity_aliases[$name] = SchemaPool::inst()->get_schema($cmp_schema->class);
                     return;
                 }
                 if (isset($this->_implicit_root_schema->embedded_components[$name])) {
                     $cmp_schema = $this->_implicit_root_schema->embedded_components[$name];
-                    $this->_entity_aliases[$name] = model\AbstractModel::schema_by_class($cmp_schema->class);
+                    $this->_entity_aliases[$name] = SchemaPool::inst()->get_schema($cmp_schema->class);
                     return;
                 }
             }
@@ -104,8 +106,7 @@ class NamingService {
                 $found = FALSE;
                 $walked_segments []= $seg;
                 if (isset($current_schema->components[$seg])) {
-                    $current_schema = model\AbstractModel
-                        ::schema_by_class($current_schema->components[$seg]->class);
+                    $current_schema = SchemaPool::inst()->get_schema($current_schema->components[$seg]->class);
                     $this->_entity_aliases[implode('.', $walked_segments)] = $current_schema;
                     $found = TRUE;
                 } elseif (isset($current_schema->embedded_components[$seg])) {

@@ -4,6 +4,7 @@ namespace cyclone\jork\mapper\select;
 
 use cyclone as cy;
 use cyclone\jork;
+use cyclone\jork\schema\SchemaPool;
 use cyclone\db;
 
 /**
@@ -253,7 +254,7 @@ class ExplRoot extends jork\mapper\SelectMapper {
         $join_conditions = array();
         
         foreach ($this->_jork_query->from_list as $from_itm) {
-            $ent_schema = jork\model\AbstractModel::schema_by_class($from_itm['class']);
+            $ent_schema = SchemaPool::inst()->get_schema($from_itm['class']);
 
             $existing_table_alias = $this->_naming_srv->table_alias($from_itm['alias'], $ent_schema->table);
             

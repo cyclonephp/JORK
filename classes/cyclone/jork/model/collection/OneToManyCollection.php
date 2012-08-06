@@ -5,6 +5,7 @@ namespace cyclone\jork\model\collection;
 use cyclone as cy;
 use cyclone\jork;
 use cyclone\jork\schema;
+use cyclone\jork\schema\SchemaPool;
 use cyclone\db;
 
 /**
@@ -79,7 +80,7 @@ class OneToManyCollection extends AbstractCollection {
         $on_delete = $this->_comp_schema->on_delete;
         if (cy\JORK::SET_NULL == $on_delete) {
             $upd_stmt = new db\query\Update;
-            $children_schema = jork\model\AbstractModel::schema_by_class($this->_comp_class);
+            $children_schema = SchemaPool::inst()->get_schema($this->_comp_class);
             $join_primitive = $this->_comp_schema->join_columns[0];
 
             $join_primitive_schema = $children_schema->primitive_by_col($join_primitive);

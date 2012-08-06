@@ -4,6 +4,7 @@ namespace cyclone\jork\mapper\select;
 
 use cyclone as cy;
 use cyclone\jork;
+use cyclone\jork\schema\SchemaPool;
 use cyclone\db;
 
 /**
@@ -16,7 +17,7 @@ class ImplRoot extends jork\mapper\SelectMapper {
         parent::__construct($jork_query);
         $this->has_implicit_root = TRUE;
         $impl_root_class = $jork_query->from_list[0]['class'];
-        $this->_implicit_root = jork\model\AbstractModel::schema_by_class($impl_root_class);
+        $this->_implicit_root = SchemaPool::inst()->get_schema($impl_root_class);
         $this->_naming_srv->set_implicit_root($impl_root_class);
     }
 

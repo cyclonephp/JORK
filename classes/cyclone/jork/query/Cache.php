@@ -3,6 +3,7 @@
 namespace cyclone\jork\query;
 
 use cyclone\jork;
+use cyclone\jork\schema\SchemaPool;
 use cyclone\db;
 use cyclone as cy;
 
@@ -83,7 +84,7 @@ class Cache {
 
     private function  __construct($class) {
         $this->_class = $class;
-        $this->_schema = jork\model\AbstractModel::schema_by_class($class);
+        $this->_schema = SchemaPool::inst()->get_schema($class);
     }
 
     /**

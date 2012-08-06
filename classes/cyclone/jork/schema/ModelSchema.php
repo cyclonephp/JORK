@@ -5,6 +5,7 @@ namespace cyclone\jork\schema;
 use cyclone\jork;
 use cyclone as cy;
 use cyclone\jork\schema;
+use cyclone\jork\schema\SchemaPool;
 
 /**
  * @author Bence Erős <crystal@cyclonephp.org>
@@ -363,7 +364,7 @@ use cyclone\jork\schema;
             return $comp_schema->type == cy\JORK::ONE_TO_MANY
                 || $comp_schema->type == cy\JORK::MANY_TO_MANY;
 
-        $remote_comp_schema = jork\model\AbstractModel::schema_by_class($comp_schema->class)
+        $remote_comp_schema = SchemaPool::inst()->get_schema($comp_schema->class)
             ->components[$comp_schema->mapped_by];
 
         return $remote_comp_schema->type == cy\JORK::MANY_TO_MANY

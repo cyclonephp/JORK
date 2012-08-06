@@ -5,6 +5,7 @@ use cyclone\db;
 use cyclone\jork;
 use cyclone\jork\query;
 use cyclone\jork\schema;
+use cyclone\jork\schema\SchemaPool;
 
 require_once realpath(__DIR__) . '../../MapperTest.php';
 
@@ -14,7 +15,7 @@ class JORK_Mapping_SchemaTest extends JORK_MapperTest {
      * @expectedException cyclone\jork\SchemaException
      */
     public function test_get_prop_schema() {
-        $schema = jork\model\AbstractModel::schema_by_class('Model_User');
+        $schema = SchemaPool::inst()->get_schema('Model_User');
         /*$this->assertEquals($schema->get_property_schema('id'), array(
                 'type' => 'int',
                 'primary' => true,
@@ -45,7 +46,7 @@ class JORK_Mapping_SchemaTest extends JORK_MapperTest {
      */
     public function test_is_to_many_component($class, $component, $is_to_many) {
         $this->load_schemas('basic');
-        $this->assertEquals($is_to_many, jork\model\AbstractModel::schema_by_class($class)
+        $this->assertEquals($is_to_many, SchemaPool::inst()->get_schema($class)
                 ->is_to_many_component($component));
     }
 

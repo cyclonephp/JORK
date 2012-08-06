@@ -1,6 +1,7 @@
 <?php
 
 namespace cyclone\jork\schema;
+use cyclone\jork\schema\SchemaPool;
 use cyclone\jork;
 
 /**
@@ -93,7 +94,7 @@ class EmbeddableSchema {
             return $comp_schema->type == JORK::ONE_TO_MANY
                 || $comp_schema->type == JORK::MANY_TO_MANY;
 
-        $remote_comp_schema = jork\AbstractModel::schema_by_class($comp_schema->class)
+        $remote_comp_schema = SchemaPool::inst()->get($comp_schema->class)
             ->components[$comp_schema->mapped_by];
 
         return $remote_comp_schema->type == JORK::MANY_TO_MANY

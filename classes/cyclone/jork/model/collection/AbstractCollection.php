@@ -4,6 +4,7 @@ namespace cyclone\jork\model\collection;
 
 use cyclone as cy;
 use cyclone\jork;
+use cyclone\jork\schema\SchemaPool;
 use cyclone\db;
 
 /**
@@ -19,7 +20,7 @@ abstract class AbstractCollection implements \ArrayAccess, \Iterator, \Countable
     public static function for_component($owner, $comp_name) {
         $comp_schema = $owner->schema()->components[$comp_name];
         if (isset($comp_schema->mapped_by)) {
-            $remote_comp_schema = jork\model\AbstractModel::schema_by_class($comp_schema->class)
+            $remote_comp_schema =SchemaPool::inst()->get_schema($comp_schema->class)
                 ->components[$comp_schema->mapped_by];
             if (cy\JORK::MANY_TO_ONE == $remote_comp_schema->type)
                 return new reverse\ManyToOneCollection($owner
@@ -348,7 +349,7 @@ abstract class AbstractCollection implements \ArrayAccess, \Iterator, \Countable
             throw new jork\Exception("composite key sorting is not yet supported");
 
         if (NULL === $this->_cmp_provider) {
-            $model_schema = jork\model\AbstractModel::schema_by_class($this->_comp_class);
+            $model_schema = SchemaPool::inst()->get_schema($this->_comp_class);
             $this->_cmp_provider = ComparatorProvider::for_schema($model_schema);
         }
         $cmp_fn = $this->_cmp_provider->get_comparator($order, $comparator);

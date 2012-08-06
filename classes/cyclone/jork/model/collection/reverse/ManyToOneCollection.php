@@ -5,6 +5,7 @@ namespace cyclone\jork\model\collection\reverse;
 use cyclone as cy;
 use cyclone\jork;
 use cyclone\jork\schema;
+use cyclone\jork\schema\SchemaPool;
 use cyclone\db;
 
 /**
@@ -15,19 +16,19 @@ class ManyToOneCollection extends jork\model\collection\AbstractCollection {
 
     public function  __construct($owner, $comp_name, $comp_schema) {
         parent::__construct($owner, $comp_name, $comp_schema);
-        $remote_comp_schema = jork\model\AbstractModel::schema_by_class($comp_schema->class)
+        $remote_comp_schema = SchemaPool::inst()->get_schema($comp_schema->class)
             ->components[$comp_schema->mapped_by];
 
         $this->_inverse_join_columns = $remote_comp_schema->join_columns;
         $this->_join_columns = empty($remote_comp_schema->inverse_join_columns)
-                ? jork\model\AbstractModel::schema_by_class($comp_schema->class)->primary_keys()
+                ? SchemaPool::inst()->get_schema($comp_schema->class)->primary_keys()
                 : $remote_comp_schema->inverse_join_columns;
     }
 
     public function append($value) {
         parent::append($value);
         $inv_join_cols = $this->_inverse_join_columns;
-        $remote_schema = schema\SchemaPool::inst()->get_schema($this->_comp_class);
+        $remote_schema = SchemaPool::inst()->get_schema($this->_comp_class);
         $local_schema = $this->_owner->schema();
         foreach ($this->_join_columns as $idx => $join_col) {
             $local_prop = $local_schema->primitive_by_col($join_col)->name;
@@ -77,8 +78,7 @@ class ManyToOneCollection extends jork\model\collection\AbstractCollection {
         $on_delete = $this->_comp_schema->on_delete;
         if (cy\JORK::SET_NULL === $on_delete) {
             $upd_stmt = new db\query\Update;
-            $children_schema = jork\model\AbstractModel
-                ::schema_by_class($this->_comp_schema->class);
+            $children_schema = SchemaPool::inst()->get_schema($this->_comp_schema->class);
             $remote_comp_schema = $children_schema
                 ->get_property_schema($this->_comp_schema->mapped_by);
 

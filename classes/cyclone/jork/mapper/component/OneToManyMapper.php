@@ -2,6 +2,7 @@
 namespace cyclone\jork\mapper\component;
 
 use cyclone\jork;
+use cyclone\jork\schema\SchemaPool;
 use cyclone\db;
 use cyclone as cy;
 
@@ -50,7 +51,7 @@ class OneToManyMapper extends AbstractMapper {
     protected function comp2join_reverse() {
         $parent_ent_schema = $this->_parent_mapper->_entity_schema;
         $local_comp_schema = $parent_ent_schema->components[$this->_comp_name];
-        $comp_schema = jork\model\AbstractModel::schema_by_class($local_comp_schema->class)->components[$local_comp_schema->mapped_by];
+        $comp_schema = SchemaPool::inst()->get_schema($local_comp_schema->class)->components[$local_comp_schema->mapped_by];
 
         $local_join_cols = $comp_schema->inverse_join_columns;
         $local_join_tables = $this->_entity_schema->table_names_for_columns($local_join_cols);

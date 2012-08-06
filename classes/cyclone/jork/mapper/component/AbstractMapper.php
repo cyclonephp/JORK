@@ -3,6 +3,7 @@
 namespace cyclone\jork\mapper\component;
 
 use cyclone\jork;
+use cyclone\jork\schema\SchemaPool;
 use cyclone\db;
 use cyclone as cy;
 
@@ -67,7 +68,7 @@ abstract class AbstractMapper extends jork\mapper\EntityMapper {
         );
 
         if (isset($comp_def->mapped_by)) {
-            $remote_schema = jork\model\AbstractModel::schema_by_class($comp_def->class);
+            $remote_schema = SchemaPool::inst()->get_schema($comp_def->class);
 
             $remote_comp_def = $remote_schema->get_property_schema($comp_def->mapped_by);
 

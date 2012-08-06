@@ -4,6 +4,7 @@ namespace cyclone\jork\model\collection\reverse;
 
 use cyclone as cy;
 use cyclone\jork;
+use cyclone\jork\schema\SchemaPool;
 use cyclone\db;
 
 /**
@@ -34,7 +35,7 @@ class ManyToManyCollection extends jork\model\collection\AbstractCollection {
             // there nothing to save
             return;
         
-        $comp_schema = jork\model\AbstractModel::schema_by_class($this->_comp_schema->class)
+        $comp_schema = SchemaPool::inst()->get_schema($this->_comp_schema->class)
             ->get_property_schema($this->_comp_schema->mapped_by);
         $pk = $this->_owner->pk();
         $db_conn = $this->_owner->schema()->db_conn;

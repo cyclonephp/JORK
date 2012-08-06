@@ -3,6 +3,7 @@
 namespace cyclone\jork\mapper;
 
 use cyclone\jork;
+use cyclone\jork\schema\SchemaPool;
 use cyclone\db;
 use cyclone as cy;
 
@@ -181,7 +182,7 @@ abstract class SelectMapper {
 //                            . $right_ent_schema->components[$right_last_prop]['class'] . "'");
             $left_class = $left_ent_schema->components[$left_last_prop]->class;
 
-            $prim_keys = jork\model\AbstractModel::schema_by_class($left_ent_schema->components[$left_last_prop]->class)->primary_keys();
+            $prim_keys = SchemaPool::inst()->get_schema($left_ent_schema->components[$left_last_prop]->class)->primary_keys();
             if (count($prim_keys) == 1) {
                 $prim_key = $prim_keys[0];
                 $left_prop_chain = array($left_last_prop
@@ -206,7 +207,7 @@ abstract class SelectMapper {
             list($right_mapper, $right_ent_schema, $right_last_prop)
                     = $expr->right_operand;
             $right_class = $right_ent_schema->components[$right_last_prop]->class;
-            $prim_keys = jork\model\AbstractModel::schema_by_class($right_ent_schema->components[$right_last_prop]->class)->primary_keys();
+            $prim_keys = SchemaPool::inst()->get_schema($right_ent_schema->components[$right_last_prop]->class)->primary_keys();
             if (count($prim_keys) == 1) {
                 $prim_key = $prim_keys[0];
                 $right_prop_chain = array($right_last_prop
