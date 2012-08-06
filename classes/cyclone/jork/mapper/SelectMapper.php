@@ -105,7 +105,7 @@ abstract class SelectMapper {
      * Resolves a custom database expression passed as string.
      *
      * Picks property chains it founds in enclosing brackets, resolves the
-     * property chains to table names. If the last item is an atomic property
+     * property chains to table names. If the last item is a primitive property
      * then it puts the coresponding table column to the resolved expression,
      * otherwise throws an exception
      *

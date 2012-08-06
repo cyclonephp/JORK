@@ -64,7 +64,7 @@ class ExplRoot extends jork\mapper\SelectMapper {
      * Resolves a custom database expression passed as string.
      *
      * Picks property chains it founds in enclosing brackets, resolves the
-     * property chains to table names. If the last item is an atomic property
+     * property chains to table names. If the last item is a primitive property
      * then it puts the coresponding table column to the resolved expression,
      * otherwise throws an exception
      *
@@ -99,7 +99,7 @@ class ExplRoot extends jork\mapper\SelectMapper {
     protected function map_select() {
         if (empty($this->_jork_query->select_list)) {
             foreach ($this->_mappers as $mapper) {
-                $mapper->select_all_atomics();
+                $mapper->select_all_primitives();
             }
             return;
         }
@@ -119,7 +119,7 @@ class ExplRoot extends jork\mapper\SelectMapper {
                         . $select_item['prop_chain']->as_string());
             if (empty($prop_chain)) {
                 if ( ! isset($select_item['projection'])) {
-                    $this->_mappers[$root_entity]->select_all_atomics();
+                    $this->_mappers[$root_entity]->select_all_primitives();
                 }
             } else {
                 $this->_mappers[$root_entity]->merge_prop_chain($prop_chain, jork\mapper\EntityMapper::SELECT_LAST);
@@ -207,7 +207,7 @@ class ExplRoot extends jork\mapper\SelectMapper {
                 $root_prop = array_shift($col_arr);
                 $col = $this->_mappers[$root_prop]->resolve_prop_chain($col_arr);
                 if (is_array($col))
-                    throw new jork\Exception($ord['column'] . ' is not an atomic property');
+                    throw new jork\Exception($ord['column'] . ' is not a primitive property');
             }
             $this->_db_query->order_by [] = array(
                 'column' => $col,
@@ -225,7 +225,7 @@ class ExplRoot extends jork\mapper\SelectMapper {
             $col = $this->_mappers[$root_prop]
                     ->resolve_prop_chain($prop_chain);
             if (is_array($col))
-                throw new jork\Exception ($group_by_itm.' is not an atomic property');
+                throw new jork\Exception ($group_by_itm.' is not an primitive property');
             $this->_db_query->group_by []= $col;
         }
     }

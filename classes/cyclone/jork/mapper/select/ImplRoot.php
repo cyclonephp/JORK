@@ -50,7 +50,7 @@ class ImplRoot extends jork\mapper\SelectMapper {
 
     protected function map_select() {
         if (empty($this->_jork_query->select_list)) {
-            $this->_mappers[NULL]->select_all_atomics();
+            $this->_mappers[NULL]->select_all_primitives();
             return;
         }
         foreach ($this->_jork_query->select_list as &$select_item) {
@@ -133,7 +133,7 @@ class ImplRoot extends jork\mapper\SelectMapper {
             } else {
                 $col = $this->_mappers[NULL]->resolve_prop_chain(explode('.', $ord['column']));
                 if (is_array($col))
-                    throw new jork\Exception($ord['column'] . ' is not an atomic property');
+                    throw new jork\Exception($ord['column'] . ' is not a primitive property');
             }
             $this->_db_query->order_by [] = array(
                 'column' => $col,
@@ -148,7 +148,7 @@ class ImplRoot extends jork\mapper\SelectMapper {
         foreach ($this->_jork_query->group_by as $group_by_itm) {
             $col = $this->_mappers[NULL]->resolve_prop_chain($group_by_itm);
             if (is_array($col))
-                throw new jork\Exception($group_by_itm.' is not an atomic property');
+                throw new jork\Exception($group_by_itm.' is not a primitive property');
             $this->_db_query->group_by []= $col;
         }
     }

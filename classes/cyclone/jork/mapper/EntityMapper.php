@@ -53,12 +53,12 @@ class EntityMapper implements RowMapper {
 
     /**
      * Stores key-value pairs where the key is a column name in the expected
-     * database query result and the value is the name of the atomic property
+     * database query result and the value is the name of the primitive property
      * that should be populated with the column value.
      *
      * @var array
      */
-    protected $_result_atomics = array();
+    protected $_result_primitives = array();
 
     /**
      * The aliases of the primary keys in the database query result.
@@ -133,13 +133,13 @@ class EntityMapper implements RowMapper {
             $entity = $instance_pool[$pk];
             if (NULL === $entity) {
                 $entity = new $this->_entity_schema->class;
-                //atomics should only be loaded when we found a new entity
+                //primitives should only be loaded when we found a new entity
                 //with a new primary key
-                $atomics = array();
-                foreach ($this->_result_atomics as $col_name => $prop_name) {
-                    $atomics[$prop_name] = $db_row[$col_name];
+                $primitives = array();
+                foreach ($this->_result_primitives as $col_name => $prop_name) {
+                    $primitives[$prop_name] = $db_row[$col_name];
                 }
-                $entity->populate_atomics($atomics);
+                $entity->populate_primitives($primitives);
                 $instance_pool[$entity->pk()] = ($entity);
             }
 
@@ -174,8 +174,8 @@ class EntityMapper implements RowMapper {
      *
      * @param array $prop_chain
      * @return array: 0th item is the mapper, 1st item is the last propertyof the
-     *  prop. chain if it is an entity, otherwise (if it's an atomic prop.) it will be FALSE.
-     * @usedby JORK_Mapper_Result_Default::extract_mappers()
+     *  prop. chain if it is an entity, otherwise (if it's a primitive prop.) it will be FALSE.
+     * @usedby \cyclone\jork\mapper\result\DefaultResult::extract_mappers()
      */
     public function get_mapper_for_propchain($prop_chain) {
         $root_prop = array_shift($prop_chain);
@@ -237,15 +237,15 @@ class EntityMapper implements RowMapper {
 
 
     /**
-     * Adds an atomic property join to the db query. Also joins the table of
+     * Adds a primitive property join to the db query. Also joins the table of
      * the db column if it's not joined yet.
      *
      * @param string $prop_name
      * @param cyclone\jork\schema\PrimitivePropertySchema $prop_schema
      * @return the full column name (with table alias)
      */
-    protected function add_atomic_property($prop_name, &$prop_schema) {
-        if (in_array($prop_name, $this->_result_atomics))
+    protected function add_primitive_property($prop_name, &$prop_schema) {
+        if (in_array($prop_name, $this->_result_primitives))
                 return;
 
         $tbl_name = isset($prop_schema->table)
@@ -265,7 +265,7 @@ class EntityMapper implements RowMapper {
         $full_alias = $tbl_alias.'_'.$col_name;
         
         $this->_db_query->columns []= array($full_column, $full_alias);
-        $this->_result_atomics[$full_alias] = $prop_name;
+        $this->_result_primitives[$full_alias] = $prop_name;
 
         if (in_array($prop_name, $this->_entity_schema->primary_keys())) {
             $this->_result_primary_key_columns []= $full_alias;
@@ -357,23 +357,23 @@ class EntityMapper implements RowMapper {
         if ( ! empty($prop_chain)) {
             if ( ! isset($schema->class))
                 throw new jork\SyntaxException('only the last item of a property
-                    chain can be an atomic property');
+                    chain can be a primitive property');
             $next_mapper = $this->get_component_mapper($root_prop, $schema);
             if ($select_policy == self::SELECT_ALL) {
-                $next_mapper->select_all_atomics();
+                $next_mapper->select_all_primitives();
             }
             $next_mapper->merge_prop_chain($prop_chain, $select_policy);
         } else {
             if (isset($schema->class)) { // component
                 $next_mapper = $this->get_component_mapper($root_prop, $schema);
                 if ($select_policy != self::SELECT_NONE) {
-                    $next_mapper->select_all_atomics();
+                    $next_mapper->select_all_primitives();
                 }
-            } elseif (isset($schema->type)) { // atomic property
-                $this->add_atomic_property($root_prop, $schema);
+            } elseif (isset($schema->type)) { // primitive property
+                $this->add_primitive_property($root_prop, $schema);
             } else { // embedded component
                 $next_mapper = $this->get_component_mapper($root_prop, $schema);
-                $next_mapper->select_all_atomics();
+                $next_mapper->select_all_primitives();
             }
         }
         //The primary key column should _always_ be selected
@@ -381,26 +381,26 @@ class EntityMapper implements RowMapper {
                 // dirty hack, must be cleaned up
                 && ! ($this instanceof component\EmbeddedMapper)) {
             foreach($this->_entity_schema->primary_keys() as $pk) {
-                $this->add_atomic_property($pk, $this->_entity_schema->primitives[$pk]);
+                $this->add_primitive_property($pk, $this->_entity_schema->primitives[$pk]);
             }
         }
     }
 
     /**
-     * Puts all atomic properties into the db query select list.
+     * Puts all primitive properties into the db query select list.
      * Called if the select list is empty.
      */
-    public function select_all_atomics() {
+    public function select_all_primitives() {
         if ( ! is_object($this->_entity_schema)) {
             //var_dump($this->_entity_schema); die();
         }
         foreach ($this->_entity_schema->primitives as $prop_name => $prop_schema) {
-            $this->add_atomic_property($prop_name, $prop_schema);
+            $this->add_primitive_property($prop_name, $prop_schema);
         }
     }
 
     /**
-     * If the last item of the property chain is an atomic property then the method
+     * If the last item of the property chain is a primitive property then the method
      * returns the qualified name of the corresponding database column.
      *
      * Otherwise it returns the mapper object of the last property, the mapped entity schema
@@ -414,7 +414,7 @@ class EntityMapper implements RowMapper {
         if (empty($prop_chain)) { //we are there
             if ( ! isset($this->_entity_schema->primitives[$root_prop])) {
                 if (isset($this->_entity_schema->components[$root_prop])) {
-                    // if the last property of the property chain is not an atomic
+                    // if the last property of the property chain is not a primitive
                     // property, then we return the mapper ($this), the entity
                     // schema of the mapper, and the final property
                     return array($this, $this->_entity_schema, $root_prop);

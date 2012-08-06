@@ -180,20 +180,20 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * Used by @c jork\mapper\EntityMapper::map_row() to quickly load the primitive properties
      * instead of executing @c AbstractModel::__set() each time.
      *
-     * @param array $atomics
+     * @param array $primitives
      * @usedby cyclone\jork\mapper\EntityMapper::map_row()
      */
-    public function populate_atomics($atomics) {
+    public function populate_primitives($primitives) {
         $schema = $this->schema();
         if (self::$_cfg['force_type']) {
-            foreach ($atomics as $k => $v) {
+            foreach ($primitives as $k => $v) {
                 $this->_primitives[$k] = array(
                     'value' => $this->force_type($v, $schema->primitives[$k]->type),
                     'persistent' => TRUE
                 );
             }
         } else {
-            foreach ($atomics as $k => $v) {
+            foreach ($primitives as $k => $v) {
                 $this->_primitives[$k] = array(
                     'value' => $v,
                     'persistent' => TRUE
@@ -365,7 +365,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     /**
      * Magic getter implementation for the entity.
      * 
-     * First checks the atomics in
+     * First checks the primitive properties in
      * the schema, if it finds one then returns the value from this entity, or
      * NULL if not found. Then it checks the components of the schema, and if it
      * founds one with <code>$key</code> then checks if the component exists in
@@ -419,15 +419,15 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     }
 
     /**
-     * Used to force typecasting of atomic properties. Used when the entity
-     * is loaded from the database and when the value of the atomic property
+     * Used to force typecasting of primitive properties. Used when the entity
+     * is loaded from the database and when the value of the primitive property
      * is changed.
      *
      * @param mixed $val
      * @param string $type
      * @return mixed
-     * @see JORK_Model_Abstract::__set()
-     * @see JORK_Model_Abstract::populate_atomics()
+     * @see AbstractModel::__set()
+     * @see AbstractModel::populate_primitives()
      */
     private function force_type($val, $type) {
         if (NULL === $val) {
@@ -447,7 +447,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                     return (bool) $val;
                 default:
                     $schema = $this->schema();
-                    throw new jork\Exception("invalid type for atomic propery '$val' in class '{$schema->class}': '{$type}.'
+                    throw new jork\Exception("invalid type for primitive propery '$val' in class '{$schema->class}': '{$type}.'
                     It must be one of the followings: string, int, float, bool, datetime");
             }
         }
@@ -928,28 +928,28 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
 
         $schema_primary_key = $schema->primary_keys();
 
-        $local_join_atomic = isset($remote_comp_schema->inverse_join_column)
+        $local_join_primitive = isset($remote_comp_schema->inverse_join_column)
                 ? $remote_comp_schema->join_columns[0]
                 : $schema_primary_key[0];
 
-        $local_join_col = isset($schema->primitives[$local_join_atomic]->column)
-                ? $schema->primitives[$local_join_atomic]->column
-                : $local_join_atomic;
+        $local_join_col = isset($schema->primitives[$local_join_primitive]->column)
+                ? $schema->primitives[$local_join_primitive]->column
+                : $local_join_primitive;
 
         $upd_stmt->table = isset($remote_primitive_schema->table)
                 ? $remote_primitive_schema->table
                 : $remote_class_schema->table;
 
         $schema_primary_keys = $schema->primary_keys();
-        if ($local_join_atomic == $schema_primary_keys[0]) {
+        if ($local_join_primitive == $schema_primary_keys[0]) {
             // we are simply happy, the primary key is the
             // join column and we have it
             $local_join_cond = $pk;
         } else {
             // the local join column is not the primary key
-            if (isset($this->_primitives[$local_join_atomic])) {
+            if (isset($this->_primitives[$local_join_primitive])) {
                 // but if it's loaded then we are still happy
-                $local_join_cond = new DB_Expression_Param($this->_primitives[$local_join_atomic]);
+                $local_join_cond = new DB_Expression_Param($this->_primitives[$local_join_primitive]);
             } else {
                 // otherwise we have to create a subselect to
                 // get the value of the local join column based on the primary key
@@ -957,8 +957,8 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                 $local_join_cond = new db\query\SelectQuery;
                 $local_join_cond->columns = array($local_join_col);
                 $local_join_cond->tables = array(
-                    isset($schema->primitives[$local_join_atomic]->table)
-                            ? $schema->primitives[$local_join_atomic]->table
+                    isset($schema->primitives[$local_join_primitive]->table)
+                            ? $schema->primitives[$local_join_primitive]->table
                             : $schema->table
                 );
                 $local_join_cond->where_conditions = array(

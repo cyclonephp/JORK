@@ -45,8 +45,8 @@ class Cache {
     private $_schema;
 
     /**
-     * An array of INSERT queries that are used to persist the atomic properties
-     * of $this->_class instances. Contains one query / table. Note that the atomic
+     * An array of INSERT queries that are used to persist the primitive properties
+     * of $this->_class instances. Contains one query / table. Note that the primitive
      * properties of an entity can be stored in more than one tables if the
      * entity has got secondary tables.
      *

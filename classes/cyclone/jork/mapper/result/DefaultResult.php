@@ -49,16 +49,16 @@ class DefaultResult extends AbstractResult {
     private $_entity_mappers = array();
 
     /**
-     * Mappers that should return an atomic property (scalar) in each row.
+     * Mappers that should return a primitive property (scalar) in each row.
      *
      * @var array<cyclone\jork\mapper\RowMapper>
      */
-    private $_atomic_mappers = array();
+    private $_primitive_mappers = array();
 
     /**
      * @var array<string>
      */
-    private $_atomic_props = array();
+    private $_primitive_props = array();
 
     public function  __construct(jork\query\SelectQuery $jork_query
             , db\query\result\AbstractResult $db_result, $has_implicit_root
@@ -93,17 +93,17 @@ class DefaultResult extends AbstractResult {
                 $itm_mapper = $root_mapper;
                 $this->_entity_mappers[$alias] = $itm_mapper;
             } else {
-                list($itm_mapper, $atomic_prop) = $root_mapper
+                list($itm_mapper, $primitive_prop) = $root_mapper
                         ->get_mapper_for_propchain($prop_chain);
-                if (FALSE === $atomic_prop) {
+                if (FALSE === $primitive_prop) {
                     if ($root_mapper->is_to_many_comp($prop_chain)) {
                         $this->_coll_mappers[$alias] = $itm_mapper;
                     } else {
                         $this->_entity_mappers[$alias] = $itm_mapper;
                     }
                 } else {
-                    $this->_atomic_mappers[$alias] = $itm_mapper;
-                    $this->_atomic_props[$alias] = $atomic_prop;
+                    $this->_primitive_mappers[$alias] = $itm_mapper;
+                    $this->_primitive_props[$alias] = $primitive_prop;
                 }
             }
         }
@@ -131,10 +131,10 @@ class DefaultResult extends AbstractResult {
                 foreach ($this->_entity_mappers as $alias => $mapper) {
                     $obj_result_row[$alias] = $mapper->get_last_entity();
                 }
-                foreach ($this->_atomic_mappers as $alias => $mapper) {
+                foreach ($this->_primitive_mappers as $alias => $mapper) {
                     $last_entity = $mapper->get_last_entity();
                     $obj_result_row[$alias] = $last_entity === NULL ? NULL :
-                            $last_entity->{$this->_atomic_props[$alias]};
+                            $last_entity->{$this->_primitive_props[$alias]};
                 }
             }
 

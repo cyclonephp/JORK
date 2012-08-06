@@ -156,7 +156,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         ));
     }
 
-    public function test_atomic_type_casts() {
+    public function test_primitive_type_casts() {
         $user = new Model_User;
         $user->id = 1;
         $this->assertInternalType('int', $user->id);
@@ -176,7 +176,7 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
     /**
      * @expectedException cyclone\jork\Exception
      */
-    public function test_atomic_type_check() {
+    public function test_primitive_type_check() {
         $user = new Model_User;
         $user->moderated_category = new Model_Post;
     }

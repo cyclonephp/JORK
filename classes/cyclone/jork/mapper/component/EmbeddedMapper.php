@@ -40,12 +40,12 @@ class EmbeddedMapper extends jork\mapper\EntityMapper {
 
         $entity = $this->_parent_mapper->get_last_entity()->{$this->_comp_name};
 
-        $atomics = array();
-        foreach ($this->_result_atomics as $col_name => $prop_name) {
-            $atomics[$prop_name] = $db_row[$col_name];
+        $primitives = array();
+        foreach ($this->_result_primitives as $col_name => $prop_name) {
+            $primitives[$prop_name] = $db_row[$col_name];
         }
         
-        $entity->populate_atomics($atomics);
+        $entity->populate_primitives($primitives);
 
         $this->_previous_result_entity = $entity;
         
@@ -65,8 +65,8 @@ class EmbeddedMapper extends jork\mapper\EntityMapper {
         $this->_table_aliases = &$this->_parent_mapper->_table_aliases;
     }
 
-    protected function add_atomic_property($prop_name, &$prop_schema) {
-        if (in_array($prop_name, $this->_result_atomics))
+    protected function add_primitive_property($prop_name, &$prop_schema) {
+        if (in_array($prop_name, $this->_result_primitives))
                 return;
 
         $tbl_name = $this->_parent_mapper->_entity_schema->table;
@@ -83,7 +83,7 @@ class EmbeddedMapper extends jork\mapper\EntityMapper {
         $full_column = $tbl_alias.'.'.$col_name;
         $full_alias = $tbl_alias.'_'.$col_name;
         $this->_db_query->columns []= array($full_column, $full_alias);
-        $this->_result_atomics[$full_alias] = $prop_name;
+        $this->_result_primitives[$full_alias] = $prop_name;
 
     }
 

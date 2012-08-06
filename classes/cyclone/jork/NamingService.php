@@ -99,7 +99,7 @@ class NamingService {
             }
             $current_schema = $root_schema;
             foreach ($segments as $seg) {
-                if (NULL == $current_schema) // only the last segment can be an atomic property
+                if (NULL == $current_schema) // only the last segment can be a primitive property
                     throw new jork\Exception('invalid identifier: '.$name); // otherwise the search fails
                 $found = FALSE;
                 $walked_segments []= $seg;
