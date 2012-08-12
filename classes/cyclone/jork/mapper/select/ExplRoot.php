@@ -93,8 +93,8 @@ class ExplRoot extends jork\mapper\SelectMapper {
     /**
      * Maps the SELECT clause of the jork query to the db query.
      *
-     * @see JORK_Mapper_Select::$_jork_query
-     * @see JORK_Mapper_Select::$_db_query
+     * @see \cyclone\jork\mapper\SelectMapper::$_jork_query
+     * @see \cyclone\jork\mapper\SelectMapper::$_db_query
      * @return void
      */
     protected function map_select() {
@@ -116,7 +116,7 @@ class ExplRoot extends jork\mapper\SelectMapper {
             $prop_chain = $select_item['prop_chain']->as_array();
             $root_entity = array_shift($prop_chain);
             if ( ! array_key_exists($root_entity, $this->_mappers))
-                throw new JORK_Syntax_Exception('invalid property chain in select clause:'
+                throw new jork\SyntaxException('invalid property chain in select clause:'
                         . $select_item['prop_chain']->as_string());
             if (empty($prop_chain)) {
                 if ( ! isset($select_item['projection'])) {

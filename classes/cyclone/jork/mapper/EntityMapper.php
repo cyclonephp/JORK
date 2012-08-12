@@ -71,7 +71,7 @@ class EntityMapper implements RowMapper {
      * The next mappers to be executed on the same row. All items should also in
      * $_next_to_one_mappers or $_next_to_many_mappers.
      *
-     * @var array<JORK_Mapper_Component>
+     * @var array<component\AbstractMapper>
      */
     protected $_next_mappers = array();
 
@@ -79,7 +79,7 @@ class EntityMapper implements RowMapper {
      * The mappers that should fetch only one component. Subset of
      * $_next_mappers.
      *
-     * @var array<JORK_Mapper_Component>
+     * @var array<component\AbstractMapper>
      */
     protected $_next_to_one_mappers = array();
 
@@ -87,7 +87,7 @@ class EntityMapper implements RowMapper {
      * The mappers that should fetch a collection of components. Subset of
      * $_next_mappers.
      *
-     * @var array<JORK_Mapper_Component>
+     * @var array<component\AbstractMapper>
      */
     protected $_next_to_many_mappers = array();
 
@@ -95,7 +95,7 @@ class EntityMapper implements RowMapper {
      * The instance that was queried from the previous database result row.
      * It's used to determine if a new instance should be created or not
      *
-     * @var JORK_Model_Abstract
+     * @var \cyclone\jork\model\AbstractModel
      * @see map_row()
      */
     protected $_previous_result_entity;
@@ -225,7 +225,7 @@ class EntityMapper implements RowMapper {
      *
      * @param string $tbl_name
      * @return string
-     * @see JORK_Naming_Service::table_alias($tbl_name)
+     * @see \cyclone\jork\NamingService::table_alias($tbl_name)
      */
     protected function table_alias($tbl_name) {
         if ( ! isset($this->_table_aliases[$tbl_name])) {
@@ -343,10 +343,10 @@ class EntityMapper implements RowMapper {
 
     /**
      * Here we don't take care about the property projections.
-     * These must be merged one-by-one at JORK_Mapper_Select->map_select()
+     * These must be merged one-by-one at @c SelectMapper::map_select()
      *
      * @param array $prop_chain the array representation of the property chain
-     * @throws JORK_Schema_Exception
+     * @throws \cyclone\jork\SchemaException
      */
     public function merge_prop_chain(array $prop_chain, $select_policy = self::SELECT_NONE) {
         $root_prop = array_shift($prop_chain);
@@ -454,10 +454,9 @@ class EntityMapper implements RowMapper {
     }
 
     /**
-     *
      * @param array $prop_chain
      * @return boolean
-     * @usedby JORK_Mapper_Result_Default::map()
+     * @usedby \cyclone\jork\mapper\result\DefaultResult::map()
      */
     public function is_to_many_comp($prop_chain) {
         $root_prop = array_shift($prop_chain);

@@ -43,11 +43,11 @@ abstract class AbstractMapper extends jork\mapper\EntityMapper {
     /**
      * Factory method for creating the required component mapper for the component.
      *
-     * @param JORK_Mapper_Entity $parent_mapper
+     * @param \cyclone\jork\mapper\EntityMapper $parent_mapper
      * @param string $comp_name
      * @param string $select_item
-     * @return JORK_Mapper_Component
-     * @see JORK_Mapper_Entity::get_component_mapper()
+     * @return AbstractMapper concrete subclass according to the connection defined by <code>$comp_name</code>
+     * @see \cyclone\jork\mapper\EntityMapper::get_component_mapper()
      */
     public static function factory(jork\mapper\EntityMapper $parent_mapper
             , $comp_name, $select_item) {

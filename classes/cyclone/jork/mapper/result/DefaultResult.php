@@ -44,7 +44,7 @@ class DefaultResult extends AbstractResult {
     /**
      * Mappers that should return an entity in each row.
      *
-     * @var array<JORK_Mapper_Row>
+     * @var array<\cyclone\jork\mapper\RowMapper>
      */
     private $_entity_mappers = array();
 

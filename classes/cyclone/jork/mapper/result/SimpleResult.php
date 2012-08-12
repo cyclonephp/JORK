@@ -24,7 +24,7 @@ class SimpleResult extends AbstractResult {
     /**
      * {@inheritdoc}
      *
-     * @return array<JORK_Model_Abstract>
+     * @return array<\cyclone\jork\model\AbstractModel>
      */
     public function map() {
         $obj_result = array();

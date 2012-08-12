@@ -7,9 +7,9 @@ namespace cyclone\jork\mapper;
  * of a database SELECT query result to anything that can be the result
  * of an object SELECT query (JORK query).
  *
- * @see JORK_Mapper_Entity
- * @see JORK_Mapper_Component
- * @see JORK_Mapper_Expression
+ * @see EntityMapper
+ * @see component\AbstractMapper
+ * @see ExpressionMapper
  * 
  * @author Bence Eros <crystal@cyclonephp.org>
  * @package JORK

@@ -19,7 +19,7 @@ class NamingService {
     private $_table_usage = array();
 
     /**
-     * Stores name => JORK_Mapping_Schema pairs.
+     * Stores <code>name</code> =&gt; @c schema\ModelSchema pairs.
      * @var array
      */
     private $_entity_aliases = array();
@@ -27,7 +27,7 @@ class NamingService {
     private $_offset_limit_subquery_count = 0;
 
     /**
-     * @var JORK_Mapping_Schema
+     * @var schema\ModelSchema
      */
     private $_implicit_root_schema;
 
@@ -51,7 +51,7 @@ class NamingService {
     /**
      * @param string $name a property chain or an alias name
      * @throws cyclone\jork\Exception if $name is not a valid name
-     * @return JORK_Mapping_Schema or string
+     * @return schema\ModelSchema or string
      */
     public function get_schema($name) {
         if ( ! array_key_exists($name, $this->_entity_aliases)) {
@@ -65,7 +65,7 @@ class NamingService {
      *
      * @param string $name a property chain or an alias name
      * @throws cyclone\jork\Exception if $name is not a valid name
-     * @see JORK_Naming_Service::get_schema()
+     * @see NamingService::get_schema()
      */
     private function search_schema($name) {
         $segments = explode('.', $name);

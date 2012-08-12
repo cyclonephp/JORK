@@ -17,27 +17,27 @@ abstract class SelectMapper {
 
     /**
      * The JORK query to be mapped. This query instance will be passed to the
-     * created JORK_Mapper_Entity instances.
+     * created @c EntityMapper instances.
      *
-     * @var cyclone\jork\query\Select
+     * @var cyclone\jork\query\SelectQuery
      */
     protected $_jork_query;
 
     /**
      * The DB query to be populated by the mapper methods. This query instance
-     * will be passed to the created @c jork\mapper\Entity instances.
+     * will be passed to the created @c EntityMapper instances.
      *
      * @var cyclone\db\query\Select
      */
     protected $_db_query;
 
     /**
-     * @var array<jork\apper\Result>
+     * @var array<jork\mapper\Result>
      */
     protected $_mappers;
 
     /**
-     * @var jork\NamingService
+     * @var \cyclone\jork\NamingService
      */
     protected $_naming_srv;
 
@@ -47,7 +47,7 @@ abstract class SelectMapper {
     public $has_implicit_root;
 
     /**
-     * @var jork\schema\ModelSchema
+     * @var \cyclone\jork\schema\ModelSchema
      */
     protected $_implicit_root;
 
@@ -118,8 +118,8 @@ abstract class SelectMapper {
     /**
      * Maps the SELECT clause of the jork query to the db query.
      *
-     * @see JORK_Mapper_Select::$_jork_query
-     * @see JORK_Mapper_Select::$_db_query
+     * @see $_jork_query
+     * @see $_db_query
      * @return void
      */
     protected abstract function map_select();
@@ -128,9 +128,9 @@ abstract class SelectMapper {
      * Merges the property projections of a select item using the already created
      * mappers.
      *
-     * @param JORK_Query_PropChain $prop_chain
-     * @param <type> $projections
-     * @usedby JORK_Mapper_Select::map_select()
+     * @param \cyclone\jork\query\PropChain $prop_chain
+     * @param array $projections
+     * @usedby map_select()
      */
     protected abstract function add_projections(jork\query\PropChain $prop_chain, $projections);
 
@@ -140,8 +140,8 @@ abstract class SelectMapper {
      * chains, replaces them with the corresponding table aliases and column names
      * and merges the property chains.
      *
-     * @param cyclone\db\Expression $expr
-     * @return cyclone\DB\Expression
+     * @param \cyclone\db\Expression $expr
+     * @return \cyclone\db\Expression
      */
     protected abstract function resolve_db_expr(db\Expression $expr);
     
@@ -151,7 +151,7 @@ abstract class SelectMapper {
      * should be the same class. The class/property names are replaced
      * with the corresponding primary key columns.
      * 
-     * @param DB_Expression_Binary $expr
+     * @param \cyclone\db\BinaryExpression $expr
      * @throws cyclone\jork\Exception if the two operands are not the same class
      */
     protected function obj2condition(db\BinaryExpression $expr) {
@@ -232,9 +232,9 @@ abstract class SelectMapper {
     /**
      * Maps the where clause of the jork query
      *
-     * @see JORK_Mapper_Select::$_jork_query
-     * @see JORK_Mapper_Select::$_db_query
-     * @see JORK_Mapper_Select::resolve_db_expr()
+     * @see $_jork_query
+     * @see $_db_query
+     * @see resolve_db_expr()
      */
     protected function map_where() {
         foreach ($this->_jork_query->where_conditions as $cond) {
@@ -254,8 +254,8 @@ abstract class SelectMapper {
      * These joined tables are not used to filter the number of the rows so
      * they are unnecessarily make the query slower.
      *
-     * @param DB_Query_Select $subquery the subquery which join clauses will be filtered
-     * @usedby JORK_Mapper_Select::build_offset_limit_subquery()
+     * @param \cyclone\db\query\Select $subquery the subquery which join clauses will be filtered
+     * @usedby build_offset_limit_subquery()
      */
     protected function filter_unneeded_subquery_joins(db\query\Select $subquery) {
         if (NULL == $subquery->where_conditions) {
@@ -294,17 +294,17 @@ abstract class SelectMapper {
     protected abstract function has_to_many_child();
 
     /**
-     * Creates a SimpleDB join condition that joins a subquery that properly
+     * Creates a DB join condition that joins a subquery that properly
      * controls the offset-limit clauses.
      *
-     * This method is invoked by JORK_Mapper_Select::map_offset_limit() if the
+     * This method is invoked by @c map_offset_limit() if the
      * JORK query generated at least one to-many component mapper. Otherwise
      * no offset-limit subquery is needed, the offset and limit clauses are
      * simply copied from the JORK query to the DB query.
      *
      * @return array
-     * @usedby JORK_Mapper_Select::map_offset_limit()
-     * @uses JORK_Mapper_Select::filter_unneeded_subquery_joins()
+     * @usedby map_offset_limit()
+     * @uses filter_unneeded_subquery_joins()
      */
     protected abstract function build_offset_limit_subquery(db\query\Select $subquery);
 
@@ -320,8 +320,8 @@ abstract class SelectMapper {
      * subquery is needed then simply copies the offset and limit clauses from
      * the JORK query to the DB query.
      *
-     * @uses JORK_Mapper_Select::has_to_many_child();
-     * @uses JORK_Mapper_Select::build_offset_limit_subquery();
+     * @uses has_to_many_child();
+     * @uses build_offset_limit_subquery();
      */
     protected function  map_offset_limit() {
         if (NULL == $this->_jork_query->offset

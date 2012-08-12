@@ -18,15 +18,15 @@ abstract class AbstractResult {
      *
      * If the JORK SELECT query has an implicit root and it's select list is empty,
      * (it's typically the case when the JORK SELECT was created using JORK::from())
-     * then it returns a JORK_Mapper_Result_Simple instance. Otherwise it returns
-     * a JORK_Mapper_Result_Default instance.
+     * then it returns a @c SimpleResult instance. Otherwise it returns
+     * a @c DefaultResult instance.
      *
-     * @param JORK_Query_Select $query the JORK SELECT query that's result wil be mapped
-     * @param DB_Query_Result $db_result the database query result to map
+     * @param \cyclone\jork\query\SelectQuery $query the JORK SELECT query that's result wil be mapped
+     * @param \cyclone\db\query\result\AbstractResult $db_result the database query result to map
      * @param boolean $has_implicit_root
      * @param array $mappers
-     * @return JORK_Mapper_Result
-     * @usedby JORK_Query_Select::exec()
+     * @return AbstractResult
+     * @usedby \cyclone\jork\query\SelectQuery::exec()
      */
     public static function for_query(jork\query\SelectQuery $query
             , db\query\result\AbstractResult $db_result

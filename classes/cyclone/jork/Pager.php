@@ -95,7 +95,7 @@ class Pager {
     }
 
     /**
-     * @return JORK_Result_Iterator
+     * @return result\Iterator
      */
     public function get_results() {
         return new result\Iterator($this->_jork_mapper->map());

@@ -69,7 +69,7 @@ class SelectQuery {
      *
      * @var string select item
      * @var ...
-     * @return JORK_Query_Select
+     * @return SelectQuery
      */
     public function select() {
         $args = func_get_args();
@@ -80,7 +80,7 @@ class SelectQuery {
      * Builder method for the select clause of the query
      *
      * @var array<string> args
-     * @return JORK_Query_Select
+     * @return SelectQuery this
      *
      * @see JORK::select()
      */
@@ -115,7 +115,7 @@ class SelectQuery {
      *
      * @param string from list item
      * @param ...
-     * @return JORK_Query_Select
+     * @return SelectQuery this
      */
     public function from() {
         $args = func_get_args();
@@ -125,7 +125,7 @@ class SelectQuery {
     /**
      *
      * @param array<string> $args
-     * @return JORK_Query_Select
+     * @return SelectQuery this
      */
     public function from_array($args) {
         foreach ($args as $arg) {
@@ -170,7 +170,7 @@ class SelectQuery {
     /**
      * @param string $entity_class_def
      * @param string $type
-     * @return JORK_Query_Select
+     * @return SelectQuery this
      */
     public function join($entity_class_def, $type = 'INNER') {
         preg_match('/^(?<class>[a-zA-Z_0-9.]+)( +(?<alias>[a-zA-Z_0-9]+))?$/', $entity_class_def, $matches);
@@ -191,7 +191,7 @@ class SelectQuery {
 
     /**
      * @param string $entity_class_def
-     * @return JORK_Query_Select
+     * @return SelectQuery this
      */
     public function left_join($entity_class_def) {
         $this->join($entity_class_def, 'LEFT');
@@ -199,7 +199,7 @@ class SelectQuery {
     }
 
     /**
-     * @return JORK_Query_Select
+     * @return SelectQuery this
      */
     public function on() {
         $this->_last_join['condition'] = func_get_args();
@@ -207,7 +207,7 @@ class SelectQuery {
     }
 
     /**
-     * @return JORK_Query_Select 
+     * @return SelectQuery this
      */
     public function where() {
         $args = func_get_args();
@@ -216,7 +216,7 @@ class SelectQuery {
     }
 
     /**
-     * @return JORK_Query_Select 
+     * @return SelectQuery this
      */
     public function group_by() {
         $this->group_by = func_get_args();
@@ -226,7 +226,7 @@ class SelectQuery {
     /**
      * @param string $column
      * @param string $direction
-     * @return JORK_Query_Select
+     * @return SelectQuery this
      */
     public function order_by($column, $direction = 'ASC') {
         $this->order_by []= array(
@@ -238,7 +238,7 @@ class SelectQuery {
 
     /**
      * @param int $offset
-     * @return JORK_Query_Select
+     * @return SelectQuery this
      */
     public function offset($offset) {
         $this->offset = (int) $offset;
@@ -247,7 +247,7 @@ class SelectQuery {
 
     /**
      * @param int $limit
-     * @return JORK_Query_Select
+     * @return SelectQuery this
      */
     public function limit($limit) {
         $this->limit = (int) $limit;
@@ -256,7 +256,7 @@ class SelectQuery {
 
     /**
      * @param string $database
-     * @return JORK_Result_Iterator 
+     * @return \cyclone\jork\result\Iterator
      */
     public function exec($database = 'default') {
         $mapper = jork\mapper\SelectMapper::for_query($this);

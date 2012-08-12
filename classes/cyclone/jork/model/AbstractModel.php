@@ -124,7 +124,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
 
     /**
      * @param mixed $pk
-     * @return JORK_Model_Abstract
+     * @return AbstractModel
      */
     public static function get($pk) {
         $schema = static::schema();
@@ -150,13 +150,13 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     /**
      * Only for internal usage.
      *
-     * Used by <code>JORK_Mapper_Entity::map_row()</code> to initialize the component
+     * Used by @c \cyclone\jork\mapper\EntityMapper::map_row() to initialize the component
      * collections, to be ready when the method calls
-     * <code>JORK_Model_Abstract::add_to_component_collections()</code>.
+     * @c AbstractModel::add_to_component_collections().
      *
      * @param array $prop_names
-     * @usedby JORK_Mapper_Entity::map_row()
-     * @see JORK_Model_Abstract::add_to_component_collections()
+     * @usedby \cyclone\jork\mapper\EntityMapper::map_row()
+     * @see AbstractModel::add_to_component_collections()
      */
     public function init_component_collections(&$prop_names) {
         foreach (array_diff_key($prop_names, $this->_components) as $prop => $dummy) {
@@ -234,11 +234,11 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     /**
      * Only for internal usage.
      *
-     * Used by <code>JORK_Mapper_Entity::map_row()</code> to quickly load the to-one components
-     * instead of executing <code>JORK_Model_Abstract::__set()</code> each time.
+     * Used by @c \cyclone\jork\mapper\EntityMapper::map_row() to quickly load the to-one components
+     * instead of executing @c AbstractModel::__set() each time.
      *
-     * @param array<JORK_Model_Abstract> $components
-     * @usedby JORK_Mapper_Entity::map_row()
+     * @param array<AbstractModel> $components
+     * @usedby \cyclone\jork\mapper\EntityMapper::map_row()
      */
     public function set_components($components) {
         foreach ($components as $k => $v) {
@@ -252,11 +252,11 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     /**
      * Only for internal usage.
      *
-     * Used by <code>JORK_Mapper_Entity::map_row()</code> to quickly load the to-many components
-     * instead of executing <code>JORK_Model_Abstract::__set()</code> each time.
+     * Used by @c \cyclone\jork\mapper\EntityMapper::map_row() to quickly load the to-many components
+     * instead of executing @c AbstractModel::__set() each time.
      *
-     * @param array<JORK_Model_Abstract> $components
-     * @usedby JORK_Mapper_Entity::map_row()
+     * @param array<AbstractModel> $components
+     * @usedby \cyclone\jork\mapper\EntityMapper::map_row()
      */
     public function add_to_component_collections($components) {
         foreach ($components as $prop_name => $new_comp) {
@@ -360,10 +360,10 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * 
      * First checks the primitive properties in
      * the schema, if it finds one then returns the value from this entity, or
-     * NULL if not found. Then it checks the components of the schema, and if it
+     * <code>NULL</code> if not found. Then it checks the components of the schema, and if it
      * founds one with <code>$key</code> then checks if the component exists in
      * the entity or not. If it exists, then it returns it, otherwise it returns
-     * NULL or an empty JORK_Model_Collection instance (the latter case happens
+     * <code>NULL</code> or an empty @c collection\AbstractCollection instance (the latter case happens
      * if the component is a to-many component).
      *
      * If it doesn't find the property in the schema then throws a cyclone\jork\Exception.
@@ -673,7 +673,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * Typically this method should never be called from outside, just made public
      * for edge-cases.
      *
-     * @usedby JORK_Model_Abstract::save()
+     * @usedby save()
      */
     public function update($cascade = TRUE) {
          if ($this->_save_in_progress)
@@ -765,8 +765,8 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * </code>
      *
      * @param mixed $cascade boolean or array
-     * @see JORK_Model_Abstract::insert()
-     * @see JORK_Model_Abstract::update()
+     * @see insert()
+     * @see update()
      */
     public function save($cascade = TRUE) {
         $schema = $this->schema();
@@ -821,8 +821,8 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      *
      * @param mixed $cascade
      * @throws cyclone\jork\Exception if $cascade if netither a boolean nor an array
-     * @usedby JORK_Model_Abstract::insert()
-     * @usedby JORK_Model_Abstract::update()
+     * @usedby insert()
+     * @usedby update()
      */
     private function cascade_save($cascade) {
         if (FALSE == $cascade)

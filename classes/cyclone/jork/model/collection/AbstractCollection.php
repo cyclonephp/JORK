@@ -154,13 +154,13 @@ abstract class AbstractCollection implements \ArrayAccess, \Iterator, \Countable
      * in cases when the deletion is called via Model::inst()->delete_by_pk($pk)
      * since in this cases the singleton doesn't hold any state, but this is the
      * owner of the collection. The $owner_pk parameter is already put into an
-     * escaped parameter object by JORK_Model_Abstract::delete_by_pk()
+     * escaped parameter object by @c \cyclone\jork\model\AbstractModel::delete_by_pk()
      *
      * The method throws cyclone\jork\Exception if the 'on_delete' key exists in the
-     * component definition but it's value is neither JORK::SET_NULL
-     * nor JORK::CASCADE
+     * component definition but it's value is neither <code>JORK::SET_NULL</code>
+     * nor <code>JORK::CASCADE</code>.
      *
-     * @see  cyclone\\jork\\model\\AbstractModel::delete()
+     * @see  \cyclone\jork\model\AbstractModel::delete()
      * @param mixed $owner_pk the primary key of the owner.
      */
     public abstract function notify_owner_deletion(db\ParamExpression $owner_pk);
@@ -247,8 +247,8 @@ abstract class AbstractCollection implements \ArrayAccess, \Iterator, \Countable
      * Only for internal usage. Used when object graph is loaded from the database.
      *
      * @param string $key
-     * @param JORK_Model_Abstract $val
-     * @see JORK_Model_Abstract::add_to_component_collections()
+     * @param \cyclone\jork\model\AbstractModel $val
+     * @see \cyclone\jork\model\AbstractModel::add_to_component_collections()
      * @package
      */
     public function  offsetSet($key, $val) {
