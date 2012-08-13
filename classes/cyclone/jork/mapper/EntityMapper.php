@@ -100,6 +100,13 @@ class EntityMapper implements RowMapper {
      */
     protected $_previous_result_entity;
 
+    /**
+     * Used by @c result\AbstractResult implementations to map a row of a database query result
+     * to object result.
+     *
+     * @param $db_row a row of the database query
+     * @return array
+     */
     public function map_row(&$db_row) {
         if (empty($this->_result_primary_key_columns))
             return array(NULL, FALSE);

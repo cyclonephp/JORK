@@ -753,16 +753,20 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * The <code>update()</code> and <code>insert()</code> methods are also public,
      * but these should be rarely used.
      *
-     * If $cascade is TRUE, then all components will be saved.
-     * If $cascade is FALSE, then no components will be saved.
-     * If $cascade is an array, then the components enumerated in the array
-     *      will be saved.
+     * <ul>
+     * <li>If <code>$cascade</code> is TRUE, then all components will be saved.</li>
+     * <li>If <code>$cascade</code> is FALSE, then no components will be saved.</li>
+     * <li>If <code>$cascade</code> is an array, then the components enumerated in the array
+     *      will be saved.</li>
+     * </ul>
      *
-     * Example:
-     * <code>
+     * Examples:
+     * @code // saving the topic with all of its components existing in the memory
+     * $topic->save();
+     * // saving the topic itself but none of its components
+     * $topic->save(FALSE);
      * // saving the topic and it's posts, but no other components of the topic
-     *  $topic->save(array('posts'));
-     * </code>
+     * $topic->save(array('posts')); @endcode
      *
      * @param mixed $cascade boolean or array
      * @see insert()
