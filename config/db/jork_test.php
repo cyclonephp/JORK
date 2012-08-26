@@ -3,9 +3,9 @@
 return array(
     'adapter' => 'mysqli',
     'connection' => array(
-        'username' => 'jork_test',
-        'password' => 'jork_test',
-        'database' => 'jork_test',
+        'username' => 'cyclone_test',
+        'password' => 'cyclone_test',
+        'database' => 'cyclone_test',
         'host' => 'localhost',
         //'socket' => '/var/mysql/mysql.sock'
     )

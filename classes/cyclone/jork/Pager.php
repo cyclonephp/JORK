@@ -70,7 +70,7 @@ class Pager {
         $count_result = cy\DB::select(array(cy\DB::expr('count(*)'), 'count'))
                 ->from(array($count_subquery, 'count_subquery'))->exec()->as_array();
         $this->_total_count = $count_result[0]['count'];
-        $this->page_count = ceil($this->_total_count / $this->_page_size);
+        $this->_page_count = ceil($this->_total_count / $this->_page_size);
     }
 
     private function build_db_query(query\Select $jork_query) {
