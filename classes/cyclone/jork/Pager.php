@@ -52,7 +52,7 @@ class Pager {
      */
     private $_page_count;
 
-    public function __construct(query\Select $query, $page, $page_size) {
+    public function __construct(query\SelectQuery $query, $page, $page_size) {
         $this->_query = $query;
         $this->_page = $page;
         $this->_page_size = $page_size;
@@ -69,14 +69,14 @@ class Pager {
         $count_subquery->limit = NULL;
         $count_result = cy\DB::select(array(cy\DB::expr('count(*)'), 'count'))
                 ->from(array($count_subquery, 'count_subquery'))->exec()->as_array();
-        $this->_total_count = $count_result[0]['count'];
+        $this->_total_count = max($count_result[0]['count'], 1);
         $this->_page_count = ceil($this->_total_count / $this->_page_size);
     }
 
-    private function build_db_query(query\Select $jork_query) {
+    private function build_db_query(query\SelectQuery $jork_query) {
         $jork_query->offset($this->_page_size * ($this->_page - 1));
         $jork_query->limit($this->_page_size);
-        $mapper = mapper\Select::for_query($jork_query);
+        $mapper = mapper\SelectMapper::for_query($jork_query);
         list($this->_db_query, $mappers) = $mapper->map();
 
         try {
@@ -91,7 +91,7 @@ class Pager {
             throw new Exception('Failed execute SQL: ' . $sql, $ex->getCode(), $ex);
         }
         
-        $this->_jork_mapper = mapper\Result::for_query($jork_query, $db_result, $mapper->has_implicit_root, $mappers);
+        $this->_jork_mapper = mapper\result\AbstractResult::for_query($jork_query, $db_result, $mapper->has_implicit_root, $mappers);
     }
 
     /**
