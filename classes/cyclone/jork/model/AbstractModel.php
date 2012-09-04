@@ -201,6 +201,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * @param boolean $strict if FALSE then the properties in <code>$properties</code>
      * 	which don't exist in the model properties will be skipped without any warnings.
      *  Otherwise an exception will be thrown on non-existent properties.
+     * @return AbstractModel
      * @throws \cyclone\jork\Exception
      */
     public function populate($properties, $strict = TRUE) {
@@ -229,6 +230,7 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
             } elseif ($strict)
                 throw new jork\Exception("unknown property '$name' of entity '{$schema->class}'");
         }
+        return $this;
     }
 
     /**
@@ -855,7 +857,9 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
 
     public function delete() {
         $pk = $this->pk();
-        $this->delete_by_pk($pk);
+        if (count($pk) > 1)
+            throw new jork\Exception("composite primary key deletion is not yet supported");
+        $this->delete_by_pk($pk[0]);
 
         $pk = new db\ParamExpression($pk[0]);
         $schema = static::schema();
@@ -891,10 +895,10 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
     public static function delete_by_pk($pk) {
         if ($pk === NULL)
             return;
-        if (count($pk) > 1)
+
+        if (is_array($pk))
             throw new jork\Exception("deleting composite primary key entities is not yet supported");
 
-        $pk = $pk[0];
         $schema = static::schema();
         $delete_sqls = query\Cache::inst(get_called_class())->delete_sql();
         $pk = new db\ParamExpression($pk);
