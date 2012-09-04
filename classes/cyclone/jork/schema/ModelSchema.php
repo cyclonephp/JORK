@@ -212,13 +212,17 @@ use cyclone\jork\schema\SchemaPool;
     public function primary_key_strategy() {
         if (count($this->_pk_strategies) > 0)
             return $this->_pk_strategies;
-        
+
+        $this->_pk_strategies = array();
         foreach ($this->primitives as $name => $def) {
             $candidate = $def->primary_key_strategy;
             if ( ! is_null($candidate))
-                return $this->_pk_strategy = $candidate;
+                $this->_pk_strategies []= $candidate;
         }
-        throw new jork\Exception("no primary key found for schema " . $this->class);
+        if (count($this->_pk_strategies) == 0)
+            throw new jork\Exception("no primary key found for schema " . $this->class);
+
+        return $this->_pk_strategies;
     }
 
     public function primary_key_info() {
