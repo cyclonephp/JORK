@@ -134,6 +134,10 @@ class Cache {
                     $this->_update_sql[$sec_table] = $upd_sql;
                 }
             }
+        } else {
+            foreach ($this->_update_sql as $update_sql) {
+                $update_sql->conditions = array();
+            }
         }
         return $this->_update_sql;
     }

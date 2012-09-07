@@ -75,6 +75,16 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
         }
     }
 
+    public function test_multiple_save() {
+        $user = Model_User::get(1);
+        $user->name('user1 modified')->save();
+        $user->name('user1 modified twice')->save();
+        $result = cy\JORK::from('Model_User')->where('id', '=', DB::esc(1))->exec('jork_test');
+        $result = $result[0];
+        $this->assertEquals('user1 modified twice', $result->name);
+
+    }
+
     public function test_fk_one_to_many_update_on_save() {
         $user = new Model_User;
         $post = new Model_Post;
