@@ -138,6 +138,15 @@ class JORK_Model_AbstractTest extends JORK_DbTest {
        $user->delete();
     }
 
+    public function test_multiple_delete() {
+        $result = cy\JORK::from('Model_Post')->exec('jork_test');
+        foreach ($result as $post) {
+            $post->delete();
+        }
+        $result = cy\DB::select()->from('t_posts')->exec('jork_test');
+        $this->assertEquals(0, count($result));
+    }
+
     /**
      * Tests component behavior on entity deletion
      */
