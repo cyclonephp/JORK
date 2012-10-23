@@ -87,7 +87,7 @@ class JORK {
      *
      * @param string $name
      * @param string $class
-     * @return schema\ComponentSchema
+     * @return \cyclone\jork\schema\ComponentSchema
      */
     public static function component($name, $class) {
         return new schema\ComponentSchema($name, $class);
@@ -96,7 +96,7 @@ class JORK {
     /**
      *
      * @param string $name
-     * @return schema\SecondaryTableSchema
+     * @return \cyclone\jork\schema\SecondaryTableSchema
      */
     public static function secondary_table($name, $join_col, $inverse_join_col) {
         return new schema\SecondaryTableSchema($name, $join_col, $inverse_join_col);
@@ -106,7 +106,7 @@ class JORK {
      *
      * @param string $join_column
      * @param string $inverse_join_column
-     * @return schema\JoinTableSchema
+     * @return \cyclone\jork\schema\JoinTableSchema
      */
     public static function join_table($name, $join_column, $inverse_join_column) {
         return new schema\JoinTableSchema($name, $join_column, $inverse_join_column);
@@ -115,21 +115,21 @@ class JORK {
     /**
      *
      * @param string $discriminator_column
-     * @return schema\SingleTableInheritance
+     * @return \cyclone\jork\schema\SingleTableInheritance
      */
     public static function single_table($discriminator_column) {
         return new schema\SingleTableInheritance($discriminator_column);
     }
 
     /**
-     * @return schema\JoinedSubclassInheritance
+     * @return \cyclone\jork\schema\JoinedSubclassInheritance
      */
     public static function joined_subclass() {
         return new schema\JoinedSubclassInheritance;
     }
 
     /**
-     * @return schema\TablePerClassInheritance
+     * @return \cyclone\jork\schema\TablePerClassInheritance
      */
     public static function table_per_class() {
         return new schema\TablePerClassInheritance;
