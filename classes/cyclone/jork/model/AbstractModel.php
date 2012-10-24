@@ -520,7 +520,8 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
                         $this->fetch_component($name);
                     }
                     return $this->_components[$name]['value'];
-                }
+                } else
+                    throw new jork\Exception("property {$schema->class}::{$name} does not exist");
                 break;
             case 1:
                 $this->__set($name, $args[0]);
