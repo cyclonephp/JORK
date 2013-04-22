@@ -177,7 +177,7 @@ abstract class SelectMapper {
                     = $expr->left_operand;
 //                if ($left_ent_schema->components[$left_last_prop]['class']
 //                    != $right_ent_schema->components[$right_last_prop]['class'])
-//                    throw new cyclone\jork\Exception("unable to check equality of class '"
+//                    throw new cyclone\jork\CycloneException("unable to check equality of class '"
 //                            . $left_ent_schema->components[$left_last_prop]['class'] . "' with class '"
 //                            . $right_ent_schema->components[$right_last_prop]['class'] . "'");
             $left_class = $left_ent_schema->components[$left_last_prop]->class;

@@ -368,11 +368,11 @@ abstract class AbstractModel implements \ArrayAccess, \IteratorAggregate{
      * <code>NULL</code> or an empty @c collection\AbstractCollection instance (the latter case happens
      * if the component is a to-many component).
      *
-     * If it doesn't find the property in the schema then throws a cyclone\jork\Exception.
+     * If it doesn't find the property in the schema then throws a cyclone\jork\CycloneException.
      *
      * @param string $key
      * @return mixed
-     * @throws cyclone\jork\Exception
+     * @throws cyclone\jork\CycloneException
      */
     public function  __get($key) {
         $schema = $this->schema();

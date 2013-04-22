@@ -156,7 +156,7 @@ abstract class AbstractCollection implements \ArrayAccess, \Iterator, \Countable
      * owner of the collection. The $owner_pk parameter is already put into an
      * escaped parameter object by @c \cyclone\jork\model\AbstractModel::delete_by_pk()
      *
-     * The method throws cyclone\jork\Exception if the 'on_delete' key exists in the
+     * The method throws cyclone\jork\CycloneException if the 'on_delete' key exists in the
      * component definition but it's value is neither <code>JORK::SET_NULL</code>
      * nor <code>JORK::CASCADE</code>.
      *

@@ -117,7 +117,7 @@ class CompositePKInstancePool extends InstancePool {
             $curr_iterables []= $iter;
             $iter->rewind();
             if ( ! $iter->valid())
-                //throw new Exception('invalid state');
+                //throw new CycloneException('invalid state');
                 return;
 
             $curr_pool = $iter->current();
