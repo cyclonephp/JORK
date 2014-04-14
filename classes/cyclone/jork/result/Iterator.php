@@ -9,12 +9,12 @@ namespace cyclone\jork\result;
 class Iterator implements \Iterator, \Countable, \ArrayAccess {
 
     /**
-     * @var cyclone\db\query\Result
+     * @var \cyclone\db\query\Result
      */
     private $_result;
 
     /**
-     * @var array<cyclone\jork\mapper\Result>
+     * @var array<\cyclone\jork\mapper\Result>
      */
     private $_mappers;
 

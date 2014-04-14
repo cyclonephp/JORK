@@ -16,7 +16,7 @@ abstract class JORK_MapperTest extends Kohana_Unittest_TestCase {
     }
 
     protected function load_schemas($rel_filename) {
-        $abs_filename = cy\FileSystem::get_root_path('jork') . 'tests/testschemas/' . $rel_filename . '.php';
+        $abs_filename = cy\FileSystem::get_default()->get_root_path('jork') . 'tests/testschemas/' . $rel_filename . '.php';
         if ( ! file_exists($abs_filename))
             throw new jork\SchemaException("failed to load test schemas '$rel_filename'");
 

@@ -1,5 +1,5 @@
 -- USE jork_test;
-/**
+/**/
 drop table if exists t_posts;
 drop table if exists t_topics;
 drop table if exists t_categories;
